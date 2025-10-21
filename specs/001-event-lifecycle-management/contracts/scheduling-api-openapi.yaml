@@ -1,0 +1,345 @@
+openapi: 3.0.3
+info:
+  title: Scheduling Service API
+  description: Go Fiber microservice for resource conflict detection and scheduling optimization
+  version: 1.0.0
+  contact:
+    name: Catering Event Manager Team
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local development
+  - url: http://scheduler:8080/api/v1
+    description: Docker Compose environment
+
+tags:
+  - name: Health
+    description: Service health and status
+  - name: Scheduling
+    description: Resource conflict detection and optimization
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      description: Returns service health status and version
+      tags: [Health]
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [ok]
+                  version:
+                    type: string
+                    example: "1.0.0"
+                  timestamp:
+                    type: string
+                    format: date-time
+
+  /scheduling/check-conflicts:
+    post:
+      summary: Check resource scheduling conflicts
+      description: |
+        Checks if assigning a resource to a time range would conflict with existing assignments.
+        Maps to FR-017 (conflict detection) and FR-019 (conflict warnings).
+
+        **Performance**: <100ms response time (sub-requirement of SC-004)
+      tags: [Scheduling]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [resourceId, startTime, endTime]
+              properties:
+                resourceId:
+                  type: integer
+                  description: Resource ID to check
+                  example: 42
+                startTime:
+                  type: string
+                  format: date-time
+                  description: Allocation start time (ISO 8601)
+                  example: "2025-12-15T14:00:00Z"
+                endTime:
+                  type: string
+                  format: date-time
+                  description: Allocation end time (ISO 8601)
+                  example: "2025-12-15T18:00:00Z"
+                excludeTaskId:
+                  type: integer
+                  description: Optional task ID to exclude (for updates)
+                  example: 123
+      responses:
+        '200':
+          description: Conflict check completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [hasConflicts, conflicts]
+                properties:
+                  hasConflicts:
+                    type: boolean
+                    description: Whether conflicts were found
+                    example: true
+                  conflicts:
+                    type: array
+                    description: List of conflicting resource assignments
+                    items:
+                      type: object
+                      required: [eventId, eventName, taskId, taskTitle, startTime, endTime]
+                      properties:
+                        eventId:
+                          type: integer
+                          example: 15
+                        eventName:
+                          type: string
+                          example: "Corporate Lunch"
+                        taskId:
+                          type: integer
+                          example: 67
+                        taskTitle:
+                          type: string
+                          example: "Setup catering equipment"
+                        startTime:
+                          type: string
+                          format: date-time
+                          example: "2025-12-15T13:00:00Z"
+                        endTime:
+                          type: string
+                          format: date-time
+                          example: "2025-12-15T17:00:00Z"
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /scheduling/resource-availability:
+    get:
+      summary: Get resource availability for date range
+      description: |
+        Returns available time slots for a resource within a date range.
+        Used for UI scheduling calendar (FR-018).
+      tags: [Scheduling]
+      parameters:
+        - name: resourceId
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: Resource ID
+          example: 42
+        - name: dateFrom
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+          description: Start date for availability check
+          example: "2025-12-01"
+        - name: dateTo
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+          description: End date for availability check
+          example: "2025-12-31"
+      responses:
+        '200':
+          description: Resource availability retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [resourceId, resourceName, availability]
+                properties:
+                  resourceId:
+                    type: integer
+                    example: 42
+                  resourceName:
+                    type: string
+                    example: "Chef Station #1"
+                  resourceType:
+                    type: string
+                    enum: [staff, equipment, materials]
+                    example: "equipment"
+                  availability:
+                    type: array
+                    description: List of unavailable time ranges (booked)
+                    items:
+                      type: object
+                      required: [eventId, startTime, endTime]
+                      properties:
+                        eventId:
+                          type: integer
+                          example: 15
+                        eventName:
+                          type: string
+                          example: "Corporate Lunch"
+                        startTime:
+                          type: string
+                          format: date-time
+                          example: "2025-12-15T13:00:00Z"
+                        endTime:
+                          type: string
+                          format: date-time
+                          example: "2025-12-15T17:00:00Z"
+        '400':
+          description: Invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /scheduling/optimize-allocation:
+    post:
+      summary: Optimize resource allocation for event
+      description: |
+        Suggests optimal resource assignments to minimize conflicts and balance utilization.
+        Future enhancement for intelligent scheduling (not required for MVP).
+      tags: [Scheduling]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [eventId, requiredResources]
+              properties:
+                eventId:
+                  type: integer
+                  description: Event ID to optimize
+                  example: 15
+                requiredResources:
+                  type: array
+                  description: Resources needed for event tasks
+                  items:
+                    type: object
+                    required: [resourceType, quantity, startTime, endTime]
+                    properties:
+                      resourceType:
+                        type: string
+                        enum: [staff, equipment, materials]
+                        example: "staff"
+                      quantity:
+                        type: integer
+                        minimum: 1
+                        example: 3
+                      startTime:
+                        type: string
+                        format: date-time
+                        example: "2025-12-15T14:00:00Z"
+                      endTime:
+                        type: string
+                        format: date-time
+                        example: "2025-12-15T18:00:00Z"
+      responses:
+        '200':
+          description: Optimization suggestions generated
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [suggestions, utilizationScore]
+                properties:
+                  suggestions:
+                    type: array
+                    description: Recommended resource assignments
+                    items:
+                      type: object
+                      required: [resourceId, resourceName, startTime, endTime, score]
+                      properties:
+                        resourceId:
+                          type: integer
+                          example: 42
+                        resourceName:
+                          type: string
+                          example: "Chef Station #1"
+                        startTime:
+                          type: string
+                          format: date-time
+                          example: "2025-12-15T14:00:00Z"
+                        endTime:
+                          type: string
+                          format: date-time
+                          example: "2025-12-15T18:00:00Z"
+                        score:
+                          type: number
+                          format: float
+                          description: Optimization score (0-1, higher is better)
+                          example: 0.95
+                        conflicts:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              eventId:
+                                type: integer
+                              conflictSeverity:
+                                type: string
+                                enum: [low, medium, high]
+                  utilizationScore:
+                    type: number
+                    format: float
+                    description: Overall resource utilization (0-1)
+                    example: 0.78
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    Error:
+      type: object
+      required: [error, message]
+      properties:
+        error:
+          type: string
+          description: Error type
+          example: "invalid_parameter"
+        message:
+          type: string
+          description: Human-readable error message
+          example: "startTime must be before endTime"
+        details:
+          type: object
+          description: Additional error context
+          additionalProperties: true
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Authorization token from Next.js service (passed through from Next-Auth session).
+        For MVP, simple API key validation. Future: JWT validation.
+
+security:
+  - BearerAuth: []
