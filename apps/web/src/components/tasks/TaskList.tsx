@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { TaskCard } from './TaskCard';
 import { TaskForm } from './TaskForm';
 import { TaskAssignDialog } from './TaskAssignDialog';
+import { ResourceAssignmentDialog } from '@/components/resources/ResourceAssignmentDialog';
 
 interface TaskListProps {
   eventId: number;
@@ -42,6 +43,12 @@ export function TaskList({ eventId, isAdmin = false }: TaskListProps) {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<number | null>(null);
   const [assigningTask, setAssigningTask] = useState<number | null>(null);
+  const [resourceTask, setResourceTask] = useState<{
+    id: number;
+    eventId: number;
+    startTime: Date;
+    endTime: Date;
+  } | null>(null);
 
   const { data, isLoading, error } = trpc.task.listByEvent.useQuery({
     eventId,
@@ -62,6 +69,26 @@ export function TaskList({ eventId, isAdmin = false }: TaskListProps) {
   const handleAssignSuccess = () => {
     setAssigningTask(null);
     utils.task.listByEvent.invalidate({ eventId });
+  };
+
+  const handleResourceSuccess = () => {
+    setResourceTask(null);
+    utils.task.listByEvent.invalidate({ eventId });
+  };
+
+  const openResourceDialog = (task: TaskItem) => {
+    // Default to task due date or today + 1 day for timing
+    const startTime = task.dueDate ? new Date(task.dueDate) : new Date();
+    startTime.setHours(9, 0, 0, 0); // Default 9 AM
+    const endTime = new Date(startTime);
+    endTime.setHours(17, 0, 0, 0); // Default 5 PM
+
+    setResourceTask({
+      id: task.id,
+      eventId: task.eventId,
+      startTime,
+      endTime,
+    });
   };
 
   // Group tasks by category
@@ -204,6 +231,7 @@ export function TaskList({ eventId, isAdmin = false }: TaskListProps) {
                       isAdmin={isAdmin}
                       onEdit={() => setEditingTask(task.id)}
                       onAssign={() => setAssigningTask(task.id)}
+                      onResources={() => openResourceDialog(task)}
                     />
                   ))}
                 </div>
@@ -221,6 +249,7 @@ export function TaskList({ eventId, isAdmin = false }: TaskListProps) {
               isAdmin={isAdmin}
               onEdit={() => setEditingTask(task.id)}
               onAssign={() => setAssigningTask(task.id)}
+              onResources={() => openResourceDialog(task)}
             />
           ))}
         </div>
@@ -245,6 +274,19 @@ export function TaskList({ eventId, isAdmin = false }: TaskListProps) {
           taskId={assigningTask}
           onClose={() => setAssigningTask(null)}
           onSuccess={handleAssignSuccess}
+        />
+      )}
+
+      {/* Resource Assignment Dialog */}
+      {resourceTask !== null && (
+        <ResourceAssignmentDialog
+          isOpen={true}
+          onClose={() => setResourceTask(null)}
+          taskId={resourceTask.id}
+          eventId={resourceTask.eventId}
+          startTime={resourceTask.startTime}
+          endTime={resourceTask.endTime}
+          onSuccess={handleResourceSuccess}
         />
       )}
     </div>

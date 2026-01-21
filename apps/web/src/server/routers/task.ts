@@ -1,9 +1,10 @@
 import { z } from 'zod';
 import { router, protectedProcedure, adminProcedure } from '../trpc';
-import { tasks, events, users } from '@catering-event-manager/database/schema';
+import { tasks, events, users, resources, taskResources, resourceSchedule } from '@catering-event-manager/database/schema';
 import { eq, and, desc, sql, ne, isNull, or, lt, inArray } from 'drizzle-orm';
 import { TRPCError } from '@trpc/server';
 import { observable } from '@trpc/server/observable';
+import { schedulingClient, SchedulingClientError } from '../services/scheduling-client';
 
 // Task status enum for validation
 const taskStatusEnum = z.enum(['pending', 'in_progress', 'completed']);
@@ -255,6 +256,192 @@ export const taskRouter = router({
         .returning();
 
       return updatedTask;
+    }),
+
+  // FR-016: Assign multiple resources to a task with conflict checking
+  assignResources: adminProcedure
+    .input(z.object({
+      taskId: z.number().positive(),
+      resourceIds: z.array(z.number().positive()),
+      startTime: z.coerce.date(),
+      endTime: z.coerce.date(),
+      force: z.boolean().optional().default(false), // Allow assignment despite conflicts
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const { db, session } = ctx;
+      const { taskId, resourceIds, startTime, endTime, force } = input;
+
+      // Validate time range
+      if (endTime <= startTime) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'End time must be after start time',
+        });
+      }
+
+      // Get task with event info
+      const [task] = await db
+        .select({
+          id: tasks.id,
+          eventId: tasks.eventId,
+          title: tasks.title,
+          event: {
+            id: events.id,
+            eventName: events.eventName,
+            isArchived: events.isArchived,
+          },
+        })
+        .from(tasks)
+        .leftJoin(events, eq(tasks.eventId, events.id))
+        .where(eq(tasks.id, taskId))
+        .limit(1);
+
+      if (!task) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Task not found',
+        });
+      }
+
+      if (task.event?.isArchived) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Cannot assign resources to tasks in archived events',
+        });
+      }
+
+      // Verify all resources exist and are available
+      const foundResources = await db
+        .select()
+        .from(resources)
+        .where(inArray(resources.id, resourceIds));
+
+      if (foundResources.length !== resourceIds.length) {
+        const foundIds = new Set(foundResources.map((r: { id: number }) => r.id));
+        const missingIds = resourceIds.filter((id: number) => !foundIds.has(id));
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: `Resources not found: ${missingIds.join(', ')}`,
+        });
+      }
+
+      const unavailable = foundResources.filter((r: { isAvailable: boolean }) => !r.isAvailable);
+      if (unavailable.length > 0) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: `Resources not available: ${unavailable.map((r: { name: string }) => r.name).join(', ')}`,
+        });
+      }
+
+      // Check for conflicts using Go service
+      let conflicts: { resourceId: number; resourceName: string; message: string }[] = [];
+      let serviceUnavailable = false;
+
+      try {
+        const conflictResult = await schedulingClient.checkConflicts({
+          resource_ids: resourceIds,
+          start_time: startTime,
+          end_time: endTime,
+        });
+
+        if (conflictResult.has_conflicts) {
+          conflicts = conflictResult.conflicts.map(c => ({
+            resourceId: c.resource_id,
+            resourceName: c.resource_name,
+            message: c.message,
+          }));
+        }
+      } catch (error) {
+        if (error instanceof SchedulingClientError) {
+          if (error.code === 'TIMEOUT' || error.code === 'CONNECTION_ERROR') {
+            serviceUnavailable = true;
+          }
+        }
+        // Continue with assignment if service unavailable and force=true
+        if (!force && !serviceUnavailable) {
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: 'Failed to check resource conflicts',
+          });
+        }
+      }
+
+      // If conflicts exist and not forcing, return conflicts for user decision
+      if (conflicts.length > 0 && !force) {
+        return {
+          success: false,
+          conflicts,
+          message: 'Resource scheduling conflicts detected',
+        };
+      }
+
+      // Remove existing resource assignments for this task
+      await db.delete(taskResources).where(eq(taskResources.taskId, taskId));
+
+      // Remove existing schedule entries for this task
+      await db.delete(resourceSchedule).where(eq(resourceSchedule.taskId, taskId));
+
+      // Create new task-resource assignments and schedule entries
+      for (const resourceId of resourceIds) {
+        // Create task-resource join entry
+        await db.insert(taskResources).values({
+          taskId,
+          resourceId,
+        });
+
+        // Create schedule entry
+        await db.insert(resourceSchedule).values({
+          resourceId,
+          eventId: task.eventId,
+          taskId,
+          startTime,
+          endTime,
+          notes: `Assigned to task: ${task.title}`,
+        });
+      }
+
+      return {
+        success: true,
+        assignedResources: resourceIds.length,
+        conflicts: conflicts.length > 0 ? conflicts : undefined,
+        warning: serviceUnavailable ? 'Conflicts could not be verified - scheduling service unavailable' : undefined,
+        forceOverride: conflicts.length > 0 && force,
+      };
+    }),
+
+  // Get resources assigned to a task
+  getAssignedResources: protectedProcedure
+    .input(z.object({ taskId: z.number().positive() }))
+    .query(async ({ ctx, input }) => {
+      const { db } = ctx;
+
+      const assigned = await db
+        .select({
+          resourceId: taskResources.resourceId,
+          assignedAt: taskResources.assignedAt,
+          resource: {
+            id: resources.id,
+            name: resources.name,
+            type: resources.type,
+            isAvailable: resources.isAvailable,
+          },
+          schedule: {
+            startTime: resourceSchedule.startTime,
+            endTime: resourceSchedule.endTime,
+          },
+        })
+        .from(taskResources)
+        .innerJoin(resources, eq(taskResources.resourceId, resources.id))
+        .leftJoin(
+          resourceSchedule,
+          and(
+            eq(resourceSchedule.taskId, input.taskId),
+            eq(resourceSchedule.resourceId, taskResources.resourceId)
+          )
+        )
+        .where(eq(taskResources.taskId, input.taskId));
+
+      return assigned;
     }),
 
   // FR-010, FR-014: Update task status with dependency check
