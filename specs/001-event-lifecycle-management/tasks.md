@@ -136,37 +136,37 @@
 
 ### Database for User Story 1
 
-- [ ] T053 [P] [US1] Create events table schema in packages/database/src/schema/events.ts with all fields, foreign keys, indexes per data-model.md:147-170
-- [ ] T054 [P] [US1] Create event_status_log table schema in packages/database/src/schema/event-status-log.ts for audit trail per data-model.md:203-216
-- [ ] T055 [US1] Create database trigger function log_event_status_change() in migration to auto-log status changes per data-model.md:223-240
-- [ ] T056 [US1] Create archived_events view in migration for analytics queries per data-model.md:451-461
-- [ ] T057 [US1] Add migration for events and event_status_log tables to packages/database/migrations/0001_events.sql
-- [ ] T058 [US1] Run pnpm db:migrate to apply events migration
+- [x] T053 [P] [US1] Create events table schema in packages/database/src/schema/events.ts with all fields, foreign keys, indexes per data-model.md:147-170
+- [x] T054 [P] [US1] Create event_status_log table schema in packages/database/src/schema/event-status-log.ts for audit trail per data-model.md:203-216
+- [x] T055 [US1] Create database trigger function log_event_status_change() in migration to auto-log status changes per data-model.md:223-240
+- [x] T056 [US1] Create archived_events view in migration for analytics queries per data-model.md:451-461
+- [x] T057 [US1] Add migration for events and event_status_log tables to packages/database/migrations/0001_events.sql
+- [x] T058 [US1] Run pnpm db:migrate to apply events migration
 
 ### Backend (tRPC) for User Story 1
 
-- [ ] T059 [P] [US1] Create event router file in apps/web/src/server/routers/event.ts with base router setup
-- [ ] T060 [P] [US1] Implement event.create mutation in apps/web/src/server/routers/event.ts per contracts/trpc-routers.md:43-71
-- [ ] T061 [P] [US1] Implement event.list query with cursor pagination in apps/web/src/server/routers/event.ts per contracts/trpc-routers.md:74-105
-- [ ] T062 [P] [US1] Implement event.getById query with full event details, tasks, status history in apps/web/src/server/routers/event.ts per contracts/trpc-routers.md:108-153
-- [ ] T063 [P] [US1] Implement event.updateStatus mutation with transaction and status log in apps/web/src/server/routers/event.ts per contracts/trpc-routers.md:156-179
-- [ ] T064 [P] [US1] Implement event.update mutation for event details in apps/web/src/server/routers/event.ts per contracts/trpc-routers.md:182-205
-- [ ] T065 [P] [US1] Implement event.archive mutation with validation (only completed events) in apps/web/src/server/routers/event.ts per contracts/trpc-routers.md:208-231
-- [ ] T066 [US1] Implement event.onStatusChange subscription with Server-Sent Events in apps/web/src/server/routers/event.ts per contracts/trpc-routers.md:234-256
-- [ ] T067 [US1] Register event router in apps/web/src/server/routers/_app.ts
+- [x] T059 [P] [US1] Create event router file in apps/web/src/server/routers/event.ts with base router setup
+- [x] T060 [P] [US1] Implement event.create mutation in apps/web/src/server/routers/event.ts per contracts/trpc-routers.md:43-71
+- [x] T061 [P] [US1] Implement event.list query with cursor pagination in apps/web/src/server/routers/event.ts per contracts/trpc-routers.md:74-105
+- [x] T062 [P] [US1] Implement event.getById query with full event details, tasks, status history in apps/web/src/server/routers/event.ts per contracts/trpc-routers.md:108-153
+- [x] T063 [P] [US1] Implement event.updateStatus mutation with transaction and status log in apps/web/src/server/routers/event.ts per contracts/trpc-routers.md:156-179
+- [x] T064 [P] [US1] Implement event.update mutation for event details in apps/web/src/server/routers/event.ts per contracts/trpc-routers.md:182-205
+- [x] T065 [P] [US1] Implement event.archive mutation with validation (only completed events) in apps/web/src/server/routers/event.ts per contracts/trpc-routers.md:208-231
+- [x] T066 [US1] Implement event.onStatusChange subscription with Server-Sent Events in apps/web/src/server/routers/event.ts per contracts/trpc-routers.md:234-256
+- [x] T067 [US1] Register event router in apps/web/src/server/routers/_app.ts
 
 ### Frontend UI for User Story 1
 
-- [ ] T068 [P] [US1] Create event list page in apps/web/src/app/(dashboard)/events/page.tsx with filters (status, client, date range) and pagination
-- [ ] T069 [P] [US1] Create event detail page in apps/web/src/app/(dashboard)/events/[id]/page.tsx showing client, status history, tasks
-- [ ] T070 [P] [US1] Create event creation page in apps/web/src/app/(dashboard)/events/new/page.tsx with form validation
-- [ ] T071 [P] [US1] Create EventCard component in apps/web/src/components/events/EventCard.tsx for list display
-- [ ] T072 [P] [US1] Create EventStatusBadge component in apps/web/src/components/events/EventStatusBadge.tsx with color coding per status
-- [ ] T073 [P] [US1] Create EventStatusTimeline component in apps/web/src/components/events/EventStatusTimeline.tsx showing status history
-- [ ] T074 [P] [US1] Create EventForm component in apps/web/src/components/events/EventForm.tsx with client selection, date picker, validation
-- [ ] T075 [P] [US1] Create EventStatusUpdateDialog component in apps/web/src/components/events/EventStatusUpdateDialog.tsx for status transitions
-- [ ] T076 [US1] Implement real-time status updates using event.onStatusChange subscription in event detail page
-- [ ] T077 [US1] Add event archive button to event detail page (administrators only, completed events only)
+- [x] T068 [P] [US1] Create event list page in apps/web/src/app/(dashboard)/events/page.tsx with filters (status, client, date range) and pagination
+- [x] T069 [P] [US1] Create event detail page in apps/web/src/app/(dashboard)/events/[id]/page.tsx showing client, status history, tasks
+- [x] T070 [P] [US1] Create event creation page in apps/web/src/app/(dashboard)/events/new/page.tsx with form validation
+- [x] T071 [P] [US1] Create EventCard component in apps/web/src/components/events/EventCard.tsx for list display
+- [x] T072 [P] [US1] Create EventStatusBadge component in apps/web/src/components/events/EventStatusBadge.tsx with color coding per status
+- [x] T073 [P] [US1] Create EventStatusTimeline component in apps/web/src/components/events/EventStatusTimeline.tsx showing status history
+- [x] T074 [P] [US1] Create EventForm component in apps/web/src/components/events/EventForm.tsx with client selection, date picker, validation
+- [x] T075 [P] [US1] Create EventStatusUpdateDialog component in apps/web/src/components/events/EventStatusUpdateDialog.tsx for status transitions
+- [x] T076 [US1] Implement real-time status updates using event.onStatusChange subscription in event detail page
+- [x] T077 [US1] Add event archive button to event detail page (administrators only, completed events only)
 
 **Checkpoint**: ✅ User Story 1 complete - Events can be created, tracked through lifecycle, and archived independently
 
@@ -177,7 +177,7 @@
 
 ---
 
-## Phase 4: User Story 2 - Manage Event Tasks (Priority: P2)
+## Phase 4: User Story 2 - Manage Event Tasks (Priority: P2) ✅ COMPLETE
 
 **Goal**: Enable administrators to create tasks for events, assign tasks to team members, track task completion, and flag overdue tasks. This prevents operational failures by ensuring all necessary work is completed.
 
@@ -190,38 +190,38 @@
 
 **Maps to Requirements**: FR-008 through FR-014 (task management)
 
-**Duration Estimate**: 8-10 hours
+**Duration Estimate**: 8-10 hours | **Completed**: 2026-01-20
 
 ### Database for User Story 2
 
-- [ ] T078 [P] [US2] Create tasks table schema in packages/database/src/schema/tasks.ts with all fields, task dependencies, indexes per data-model.md:258-282
-- [ ] T079 [US2] Add tasks table migration to packages/database/migrations/0002_tasks.sql with constraint for task self-dependency prevention
-- [ ] T080 [US2] Run pnpm db:migrate to apply tasks migration
+- [x] T078 [P] [US2] Create tasks table schema in packages/database/src/schema/tasks.ts with all fields, task dependencies, indexes per data-model.md:258-282
+- [x] T079 [US2] Add tasks table migration to packages/database/migrations/0002_tasks.sql with constraint for task self-dependency prevention
+- [x] T080 [US2] Run pnpm db:migrate to apply tasks migration
 
 ### Backend (tRPC) for User Story 2
 
-- [ ] T081 [P] [US2] Create task router file in apps/web/src/server/routers/task.ts with base router setup
-- [ ] T082 [P] [US2] Implement task.create mutation with category, due date, task dependency validation in apps/web/src/server/routers/task.ts per contracts/trpc-routers.md:264-296
-- [ ] T083 [P] [US2] Implement task.assign mutation with notification trigger in apps/web/src/server/routers/task.ts per contracts/trpc-routers.md:299-321
-- [ ] T084 [P] [US2] Implement task.updateStatus mutation with dependency check (FR-014) and completion tracking in apps/web/src/server/routers/task.ts per contracts/trpc-routers.md:324-347
-- [ ] T085 [P] [US2] Implement task.listByEvent query with status/category filters in apps/web/src/server/routers/task.ts per contracts/trpc-routers.md:350-377
-- [ ] T086 [US2] Implement task.onUpdate subscription for real-time task updates in apps/web/src/server/routers/task.ts per contracts/trpc-routers.md:416-433
-- [ ] T087 [US2] Implement circular dependency detection function in apps/web/src/server/services/task-service.ts
-- [ ] T088 [US2] Implement task overdue marking cron job in apps/web/src/server/services/task-service.ts (daily UPDATE is_overdue)
-- [ ] T089 [US2] Register task router in apps/web/src/server/routers/_app.ts
+- [x] T081 [P] [US2] Create task router file in apps/web/src/server/routers/task.ts with base router setup
+- [x] T082 [P] [US2] Implement task.create mutation with category, due date, task dependency validation in apps/web/src/server/routers/task.ts per contracts/trpc-routers.md:264-296
+- [x] T083 [P] [US2] Implement task.assign mutation with notification trigger in apps/web/src/server/routers/task.ts per contracts/trpc-routers.md:299-321
+- [x] T084 [P] [US2] Implement task.updateStatus mutation with dependency check (FR-014) and completion tracking in apps/web/src/server/routers/task.ts per contracts/trpc-routers.md:324-347
+- [x] T085 [P] [US2] Implement task.listByEvent query with status/category filters in apps/web/src/server/routers/task.ts per contracts/trpc-routers.md:350-377
+- [x] T086 [US2] Implement task.onUpdate subscription for real-time task updates in apps/web/src/server/routers/task.ts per contracts/trpc-routers.md:416-433
+- [x] T087 [US2] Implement circular dependency detection function in apps/web/src/server/routers/task.ts (integrated in router)
+- [x] T088 [US2] Implement task overdue marking endpoint in apps/web/src/server/routers/task.ts (markOverdueTasks mutation for cron)
+- [x] T089 [US2] Register task router in apps/web/src/server/routers/_app.ts
 
 ### Frontend UI for User Story 2
 
-- [ ] T090 [P] [US2] Create task list component in apps/web/src/components/tasks/TaskList.tsx with filters (status, category, overdue)
-- [ ] T091 [P] [US2] Create task card component in apps/web/src/components/tasks/TaskCard.tsx showing title, status, due date, assigned user
-- [ ] T092 [P] [US2] Create task creation form in apps/web/src/components/tasks/TaskForm.tsx with category selection, due date picker, task dependency dropdown
-- [ ] T093 [P] [US2] Create task assignment dialog in apps/web/src/components/tasks/TaskAssignDialog.tsx for user selection
-- [ ] T094 [P] [US2] Create task status update button in apps/web/src/components/tasks/TaskStatusButton.tsx (pending → in_progress → completed)
-- [ ] T095 [P] [US2] Create overdue task indicator in apps/web/src/components/tasks/OverdueIndicator.tsx with red flag icon
-- [ ] T096 [US2] Add task list section to event detail page in apps/web/src/app/(dashboard)/events/[id]/page.tsx
-- [ ] T097 [US2] Add task creation button to event detail page (administrators only)
-- [ ] T098 [US2] Implement real-time task updates using task.onUpdate subscription in event detail page
-- [ ] T099 [US2] Add task dependency visualization in apps/web/src/components/tasks/TaskDependencyTree.tsx showing which tasks block others
+- [x] T090 [P] [US2] Create task list component in apps/web/src/components/tasks/TaskList.tsx with filters (status, category, overdue)
+- [x] T091 [P] [US2] Create task card component in apps/web/src/components/tasks/TaskCard.tsx showing title, status, due date, assigned user
+- [x] T092 [P] [US2] Create task creation form in apps/web/src/components/tasks/TaskForm.tsx with category selection, due date picker, task dependency dropdown
+- [x] T093 [P] [US2] Create task assignment dialog in apps/web/src/components/tasks/TaskAssignDialog.tsx for user selection
+- [x] T094 [P] [US2] Create task status update button in apps/web/src/components/tasks/TaskStatusButton.tsx (pending → in_progress → completed)
+- [x] T095 [P] [US2] Create overdue task indicator in apps/web/src/components/tasks/OverdueIndicator.tsx with red flag icon
+- [x] T096 [US2] Add task list section to event detail page in apps/web/src/app/(dashboard)/events/[id]/page.tsx
+- [x] T097 [US2] Add task creation button to event detail page (administrators only)
+- [x] T098 [US2] Implement real-time task updates using task.onUpdate subscription in event detail page
+- [x] T099 [US2] Add task dependency visualization in apps/web/src/components/tasks/TaskDependencyTree.tsx showing which tasks block others
 
 **Checkpoint**: ✅ User Story 2 complete - Tasks can be created, assigned, tracked, and dependencies managed independently
 

@@ -1,7 +1,10 @@
 import { router } from '../trpc';
+import { eventRouter } from './event';
+import { taskRouter } from './task';
 
 export const appRouter = router({
-  // Routers will be added here in later phases
+  event: eventRouter,
+  task: taskRouter,
 });
 
 export type AppRouter = typeof appRouter;
