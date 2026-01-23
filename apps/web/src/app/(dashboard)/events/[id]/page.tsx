@@ -6,7 +6,7 @@ import { EventStatusBadge } from '@/components/events/EventStatusBadge';
 import { EventStatusTimeline } from '@/components/events/EventStatusTimeline';
 import { EventStatusUpdateDialog } from '@/components/events/EventStatusUpdateDialog';
 import { TaskList } from '@/components/tasks';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 export default function EventDetailPage() {
   const params = useParams();
@@ -23,23 +23,17 @@ export default function EventDetailPage() {
     },
   });
 
-  // Real-time status updates (T076)
+  // Real-time status updates (T076) using tRPC v11 useSubscription
   const utils = trpc.useUtils();
-  useEffect(() => {
-    const subscription = trpc.event.onStatusChange.subscribe(
-      { eventId },
-      {
-        onData: (data) => {
-          // Invalidate and refetch event data when status changes
-          utils.event.getById.invalidate({ id: eventId });
-        },
-      }
-    );
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [eventId, utils]);
+  trpc.event.onStatusChange.useSubscription(
+    { eventId },
+    {
+      onData: (data: { id: number; newStatus: string }) => {
+        // Invalidate and refetch event data when status changes
+        utils.event.getById.invalidate({ id: eventId });
+      },
+    }
+  );
 
   if (isLoading) {
     return (

@@ -7,7 +7,8 @@ import { eq } from 'drizzle-orm';
 import bcrypt from 'bcrypt';
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  adapter: DrizzleAdapter(db),
+  // Cast to any to resolve version conflict between @auth/drizzle-adapter and @auth/core
+  adapter: DrizzleAdapter(db) as any,
   session: {
     strategy: 'jwt',
   },
@@ -52,8 +53,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id;
-        token.role = user.role;
+        token.id = user.id!;
+        token.role = (user as { role: 'administrator' | 'manager' }).role;
       }
       return token;
     },

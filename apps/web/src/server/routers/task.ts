@@ -467,7 +467,7 @@ export const taskRouter = router({
       // Check if user is admin or assigned to this task
       const userRole = (session.user as { role?: string }).role;
       const isAdmin = userRole === 'administrator';
-      const isAssigned = task.assignedTo === session.user.id;
+      const isAssigned = task.assignedTo === parseInt(session.user.id, 10);
 
       if (!isAdmin && !isAssigned) {
         throw new TRPCError({
@@ -533,7 +533,7 @@ export const taskRouter = router({
       }
 
       if (assignedToMe) {
-        conditions.push(eq(tasks.assignedTo, session.user.id));
+        conditions.push(eq(tasks.assignedTo, parseInt(session.user.id, 10)));
       }
 
       if (cursor) {

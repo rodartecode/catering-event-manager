@@ -49,5 +49,12 @@ export const tasks = pgTable(
     assignedToIdx: index('idx_tasks_assigned_to').on(table.assignedTo),
     dueDateIdx: index('idx_tasks_due_date').on(table.dueDate),
     overdueIdx: index('idx_tasks_overdue').on(table.isOverdue),
+    // Analytics indexes (FR-027)
+    analyticsCategoryStatusIdx: index('idx_tasks_analytics_category_status').on(
+      table.category,
+      table.status,
+      table.createdAt
+    ),
+    analyticsCreatedAtIdx: index('idx_tasks_analytics_created_at').on(table.createdAt),
   })
 );

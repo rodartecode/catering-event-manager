@@ -37,5 +37,11 @@ export const resourceSchedule = pgTable(
     taskIdIdx: index('idx_resource_schedule_task_id').on(table.taskId),
     startTimeIdx: index('idx_resource_schedule_start_time').on(table.startTime),
     endTimeIdx: index('idx_resource_schedule_end_time').on(table.endTime),
+    // Analytics indexes (FR-025)
+    analyticsResourceTimeIdx: index('idx_resource_schedule_analytics').on(
+      table.resourceId,
+      table.startTime,
+      table.endTime
+    ),
   })
 );

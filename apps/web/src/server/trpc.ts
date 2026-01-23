@@ -1,15 +1,16 @@
 import { initTRPC, TRPCError } from '@trpc/server';
+import type { FetchCreateContextFnOptions } from '@trpc/server/adapters/fetch';
 import { auth } from './auth';
 import { db } from '@catering-event-manager/database/client';
 import superjson from 'superjson';
 
-export const createTRPCContext = async (opts: { headers: Headers }) => {
+export const createTRPCContext = async (opts: FetchCreateContextFnOptions) => {
   const session = await auth();
 
   return {
     db,
     session,
-    ...opts,
+    headers: opts.req.headers,
   };
 };
 
