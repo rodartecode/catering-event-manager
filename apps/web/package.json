@@ -10,14 +10,14 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@catering-event-manager/database": "workspace:*",
     "@auth/drizzle-adapter": "^1.7.2",
+    "@catering-event-manager/database": "workspace:*",
     "@tanstack/react-query": "^5.61.5",
     "@trpc/client": "^11.0.0-rc.620",
     "@trpc/next": "^11.0.0-rc.620",
     "@trpc/react-query": "^11.0.0-rc.620",
     "@trpc/server": "^11.0.0-rc.620",
-    "bcrypt": "^5.1.1",
+    "bcryptjs": "^3.0.3",
     "chart.js": "^4.5.1",
     "drizzle-orm": "^0.36.0",
     "next": "^15.1.0",
@@ -31,7 +31,7 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
-    "@types/bcrypt": "^5.0.2",
+    "@types/bcryptjs": "^3.0.0",
     "@types/node": "^22.10.2",
     "@types/react": "^19.0.2",
     "@types/react-dom": "^19.0.2",

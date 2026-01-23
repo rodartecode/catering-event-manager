@@ -4,7 +4,7 @@ import { DrizzleAdapter } from '@auth/drizzle-adapter';
 import { db } from '@catering-event-manager/database/client';
 import { users } from '@catering-event-manager/database/schema';
 import { eq } from 'drizzle-orm';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   // Cast to any to resolve version conflict between @auth/drizzle-adapter and @auth/core

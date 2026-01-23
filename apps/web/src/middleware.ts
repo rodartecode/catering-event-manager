@@ -2,15 +2,28 @@ import { auth } from '@/server/auth';
 import { NextResponse } from 'next/server';
 
 export default auth((req) => {
+  const isLoggedIn = !!req.auth;
   const { pathname } = req.nextUrl;
 
-  // Protected routes
-  if (pathname.startsWith('/dashboard')) {
-    if (!req.auth) {
-      const loginUrl = new URL('/login', req.url);
-      loginUrl.searchParams.set('callbackUrl', pathname);
-      return NextResponse.redirect(loginUrl);
-    }
+  const isAuthPage = pathname.startsWith('/login') || pathname.startsWith('/register');
+
+  // Redirect authenticated users away from auth pages
+  if (isAuthPage && isLoggedIn) {
+    return NextResponse.redirect(new URL('/', req.nextUrl));
+  }
+
+  // Protected routes - everything except auth pages, API routes, and static assets
+  const isProtectedRoute =
+    pathname === '/' ||
+    pathname.startsWith('/events') ||
+    pathname.startsWith('/clients') ||
+    pathname.startsWith('/resources') ||
+    pathname.startsWith('/analytics');
+
+  if (isProtectedRoute && !isLoggedIn) {
+    const loginUrl = new URL('/login', req.url);
+    loginUrl.searchParams.set('callbackUrl', pathname);
+    return NextResponse.redirect(loginUrl);
   }
 
   return NextResponse.next();
