@@ -1,3 +1,22 @@
+<!-- OPENSPEC:START -->
+# OpenSpec Instructions
+
+These instructions are for AI assistants working in this project.
+
+Always open `@/openspec/AGENTS.md` when the request:
+- Mentions planning or proposals (words like proposal, spec, change, plan)
+- Introduces new capabilities, breaking changes, architecture shifts, or big performance/security work
+- Sounds ambiguous and you need the authoritative spec before coding
+
+Use `@/openspec/AGENTS.md` to learn:
+- How to create and apply change proposals
+- Spec format and conventions
+- Project structure and guidelines
+
+Keep this managed block so 'openspec update' can refresh the instructions.
+
+<!-- OPENSPEC:END -->
+
 # CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
@@ -92,10 +111,8 @@ apps/
 │   ├── src/app/                   # App Router pages (Next.js 15)
 │   ├── src/server/                # tRPC API layer
 │   │   ├── routers/               # Domain-organized tRPC routers
-│   │   │   ├── event.ts           # Event management procedures
-│   │   │   ├── task.ts            # Task management procedures
-│   │   │   ├── resource.ts        # Resource assignment procedures
-│   │   │   └── client.ts          # Client management procedures
+│   │   │   ├── _app.ts            # Root router combining all domain routers
+│   │   │   └── event.ts           # Event management procedures (✅ implemented)
 │   │   ├── trpc.ts                # tRPC initialization + context
 │   │   └── auth.ts                # Next-Auth v5 configuration
 │   └── src/lib/                   # Client utilities and hooks
@@ -198,6 +215,9 @@ cd apps/web && pnpm test
 
 # Watch mode
 cd apps/web && pnpm test:watch
+
+# Run single test file
+cd apps/web && pnpm test src/server/routers/event.test.ts
 ```
 
 **Test organization**: Co-located with source files
@@ -307,7 +327,8 @@ PORT=8080
 ## Implementation Status
 
 **Phase 1**: ✅ Complete - Monorepo structure, dependencies, Docker Compose
-**Phase 2**: ⏳ Pending - Database schema, auth, tRPC, Go service foundation
+**Phase 2**: ✅ Complete - Database schema, auth, tRPC, Go service foundation
+**Phase 3**: 🎯 In Progress - Event management (create, track, status updates, archive)
 
 See `specs/001-event-lifecycle-management/tasks.md` for detailed task breakdown (200 tasks across 8 phases).
 
@@ -381,11 +402,10 @@ Detailed user stories and requirements: `specs/001-event-lifecycle-management/sp
 
 ## Next Steps
 
-After Phase 1 completion, implement Phase 2 (Foundational):
-1. Review `docs/implementation-guides/PHASE-2-FOUNDATIONAL.md`
-2. Create database schema (users, clients, enums)
-3. Configure Next-Auth v5 authentication
-4. Set up tRPC infrastructure
-5. Initialize Go Fiber service with health check
+After Phase 2 completion, continue Phase 3 (Event Management):
+1. Complete remaining event router procedures (subscription implementation)
+2. Build event management UI components (list, detail, create form)
+3. Implement event timeline visualization
+4. Add client management router and UI
 
-See `NEXT-STEPS.md` for detailed getting started guide.
+See `specs/001-event-lifecycle-management/tasks.md` for current task status.
