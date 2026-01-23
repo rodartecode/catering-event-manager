@@ -11,6 +11,7 @@ interface ResourceAssignmentDialogProps {
   eventId: number;
   startTime: Date;
   endTime: Date;
+  allowTimeEdit?: boolean;
   onSuccess?: () => void;
 }
 
@@ -34,11 +35,22 @@ export function ResourceAssignmentDialog({
   eventId,
   startTime,
   endTime,
+  allowTimeEdit = true,
   onSuccess,
 }: ResourceAssignmentDialogProps) {
   const [selectedResources, setSelectedResources] = useState<SelectedResource[]>([]);
   const [resourceTypeFilter, setResourceTypeFilter] = useState<'staff' | 'equipment' | 'materials' | ''>('');
   const [showConflictWarning, setShowConflictWarning] = useState(false);
+  const [editedStartTime, setEditedStartTime] = useState(startTime);
+  const [editedEndTime, setEditedEndTime] = useState(endTime);
+
+  // Helper to format Date for datetime-local input
+  const formatDateTimeLocal = (date: Date) => {
+    const d = new Date(date);
+    const offset = d.getTimezoneOffset();
+    const localDate = new Date(d.getTime() - offset * 60 * 1000);
+    return localDate.toISOString().slice(0, 16);
+  };
 
   // Fetch available resources
   const { data: resources, isLoading: resourcesLoading } = trpc.resource.getAvailable.useQuery(
@@ -50,8 +62,8 @@ export function ResourceAssignmentDialog({
   const { data: conflictData, isLoading: conflictsLoading } = trpc.resource.checkConflicts.useQuery(
     {
       resourceIds: selectedResources.map((r) => r.id),
-      startTime,
-      endTime,
+      startTime: editedStartTime,
+      endTime: editedEndTime,
     },
     {
       enabled: isOpen && selectedResources.length > 0,
@@ -85,6 +97,11 @@ export function ResourceAssignmentDialog({
   };
 
   const handleAssign = () => {
+    // Validate time range
+    if (editedEndTime <= editedStartTime) {
+      return;
+    }
+
     if (conflictData?.hasConflicts && !showConflictWarning) {
       setShowConflictWarning(true);
       return;
@@ -93,8 +110,8 @@ export function ResourceAssignmentDialog({
     assignMutation.mutate({
       taskId,
       resourceIds: selectedResources.map((r) => r.id),
-      startTime,
-      endTime,
+      startTime: editedStartTime,
+      endTime: editedEndTime,
     });
   };
 
@@ -103,8 +120,10 @@ export function ResourceAssignmentDialog({
     if (isOpen) {
       setSelectedResources([]);
       setShowConflictWarning(false);
+      setEditedStartTime(startTime);
+      setEditedEndTime(endTime);
     }
-  }, [isOpen]);
+  }, [isOpen, startTime, endTime]);
 
   if (!isOpen) return null;
 
@@ -129,9 +148,35 @@ export function ResourceAssignmentDialog({
           <div className="flex items-center justify-between p-6 border-b">
             <div>
               <h2 className="text-xl font-semibold">Assign Resources</h2>
-              <p className="text-sm text-gray-500 mt-1">
-                {formatDateTime(startTime)} - {formatDateTime(endTime)}
-              </p>
+              {allowTimeEdit ? (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  <div className="flex items-center gap-1">
+                    <label className="text-sm text-gray-500">From:</label>
+                    <input
+                      type="datetime-local"
+                      value={formatDateTimeLocal(editedStartTime)}
+                      onChange={(e) => setEditedStartTime(new Date(e.target.value))}
+                      className="text-sm border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <label className="text-sm text-gray-500">To:</label>
+                    <input
+                      type="datetime-local"
+                      value={formatDateTimeLocal(editedEndTime)}
+                      onChange={(e) => setEditedEndTime(new Date(e.target.value))}
+                      className="text-sm border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  {editedEndTime <= editedStartTime && (
+                    <p className="text-sm text-red-600 w-full">End time must be after start time</p>
+                  )}
+                </div>
+              ) : (
+                <p className="text-sm text-gray-500 mt-1">
+                  {formatDateTime(editedStartTime)} - {formatDateTime(editedEndTime)}
+                </p>
+              )}
             </div>
             <button
               onClick={handleClose}
@@ -312,7 +357,7 @@ export function ResourceAssignmentDialog({
               </button>
               <button
                 onClick={handleAssign}
-                disabled={selectedResources.length === 0 || assignMutation.isPending}
+                disabled={selectedResources.length === 0 || assignMutation.isPending || editedEndTime <= editedStartTime}
                 className={`px-4 py-2 rounded-lg text-white transition disabled:opacity-50 disabled:cursor-not-allowed ${
                   conflictData?.hasConflicts && showConflictWarning
                     ? 'bg-yellow-600 hover:bg-yellow-700'

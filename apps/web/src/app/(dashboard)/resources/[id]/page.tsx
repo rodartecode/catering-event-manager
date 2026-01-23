@@ -5,11 +5,13 @@ import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { ResourceTypeBadge } from '@/components/resources/ResourceTypeBadge';
 import { ResourceScheduleCalendar } from '@/components/resources/ResourceScheduleCalendar';
+import { EditResourceForm } from '@/components/resources/EditResourceForm';
 
 export default function ResourceDetailPage() {
   const params = useParams();
   const router = useRouter();
   const resourceId = Number(params.id);
+  const [isEditing, setIsEditing] = useState(false);
 
   // Date range for schedule (default: current week +/- 2 weeks)
   const [startDate] = useState(() => {
@@ -42,16 +44,6 @@ export default function ResourceDetailPage() {
       router.push('/resources');
     },
   });
-
-  const updateMutation = trpc.resource.update.useMutation();
-
-  const toggleAvailability = () => {
-    if (!resource) return;
-    updateMutation.mutate({
-      id: resourceId,
-      isAvailable: !resource.isAvailable,
-    });
-  };
 
   const handleDelete = () => {
     if (window.confirm('Are you sure you want to delete this resource? This action cannot be undone.')) {
@@ -125,19 +117,10 @@ export default function ResourceDetailPage() {
 
           <div className="flex gap-2">
             <button
-              onClick={toggleAvailability}
-              disabled={updateMutation.isPending}
-              className={`px-4 py-2 rounded-lg transition ${
-                resource.isAvailable
-                  ? 'bg-red-100 text-red-700 hover:bg-red-200'
-                  : 'bg-green-100 text-green-700 hover:bg-green-200'
-              }`}
+              onClick={() => setIsEditing(true)}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
             >
-              {updateMutation.isPending
-                ? 'Updating...'
-                : resource.isAvailable
-                ? 'Mark Unavailable'
-                : 'Mark Available'}
+              Edit
             </button>
             <button
               onClick={handleDelete}
@@ -150,57 +133,73 @@ export default function ResourceDetailPage() {
         </div>
       </div>
 
-      {/* Resource Details */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-sm font-medium text-gray-500 mb-1">Hourly Rate</h3>
-          <p className="text-2xl font-semibold">
-            {resource.hourlyRate ? `$${resource.hourlyRate}` : 'Not set'}
-          </p>
-        </div>
-
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-sm font-medium text-gray-500 mb-1">Upcoming Assignments</h3>
-          <p className="text-2xl font-semibold">{resource.upcomingAssignments || 0}</p>
-        </div>
-
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-sm font-medium text-gray-500 mb-1">Created</h3>
-          <p className="text-lg">
-            {new Date(resource.createdAt).toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-            })}
-          </p>
-        </div>
-      </div>
-
-      {/* Notes Section */}
-      {resource.notes && (
+      {/* Edit Form */}
+      {isEditing && (
         <div className="bg-white rounded-lg shadow p-6 mb-8">
-          <h3 className="text-lg font-semibold mb-3">Notes</h3>
-          <p className="text-gray-600 whitespace-pre-wrap">{resource.notes}</p>
+          <h2 className="text-xl font-semibold mb-6">Edit Resource</h2>
+          <EditResourceForm
+            resource={resource}
+            onSuccess={() => setIsEditing(false)}
+            onCancel={() => setIsEditing(false)}
+          />
         </div>
       )}
 
-      {/* Schedule Calendar */}
-      <div className="mb-8">
-        <h2 className="text-xl font-semibold mb-4">Schedule</h2>
-        {scheduleLoading ? (
-          <div className="bg-white rounded-lg shadow p-12 text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="text-gray-500 mt-4">Loading schedule...</p>
+      {/* Resource Details */}
+      {!isEditing && (
+        <>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <div className="bg-white rounded-lg shadow p-6">
+              <h3 className="text-sm font-medium text-gray-500 mb-1">Hourly Rate</h3>
+              <p className="text-2xl font-semibold">
+                {resource.hourlyRate ? `$${resource.hourlyRate}` : 'Not set'}
+              </p>
+            </div>
+
+            <div className="bg-white rounded-lg shadow p-6">
+              <h3 className="text-sm font-medium text-gray-500 mb-1">Upcoming Assignments</h3>
+              <p className="text-2xl font-semibold">{resource.upcomingAssignments || 0}</p>
+            </div>
+
+            <div className="bg-white rounded-lg shadow p-6">
+              <h3 className="text-sm font-medium text-gray-500 mb-1">Created</h3>
+              <p className="text-lg">
+                {new Date(resource.createdAt).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })}
+              </p>
+            </div>
           </div>
-        ) : (
-          <ResourceScheduleCalendar
-            entries={scheduleData?.entries || []}
-            onEntryClick={(entry) => {
-              router.push(`/events/${entry.eventId}`);
-            }}
-          />
-        )}
-      </div>
+
+          {/* Notes Section */}
+          {resource.notes && (
+            <div className="bg-white rounded-lg shadow p-6 mb-8">
+              <h3 className="text-lg font-semibold mb-3">Notes</h3>
+              <p className="text-gray-600 whitespace-pre-wrap">{resource.notes}</p>
+            </div>
+          )}
+
+          {/* Schedule Calendar */}
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold mb-4">Schedule</h2>
+            {scheduleLoading ? (
+              <div className="bg-white rounded-lg shadow p-12 text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                <p className="text-gray-500 mt-4">Loading schedule...</p>
+              </div>
+            ) : (
+              <ResourceScheduleCalendar
+                entries={scheduleData?.entries || []}
+                onEntryClick={(entry) => {
+                  router.push(`/events/${entry.eventId}`);
+                }}
+              />
+            )}
+          </div>
+        </>
+      )}
 
       {/* Delete Error */}
       {deleteMutation.error && (
