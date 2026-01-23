@@ -47,6 +47,10 @@ Thumbs.db
 
 # Claude Code
 .claude/settings.local.json
+.codex/
+
+# Playwright MCP artifacts
+.playwright-mcp/
 
 # TypeScript
 *.tsbuildinfo
