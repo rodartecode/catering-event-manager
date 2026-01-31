@@ -51,10 +51,12 @@ Thumbs.db
 
 # Playwright MCP artifacts
 .playwright-mcp/
+apps/web/playwright-report
 
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
+apps/web/test-results
 
 # Database
 *.db

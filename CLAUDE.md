@@ -26,7 +26,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **Catering Event Lifecycle Management System** - Hybrid microservices monorepo for managing catering events from initial inquiry to post-event follow-up, with automated resource conflict detection.
 
 **Architecture**:
-- Next.js 15 app (CRUD, auth, UI) + Go scheduling service (resource conflicts)
+- Next.js 16 app (CRUD, auth, UI) + Go scheduling service (resource conflicts)
 - Shared PostgreSQL 17 database with Drizzle ORM (TypeScript) and SQLC (Go)
 - Type-safe end-to-end via tRPC v11 and SQLC compile-time generation
 
@@ -107,8 +107,8 @@ sqlc generate      # Regenerate type-safe Go code from SQL queries
 
 ```
 apps/
-├── web/                           # Next.js 15 application
-│   ├── src/app/                   # App Router pages (Next.js 15)
+├── web/                           # Next.js 16 application
+│   ├── src/app/                   # App Router pages (Next.js 16)
 │   ├── src/server/                # tRPC API layer
 │   │   ├── routers/               # Domain-organized tRPC routers
 │   │   │   ├── _app.ts            # Root router combining all domain routers
@@ -218,16 +218,49 @@ cd apps/web && pnpm test:watch
 
 # Run single test file
 cd apps/web && pnpm test src/server/routers/event.test.ts
+
+# Run with coverage
+cd apps/web && pnpm test:coverage
 ```
 
-**Test organization**: Co-located with source files
+**Test organization**:
 ```
-src/
-├── server/
-│   └── routers/
-│       ├── event.ts
-│       └── event.test.ts       # Unit tests for tRPC procedures
+apps/web/
+├── src/
+│   ├── server/routers/
+│   │   ├── event.test.ts         # Router unit tests (co-located)
+│   │   ├── task.test.ts
+│   │   ├── resource.test.ts
+│   │   ├── clients.test.ts
+│   │   └── ...
+│   ├── components/**/*.test.tsx   # Component tests (co-located)
+│   └── lib/**/*.test.ts           # Utility tests (co-located)
+├── test/
+│   ├── helpers/
+│   │   ├── db.ts                  # Testcontainers PostgreSQL setup
+│   │   ├── trpc.ts                # Test caller factories (admin, manager, client, unauthenticated)
+│   │   ├── factories.ts           # Test data factories (createEvent, createTask, etc.)
+│   │   └── input-factories.ts     # Auth matrix data + procedure input generators
+│   ├── scenarios/
+│   │   ├── event-lifecycle.test.ts        # Event state machine scenario tests
+│   │   ├── task-dependencies.test.ts      # Task dependency chain scenarios
+│   │   ├── resource-conflicts.test.ts     # Resource conflict scenarios (mocked Go service)
+│   │   └── client-communication.test.ts   # Communication workflow scenarios
+│   ├── integration/
+│   │   ├── setup.ts               # Go service build/start/stop helpers
+│   │   └── cross-service.test.ts  # Real Go service integration tests
+│   ├── auth-matrix.test.ts        # Authorization boundary matrix (~97 cases)
+│   └── setup.ts                   # Global test setup
 ```
+
+### Cross-Service Integration Tests
+
+```bash
+# Requires Go 1.24+ toolchain installed
+cd apps/web && pnpm test:integration
+```
+
+These tests build and spawn the real Go scheduling service against a Testcontainers PostgreSQL instance. They verify end-to-end behavior between tRPC routers and the Go conflict detection service without mocks.
 
 ### Go Tests
 
@@ -259,6 +292,25 @@ Comprehensive step-by-step guides located in `docs/implementation-guides/`:
 - **PHASES-4-8-OVERVIEW.md**: Task management, resource scheduling, analytics, client communication
 
 Each guide includes exact file paths, complete code examples, and verification commands.
+
+## Session Context
+
+**At session start**, read these files to avoid re-learning known issues:
+
+1. **`docs/learnings.md`** - Accumulated debugging patterns, gotchas, and solutions
+2. **`docs/decisions/`** - Architecture Decision Records explaining "why we chose X"
+
+**During development**, when you discover a non-obvious solution or gotcha:
+
+- Append to `docs/learnings.md` under the appropriate category
+- Use the Problem/Solution/Context format with date heading
+- Example:
+  ```markdown
+  ### [2026-01-23] Brief title
+  **Problem**: What went wrong
+  **Solution**: What fixed it
+  **Context**: When this applies
+  ```
 
 ## Database Schema Key Concepts
 
@@ -315,14 +367,18 @@ PORT=8080
 
 - **Node.js**: 20 LTS
 - **pnpm**: 10+
-- **Go**: 1.23+
+- **Go**: 1.24.0+
 - **PostgreSQL**: 17
-- **Next.js**: 15.1+
-- **React**: 19
-- **tRPC**: v11 (RC)
-- **Drizzle ORM**: 0.36+
+- **Next.js**: 16.1+
+- **React**: 19.2+
+- **Tailwind CSS**: 4.1+
+- **tRPC**: v11.8+
+- **Drizzle ORM**: 0.45+
+- **Zod**: 4.3+
 - **Fiber**: v3 (Go)
 - **SQLC**: 1.27+
+- **Vitest**: 4.0+
+- **ESLint**: 9.39+
 
 ## Implementation Status
 
