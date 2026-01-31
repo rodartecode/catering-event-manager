@@ -2,6 +2,7 @@
 
 import { trpc } from '@/lib/trpc';
 import { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 
 interface TaskFormProps {
   eventId: number;
@@ -58,27 +59,33 @@ export function TaskForm({ eventId, taskId, onClose, onSuccess }: TaskFormProps)
 
   const createMutation = trpc.task.create.useMutation({
     onSuccess: () => {
+      toast.success('Task created successfully');
       onSuccess();
     },
     onError: (err) => {
+      toast.error(err.message);
       setError(err.message);
     },
   });
 
   const updateMutation = trpc.task.update.useMutation({
     onSuccess: () => {
+      toast.success('Task updated successfully');
       onSuccess();
     },
     onError: (err) => {
+      toast.error(err.message);
       setError(err.message);
     },
   });
 
   const deleteMutation = trpc.task.delete.useMutation({
     onSuccess: () => {
+      toast.success('Task deleted successfully');
       onSuccess();
     },
     onError: (err) => {
+      toast.error(err.message);
       setError(err.message);
     },
   });
@@ -144,6 +151,8 @@ export function TaskForm({ eventId, taskId, onClose, onSuccess }: TaskFormProps)
               Title *
             </label>
             <input
+              id="title"
+              name="title"
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -158,6 +167,8 @@ export function TaskForm({ eventId, taskId, onClose, onSuccess }: TaskFormProps)
               Description
             </label>
             <textarea
+              id="description"
+              name="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
@@ -171,6 +182,8 @@ export function TaskForm({ eventId, taskId, onClose, onSuccess }: TaskFormProps)
               Category *
             </label>
             <select
+              id="category"
+              name="category"
               value={category}
               onChange={(e) => setCategory(e.target.value as TaskCategory)}
               required
@@ -187,6 +200,8 @@ export function TaskForm({ eventId, taskId, onClose, onSuccess }: TaskFormProps)
               Due Date
             </label>
             <input
+              id="dueDate"
+              name="dueDate"
               type="datetime-local"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
@@ -199,6 +214,8 @@ export function TaskForm({ eventId, taskId, onClose, onSuccess }: TaskFormProps)
               Depends On
             </label>
             <select
+              id="dependsOnTaskId"
+              name="dependsOnTaskId"
               value={dependsOnTaskId || ''}
               onChange={(e) => setDependsOnTaskId(e.target.value ? Number(e.target.value) : null)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"

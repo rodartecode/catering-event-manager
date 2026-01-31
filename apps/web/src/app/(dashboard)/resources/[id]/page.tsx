@@ -182,7 +182,7 @@ export default function ResourceDetailPage() {
           )}
 
           {/* Schedule Calendar */}
-          <div className="mb-8">
+          <div className="mb-8" data-testid="resource-schedule">
             <h2 className="text-xl font-semibold mb-4">Schedule</h2>
             {scheduleLoading ? (
               <div className="bg-white rounded-lg shadow p-12 text-center">

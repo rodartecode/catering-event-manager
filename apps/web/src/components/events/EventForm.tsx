@@ -3,17 +3,17 @@
 import { trpc } from '@/lib/trpc';
 import { useState } from 'react';
 import { z } from 'zod';
+import toast from 'react-hot-toast';
 
 // Form validation schema
 const eventFormSchema = z.object({
-  clientId: z.number({ required_error: 'Client is required' }).positive('Client is required'),
+  clientId: z.number({ error: 'Client is required' }).positive('Client is required'),
   eventName: z
     .string()
     .min(1, 'Event name is required')
     .max(255, 'Event name must be less than 255 characters'),
   eventDate: z.coerce.date({
-    required_error: 'Event date is required',
-    invalid_type_error: 'Invalid date format',
+    error: 'Event date is required',
   }),
   location: z.string().max(500, 'Location must be less than 500 characters').optional(),
   estimatedAttendees: z
@@ -44,9 +44,11 @@ export function EventForm({ onSuccess, onCancel }: EventFormProps) {
 
   const createEventMutation = trpc.event.create.useMutation({
     onSuccess: (data) => {
+      toast.success('Event created successfully');
       onSuccess(data);
     },
     onError: (error) => {
+      toast.error(error.message);
       setErrors({ submit: error.message });
     },
   });
@@ -67,7 +69,7 @@ export function EventForm({ onSuccess, onCancel }: EventFormProps) {
     } catch (error) {
       if (error instanceof z.ZodError) {
         const fieldErrors: Record<string, string> = {};
-        error.errors.forEach((err) => {
+        error.issues.forEach((err) => {
           if (err.path[0]) {
             fieldErrors[err.path[0] as string] = err.message;
           }

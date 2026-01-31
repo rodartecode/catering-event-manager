@@ -31,6 +31,7 @@ export function UserMenu() {
   return (
     <div className="relative" ref={menuRef}>
       <button
+        data-testid="user-menu"
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-3 w-full px-2 py-2 rounded-lg hover:bg-gray-800 transition"
       >

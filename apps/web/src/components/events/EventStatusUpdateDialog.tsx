@@ -2,6 +2,7 @@
 
 import { trpc } from '@/lib/trpc';
 import { useState } from 'react';
+import toast from 'react-hot-toast';
 
 type EventStatus = 'inquiry' | 'planning' | 'preparation' | 'in_progress' | 'completed' | 'follow_up';
 
@@ -55,9 +56,13 @@ export function EventStatusUpdateDialog({
   const utils = trpc.useUtils();
   const updateStatusMutation = trpc.event.updateStatus.useMutation({
     onSuccess: () => {
+      toast.success('Status updated successfully');
       utils.event.getById.invalidate({ id: eventId });
       utils.event.list.invalidate();
       onClose();
+    },
+    onError: (error) => {
+      toast.error(error.message);
     },
   });
 

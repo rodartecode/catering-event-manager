@@ -7,15 +7,16 @@ import { trpc } from '@/lib/trpc';
 import { CommunicationForm } from '@/components/clients/CommunicationForm';
 import { CommunicationList } from '@/components/clients/CommunicationList';
 import { EventStatusBadge } from '@/components/events/EventStatusBadge';
+import { PortalAccessSection } from '@/components/clients/PortalAccessSection';
 
-type Tab = 'info' | 'events' | 'communications';
+type Tab = 'info' | 'events' | 'communications' | 'portal';
 
 export default function ClientDetailPage() {
   const params = useParams();
   const clientId = Number(params.id);
   const [activeTab, setActiveTab] = useState<Tab>('communications');
 
-  const { data: client, isLoading: clientLoading } = trpc.clients.getById.useQuery({
+  const { data: client, isLoading: clientLoading, refetch: refetchClient } = trpc.clients.getById.useQuery({
     id: clientId,
   });
 
@@ -56,6 +57,7 @@ export default function ClientDetailPage() {
     { id: 'info', label: 'Info' },
     { id: 'events', label: `Events (${clientEvents?.length ?? 0})` },
     { id: 'communications', label: `Communications (${communicationsData?.total ?? 0})` },
+    { id: 'portal', label: client.portalEnabled ? 'Portal ✓' : 'Portal' },
   ];
 
   return (
@@ -154,7 +156,7 @@ export default function ClientDetailPage() {
       )}
 
       {activeTab === 'events' && (
-        <div>
+        <div data-testid="client-events">
           {clientEvents?.length === 0 ? (
             <div className="bg-white rounded-lg shadow p-12 text-center">
               <p className="text-gray-500">No events for this client</p>
@@ -219,6 +221,33 @@ export default function ClientDetailPage() {
 
       {activeTab === 'communications' && (
         <div>
+          {/* Pending Follow-ups */}
+          {communicationsData?.communications && (() => {
+            const pendingFollowUps = communicationsData.communications.filter(
+              (c) => c.communication.followUpDate && !c.communication.followUpCompleted
+            );
+            if (pendingFollowUps.length === 0) return null;
+            return (
+              <div data-testid="follow-ups" className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+                <h3 className="text-sm font-semibold text-amber-800 mb-2">
+                  Pending Follow-ups ({pendingFollowUps.length})
+                </h3>
+                <ul className="space-y-2">
+                  {pendingFollowUps.map((c) => (
+                    <li key={c.communication.id} className="flex items-center justify-between text-sm">
+                      <span className="text-amber-900">
+                        {c.communication.notes?.slice(0, 60)}{c.communication.notes && c.communication.notes.length > 60 ? '...' : ''}
+                      </span>
+                      <span className="text-amber-600 text-xs ml-2 whitespace-nowrap">
+                        Due {new Date(c.communication.followUpDate!).toLocaleDateString()}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            );
+          })()}
+
           {clientEvents && clientEvents.length > 0 && (
             <CommunicationForm
               clientId={clientId}
@@ -249,6 +278,16 @@ export default function ClientDetailPage() {
             />
           )}
         </div>
+      )}
+
+      {activeTab === 'portal' && (
+        <PortalAccessSection
+          clientId={clientId}
+          clientEmail={client.email}
+          portalEnabled={client.portalEnabled}
+          portalEnabledAt={client.portalEnabledAt}
+          onUpdate={() => refetchClient()}
+        />
       )}
     </div>
   );

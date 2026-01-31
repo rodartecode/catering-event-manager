@@ -98,7 +98,7 @@ export function TaskPerformanceChart({ data, onExport }: TaskPerformanceChartPro
   const completionRate = totalTasks > 0 ? (totalCompleted / totalTasks) * 100 : 0;
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6">
+    <div data-testid="task-performance" className="bg-white rounded-lg border border-gray-200 p-6">
       <div className="flex items-center justify-between mb-4">
         <div>
           <h3 className="text-lg font-semibold text-gray-900">Task Performance by Category</h3>

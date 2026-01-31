@@ -2,6 +2,7 @@
 
 import { trpc } from '@/lib/trpc';
 import { useState } from 'react';
+import toast from 'react-hot-toast';
 
 interface TaskAssignDialogProps {
   taskId: number;
@@ -9,12 +10,7 @@ interface TaskAssignDialogProps {
   onSuccess: () => void;
 }
 
-interface AssignableUser {
-  id: number;
-  name: string;
-  email: string;
-  role: 'administrator' | 'manager';
-}
+// Type is inferred from tRPC - users are filtered to exclude clients
 
 export function TaskAssignDialog({ taskId, onClose, onSuccess }: TaskAssignDialogProps) {
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
@@ -35,9 +31,11 @@ export function TaskAssignDialog({ taskId, onClose, onSuccess }: TaskAssignDialo
 
   const assignMutation = trpc.task.assign.useMutation({
     onSuccess: () => {
+      toast.success('Task assigned successfully');
       onSuccess();
     },
     onError: (err) => {
+      toast.error(err.message);
       setError(err.message);
     },
   });
@@ -103,7 +101,7 @@ export function TaskAssignDialog({ taskId, onClose, onSuccess }: TaskAssignDialo
                 <p className="text-sm text-gray-500">Remove assignment</p>
               </button>
 
-              {users?.map((user: AssignableUser) => (
+              {users?.map((user) => (
                 <button
                   key={user.id}
                   onClick={() => setSelectedUserId(user.id)}
@@ -115,7 +113,7 @@ export function TaskAssignDialog({ taskId, onClose, onSuccess }: TaskAssignDialo
                 >
                   <p className="font-medium text-gray-900">{user.name}</p>
                   <p className="text-sm text-gray-500">
-                    {user.email} · {user.role === 'administrator' ? 'Admin' : 'Manager'}
+                    {user.email} · {user.role === 'administrator' ? 'Admin' : user.role === 'manager' ? 'Manager' : 'Client'}
                   </p>
                 </button>
               ))}

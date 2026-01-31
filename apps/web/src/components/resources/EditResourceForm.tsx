@@ -3,6 +3,7 @@
 import { trpc } from '@/lib/trpc';
 import { useState } from 'react';
 import { z } from 'zod';
+import toast from 'react-hot-toast';
 
 const resourceFormSchema = z.object({
   name: z
@@ -10,7 +11,7 @@ const resourceFormSchema = z.object({
     .min(1, 'Resource name is required')
     .max(255, 'Resource name must be less than 255 characters'),
   type: z.enum(['staff', 'equipment', 'materials'], {
-    required_error: 'Resource type is required',
+    error: 'Resource type is required',
   }),
   hourlyRate: z
     .string()
@@ -55,11 +56,13 @@ export function EditResourceForm({ resource, onSuccess, onCancel }: EditResource
 
   const updateResourceMutation = trpc.resource.update.useMutation({
     onSuccess: () => {
+      toast.success('Resource updated successfully');
       utils.resource.getById.invalidate({ id: resource.id });
       utils.resource.list.invalidate();
       onSuccess();
     },
     onError: (error) => {
+      toast.error(error.message);
       setErrors({ submit: error.message });
     },
   });
@@ -81,7 +84,7 @@ export function EditResourceForm({ resource, onSuccess, onCancel }: EditResource
     } catch (error) {
       if (error instanceof z.ZodError) {
         const fieldErrors: Record<string, string> = {};
-        error.errors.forEach((err) => {
+        error.issues.forEach((err) => {
           if (err.path[0]) {
             fieldErrors[err.path[0] as string] = err.message;
           }

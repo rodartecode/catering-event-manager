@@ -39,7 +39,7 @@ export function TaskCard({ task, onEdit, onAssign, onResources, showActions = tr
     : null;
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition">
+    <div data-testid="task-card" className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition">
       <div className="flex justify-between items-start mb-2">
         <div className="flex-1">
           <h4 className="font-medium text-gray-900">{task.title}</h4>

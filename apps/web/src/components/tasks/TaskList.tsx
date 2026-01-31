@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { TaskCard } from './TaskCard';
 import { TaskForm } from './TaskForm';
 import { TaskAssignDialog } from './TaskAssignDialog';
+import { TaskListSkeleton } from './TaskListSkeleton';
 import { ResourceAssignmentDialog } from '@/components/resources/ResourceAssignmentDialog';
 
 interface TaskListProps {
@@ -111,11 +112,7 @@ export function TaskList({ eventId, isAdmin = false }: TaskListProps) {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex justify-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      </div>
-    );
+    return <TaskListSkeleton />;
   }
 
   if (error) {

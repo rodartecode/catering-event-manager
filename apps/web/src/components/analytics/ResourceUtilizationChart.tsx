@@ -92,7 +92,7 @@ export function ResourceUtilizationChart({ data, onExport }: ResourceUtilization
   const overUtilized = data.filter((r) => r.utilizationPercentage > 100).length;
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6">
+    <div data-testid="resource-utilization" className="bg-white rounded-lg border border-gray-200 p-6">
       <div className="flex items-center justify-between mb-4">
         <div>
           <h3 className="text-lg font-semibold text-gray-900">Resource Utilization</h3>

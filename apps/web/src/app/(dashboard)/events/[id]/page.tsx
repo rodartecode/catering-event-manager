@@ -6,34 +6,27 @@ import { EventStatusBadge } from '@/components/events/EventStatusBadge';
 import { EventStatusTimeline } from '@/components/events/EventStatusTimeline';
 import { EventStatusUpdateDialog } from '@/components/events/EventStatusUpdateDialog';
 import { TaskList } from '@/components/tasks';
+import { useIsAdmin } from '@/lib/use-auth';
 import { useState } from 'react';
 
 export default function EventDetailPage() {
+  const { isAdmin } = useIsAdmin();
   const params = useParams();
   const router = useRouter();
   const eventId = Number(params.id);
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
   const [isArchiveDialogOpen, setIsArchiveDialogOpen] = useState(false);
 
-  const { data: event, isLoading, error } = trpc.event.getById.useQuery({ id: eventId });
+  const { data: event, isLoading, error } = trpc.event.getById.useQuery(
+    { id: eventId },
+    { refetchInterval: 5000 },
+  );
   const archiveMutation = trpc.event.archive.useMutation({
     onSuccess: () => {
       setIsArchiveDialogOpen(false);
       router.push('/events');
     },
   });
-
-  // Real-time status updates (T076) using tRPC v11 useSubscription
-  const utils = trpc.useUtils();
-  trpc.event.onStatusChange.useSubscription(
-    { eventId },
-    {
-      onData: (data: { id: number; newStatus: string }) => {
-        // Invalidate and refetch event data when status changes
-        utils.event.getById.invalidate({ id: eventId });
-      },
-    }
-  );
 
   if (isLoading) {
     return (
@@ -88,23 +81,27 @@ export default function EventDetailPage() {
             <EventStatusBadge status={event.status} />
           </div>
 
-          <div className="flex gap-2">
-            <button
-              onClick={() => setIsStatusDialogOpen(true)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-            >
-              Update Status
-            </button>
-
-            {canArchive && (
+          {isAdmin && (
+            <div className="flex gap-2">
               <button
-                onClick={() => setIsArchiveDialogOpen(true)}
-                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+                type="button"
+                onClick={() => setIsStatusDialogOpen(true)}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
               >
-                Archive Event
+                Update Status
               </button>
-            )}
-          </div>
+
+              {canArchive && (
+                <button
+                  type="button"
+                  onClick={() => setIsArchiveDialogOpen(true)}
+                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+                >
+                  Archive Event
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -187,10 +184,7 @@ export default function EventDetailPage() {
           {/* Tasks Section */}
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-xl font-semibold mb-4">Tasks</h2>
-            <TaskList
-              eventId={eventId}
-              isAdmin={true} // TODO: Get from session once auth is fully implemented
-            />
+            <TaskList eventId={eventId} isAdmin={isAdmin} />
           </div>
         </div>
 

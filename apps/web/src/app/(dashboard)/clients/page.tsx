@@ -1,13 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { trpc } from '@/lib/trpc';
 import { ClientCard } from '@/components/clients/ClientCard';
+import { ClientListSkeleton } from '@/components/clients/ClientListSkeleton';
 import { FollowUpBanner } from '@/components/clients/FollowUpBanner';
+import { useIsAdmin } from '@/lib/use-auth';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 
-export default function ClientsPage() {
+function ClientsPageContent() {
+  const { isAdmin } = useIsAdmin();
   const [search, setSearch] = useState('');
   const searchParams = useSearchParams();
   const showFollowUps = searchParams.get('followups') === 'due';
@@ -36,12 +39,14 @@ export default function ClientsPage() {
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Clients</h1>
-        <Link
-          href="/clients/new"
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-        >
-          Add Client
-        </Link>
+        {isAdmin && (
+          <Link
+            href="/clients/new"
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+          >
+            Add Client
+          </Link>
+        )}
       </div>
 
       <FollowUpBanner />
@@ -93,9 +98,7 @@ export default function ClientsPage() {
 
       {/* Client List */}
       {isLoading ? (
-        <div className="flex justify-center items-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        </div>
+        <ClientListSkeleton />
       ) : filteredClients?.length === 0 ? (
         <div className="bg-white rounded-lg shadow p-12 text-center">
           <svg
@@ -135,5 +138,19 @@ export default function ClientsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function ClientsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex justify-center items-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+        </div>
+      }
+    >
+      <ClientsPageContent />
+    </Suspense>
   );
 }

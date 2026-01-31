@@ -3,12 +3,14 @@
 import { trpc } from '@/lib/trpc';
 import { useState } from 'react';
 import { ResourceCard } from '@/components/resources/ResourceCard';
+import { useIsAdmin } from '@/lib/use-auth';
 import Link from 'next/link';
 
 type ResourceType = 'staff' | 'equipment' | 'materials' | 'all';
 type AvailabilityFilter = 'all' | 'available' | 'unavailable';
 
 export default function ResourcesPage() {
+  const { isAdmin } = useIsAdmin();
   const [type, setType] = useState<ResourceType>('all');
   const [availability, setAvailability] = useState<AvailabilityFilter>('all');
 
@@ -30,12 +32,14 @@ export default function ResourcesPage() {
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Resources</h1>
-        <Link
-          href="/resources/new"
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-        >
-          Add Resource
-        </Link>
+        {isAdmin && (
+          <Link
+            href="/resources/new"
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+          >
+            Add Resource
+          </Link>
+        )}
       </div>
 
       {/* Filters */}

@@ -19,7 +19,7 @@ export function EventStatusTimeline({ history }: EventStatusTimelineProps) {
   }
 
   return (
-    <div className="space-y-4">
+    <div data-testid="status-timeline" className="space-y-4">
       {history.map((item, index) => {
         const isLast = index === history.length - 1;
         const formattedDate = new Date(item.changedAt).toLocaleDateString('en-US', {
