@@ -3,7 +3,7 @@ import { router, protectedProcedure, adminProcedure } from '../trpc';
 import { events, eventStatusLog, clients, users } from '@catering-event-manager/database/schema';
 import { eq, and, gte, lte, desc, sql } from 'drizzle-orm';
 import { TRPCError } from '@trpc/server';
-import { observable } from '@trpc/server/observable';
+
 
 // Event status enum for validation
 const eventStatusEnum = z.enum([
@@ -375,23 +375,5 @@ export const eventRouter = router({
         .where(eq(events.id, input.id));
 
       return { success: true };
-    }),
-
-  // FR-004: Real-time status updates subscription
-  onStatusChange: protectedProcedure
-    .input(z.object({ eventId: z.number().positive() }))
-    .subscription(({ input }) => {
-      return observable<{ id: number; newStatus: string }>((emit) => {
-        // This is a simplified implementation
-        // In production, you'd use Redis Pub/Sub or PostgreSQL LISTEN/NOTIFY
-        const interval = setInterval(async () => {
-          // For now, this is a placeholder
-          // Real implementation would listen to database changes
-        }, 2000);
-
-        return () => {
-          clearInterval(interval);
-        };
-      });
     }),
 });

@@ -7,6 +7,8 @@ import {
   users,
 } from "@catering-event-manager/database/schema";
 import { eq, desc, and, lte, sql } from "drizzle-orm";
+import { TRPCError } from "@trpc/server";
+import { sendWelcomeEmail } from "@/lib/email";
 
 export const clientsRouter = router({
   // ============================================
@@ -238,4 +240,146 @@ export const clientsRouter = router({
       count: dueFollowUps.length,
     };
   }),
+
+  // ============================================
+  // Portal Access Management (T192, T193, T195)
+  // ============================================
+
+  enablePortalAccess: adminProcedure
+    .input(
+      z.object({
+        clientId: z.number(),
+        contactEmail: z.string().email(),
+        sendWelcome: z.boolean().default(true),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { clientId, contactEmail, sendWelcome } = input;
+
+      // Check if client exists
+      const [client] = await ctx.db
+        .select()
+        .from(clients)
+        .where(eq(clients.id, clientId));
+
+      if (!client) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Client not found" });
+      }
+
+      // Check if user already exists with this email
+      const [existingUser] = await ctx.db
+        .select()
+        .from(users)
+        .where(eq(users.email, contactEmail));
+
+      if (existingUser) {
+        // If user exists but is linked to a different client, error
+        if (existingUser.clientId && existingUser.clientId !== clientId) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "Email already associated with another client",
+          });
+        }
+
+        // Update existing user to be a client user
+        await ctx.db
+          .update(users)
+          .set({
+            role: "client",
+            clientId: clientId,
+            isActive: true,
+            updatedAt: new Date(),
+          })
+          .where(eq(users.id, existingUser.id));
+      } else {
+        // Create new client user
+        await ctx.db.insert(users).values({
+          email: contactEmail,
+          name: client.contactName,
+          role: "client",
+          clientId: clientId,
+          isActive: true,
+          passwordHash: null, // Magic link users don't have passwords
+        });
+      }
+
+      // Enable portal for the client
+      const [updatedClient] = await ctx.db
+        .update(clients)
+        .set({
+          portalEnabled: true,
+          portalEnabledAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .where(eq(clients.id, clientId))
+        .returning();
+
+      // Send welcome email if requested
+      if (sendWelcome) {
+        const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+        try {
+          await sendWelcomeEmail({
+            to: contactEmail,
+            clientName: client.contactName,
+            companyName: client.companyName,
+            portalUrl: `${baseUrl}/portal/login`,
+          });
+        } catch (error) {
+          console.error("[Portal] Failed to send welcome email:", error);
+          // Don't fail the mutation if email fails
+        }
+      }
+
+      return {
+        success: true,
+        client: updatedClient,
+      };
+    }),
+
+  disablePortalAccess: adminProcedure
+    .input(z.object({ clientId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const { clientId } = input;
+
+      // Deactivate the client user
+      await ctx.db
+        .update(users)
+        .set({
+          isActive: false,
+          updatedAt: new Date(),
+        })
+        .where(and(eq(users.clientId, clientId), eq(users.role, "client")));
+
+      // Disable portal for the client
+      const [updatedClient] = await ctx.db
+        .update(clients)
+        .set({
+          portalEnabled: false,
+          updatedAt: new Date(),
+        })
+        .where(eq(clients.id, clientId))
+        .returning();
+
+      return {
+        success: true,
+        client: updatedClient,
+      };
+    }),
+
+  getPortalUser: protectedProcedure
+    .input(z.object({ clientId: z.number() }))
+    .query(async ({ ctx, input }) => {
+      const [portalUser] = await ctx.db
+        .select({
+          id: users.id,
+          email: users.email,
+          name: users.name,
+          isActive: users.isActive,
+          createdAt: users.createdAt,
+        })
+        .from(users)
+        .where(and(eq(users.clientId, input.clientId), eq(users.role, "client")));
+
+      return portalUser ?? null;
+    }),
 });

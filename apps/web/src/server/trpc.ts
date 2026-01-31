@@ -47,3 +47,27 @@ export const adminProcedure = t.procedure.use(({ ctx, next }) => {
     },
   });
 });
+
+// Client portal procedure - requires client role and includes clientId in context
+export const clientProcedure = t.procedure.use(({ ctx, next }) => {
+  if (!ctx.session?.user) {
+    throw new TRPCError({ code: 'UNAUTHORIZED' });
+  }
+  if (ctx.session.user.role !== 'client') {
+    throw new TRPCError({ code: 'FORBIDDEN', message: 'Client access required' });
+  }
+  const clientId = ctx.session.user.clientId;
+  if (!clientId) {
+    throw new TRPCError({ code: 'FORBIDDEN', message: 'No client association' });
+  }
+  return next({
+    ctx: {
+      ...ctx,
+      session: { ...ctx.session, user: ctx.session.user },
+      clientId, // Available in all portal procedures for scoping queries
+    },
+  });
+});
+
+// Export caller factory for testing
+export const createCallerFactory = t.createCallerFactory;

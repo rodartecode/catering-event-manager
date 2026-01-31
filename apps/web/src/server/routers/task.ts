@@ -3,7 +3,7 @@ import { router, protectedProcedure, adminProcedure } from '../trpc';
 import { tasks, events, users, resources, taskResources, resourceSchedule } from '@catering-event-manager/database/schema';
 import { eq, and, desc, sql, ne, isNull, or, lt, inArray } from 'drizzle-orm';
 import { TRPCError } from '@trpc/server';
-import { observable } from '@trpc/server/observable';
+
 import { schedulingClient, SchedulingClientError } from '../services/scheduling-client';
 
 // Task status enum for validation
@@ -537,7 +537,7 @@ export const taskRouter = router({
       }
 
       if (cursor) {
-        conditions.push(sql`${tasks.id} > ${cursor}`);
+        conditions.push(sql`${tasks.id} >= ${cursor}`);
       }
 
       // Query tasks with assignee info
@@ -798,24 +798,7 @@ export const taskRouter = router({
       return { success: true, clearedDependencies: dependentTasks.length };
     }),
 
-  // Real-time task updates subscription
-  onUpdate: protectedProcedure
-    .input(z.object({ eventId: z.number().positive() }))
-    .subscription(({ input }) => {
-      return observable<{ taskId: number; action: 'created' | 'updated' | 'deleted' }>((emit) => {
-        // Placeholder for real-time updates
-        // In production, use Redis Pub/Sub or PostgreSQL LISTEN/NOTIFY
-        const interval = setInterval(async () => {
-          // Poll or listen for changes
-        }, 2000);
-
-        return () => {
-          clearInterval(interval);
-        };
-      });
-    }),
-
-  // Get users for task assignment
+  // Get users for task assignment (staff only, not clients)
   getAssignableUsers: protectedProcedure.query(async ({ ctx }) => {
     const { db } = ctx;
 
@@ -827,7 +810,7 @@ export const taskRouter = router({
         role: users.role,
       })
       .from(users)
-      .where(eq(users.isActive, true))
+      .where(and(eq(users.isActive, true), ne(users.role, 'client')))
       .orderBy(users.name);
 
     return activeUsers;
