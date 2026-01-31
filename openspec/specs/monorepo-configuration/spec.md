@@ -41,18 +41,18 @@ Authentication types MUST include custom properties for role-based access contro
 - **Then** TypeScript recognizes `role` as a valid property
 - **And** the type is `'administrator' | 'manager'`
 
-### Requirement: tRPC subscription compatibility
+### Requirement: Near-real-time data freshness
 
-Real-time subscriptions MUST use the correct API for tRPC v11.
+Event and task data MUST stay current using polling until subscription infrastructure (Redis Pub/Sub, SSE transport) is built.
 
 **Priority**: P1
 **Status**: Draft
 
-#### Scenario: Subscribe to event status changes
+#### Scenario: Event detail page reflects recent changes
 - **Given** an event detail page component
-- **When** setting up a subscription to `event.onStatusChange`
-- **Then** the subscription uses tRPC v11's `useSubscription` hook
-- **And** TypeScript accepts the subscription configuration without errors
+- **When** the page is open and another user updates the event status
+- **Then** the `useQuery` hook refetches data on a polling interval (default 5 seconds)
+- **And** the updated status is visible without a manual page refresh
 
 ### Requirement: Clean type checking
 

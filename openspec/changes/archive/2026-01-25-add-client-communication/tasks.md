@@ -18,6 +18,8 @@
 **Priority**: P0 (blocking)
 **File**: `packages/database/src/schema/communications.ts`
 
+- [x] Complete
+
 Add complete table definition with fields:
 - id, eventId, clientId (foreign keys)
 - type (uses existing enum)
@@ -34,10 +36,13 @@ Add complete table definition with fields:
 **Priority**: P1
 **File**: `packages/database/src/schema/communications.ts`
 
+- [x] Complete
+
 Add indexes for:
 - `idx_communications_event_id` - Event detail page queries
 - `idx_communications_client_id` - Client history queries
 - `idx_communications_follow_up_date` - Follow-up queries
+- `idx_communications_contacted_at` - Chronological queries
 
 **Acceptance**: Indexes defined in schema, push succeeds.
 
@@ -46,6 +51,8 @@ Add indexes for:
 ### T148: Export communications from schema index
 **Priority**: P0 (blocking)
 **File**: `packages/database/src/schema/index.ts`
+
+- [x] Complete
 
 Ensure communications table and enum are exported. Already exports from communications.ts but may need update after table addition.
 
@@ -60,6 +67,8 @@ Ensure communications table and enum are exported. Already exports from communic
 **File**: `apps/web/src/server/routers/clients.ts`
 **Spec**: FR-022
 
+- [x] Complete
+
 Add adminProcedure mutation:
 - Input: eventId, clientId, type, subject?, notes?, contactedAt?, followUpDate?
 - Validates event and client exist
@@ -72,6 +81,8 @@ Add adminProcedure mutation:
 ### T150: Add listCommunications query
 **Priority**: P0 (blocking)
 **File**: `apps/web/src/server/routers/clients.ts`
+
+- [x] Complete
 
 Add protectedProcedure query:
 - Input: clientId, optional pagination (limit, offset)
@@ -87,6 +98,8 @@ Add protectedProcedure query:
 **File**: `apps/web/src/server/routers/clients.ts`
 **Spec**: FR-023
 
+- [x] Complete
+
 Add adminProcedure mutation:
 - Input: communicationId, followUpDate
 - Updates existing communication with follow-up date
@@ -100,6 +113,8 @@ Add adminProcedure mutation:
 **Priority**: P0 (blocking)
 **File**: `apps/web/src/server/routers/clients.ts`
 
+- [x] Complete
+
 Add protectedProcedure mutation:
 - Input: communicationId
 - Sets followUpCompleted = true
@@ -112,6 +127,8 @@ Add protectedProcedure mutation:
 ### T153: Add getDueFollowUps query
 **Priority**: P0 (blocking)
 **File**: `apps/web/src/server/routers/clients.ts`
+
+- [x] Complete
 
 Add protectedProcedure query:
 - No required input
@@ -128,11 +145,14 @@ Add protectedProcedure query:
 **Priority**: P0 (blocking)
 **File**: `apps/web/src/app/(dashboard)/clients/page.tsx`
 
+- [x] Complete
+
 Create page with:
 - Title and description
 - Search input filtering by company/contact name
 - Grid of ClientCard components
 - Link to create new client (if admin)
+- FollowUpBanner integration
 
 **Acceptance**: Page loads at `/clients` with search working.
 
@@ -141,6 +161,8 @@ Create page with:
 ### T155: Create client detail page
 **Priority**: P0 (blocking)
 **File**: `apps/web/src/app/(dashboard)/clients/[id]/page.tsx`
+
+- [x] Complete
 
 Create page with tabs:
 - **Info tab**: Contact details, edit button (admin)
@@ -155,6 +177,8 @@ Create page with tabs:
 **Priority**: P0 (blocking)
 **File**: `apps/web/src/app/(dashboard)/clients/[id]/page.tsx`
 
+- [x] Complete
+
 In Communications tab:
 - CommunicationForm component at top
 - CommunicationList below showing history
@@ -167,6 +191,8 @@ In Communications tab:
 ### T157: Add follow-up indicator to dashboard
 **Priority**: P1
 **File**: `apps/web/src/app/(dashboard)/page.tsx` or layout
+
+- [x] Complete
 
 Add notification banner showing:
 - Count of due/overdue follow-ups
@@ -183,6 +209,8 @@ Add notification banner showing:
 **Priority**: P0 (blocking)
 **File**: `apps/web/src/components/clients/ClientCard.tsx`
 
+- [x] Complete
+
 Display:
 - Company name (heading)
 - Contact name
@@ -198,12 +226,15 @@ Display:
 **Priority**: P0 (blocking)
 **File**: `apps/web/src/components/clients/CommunicationList.tsx`
 
+- [x] Complete
+
 Display chronological list with:
 - Type icon (email/phone/meeting/other)
 - Subject and notes preview
 - Date contacted
 - Follow-up indicator if scheduled
 - Expand/collapse for full notes
+- Complete follow-up button
 
 **Acceptance**: List renders with proper styling and interactions.
 
@@ -212,6 +243,8 @@ Display chronological list with:
 ### T160: Create CommunicationForm component
 **Priority**: P0 (blocking)
 **File**: `apps/web/src/components/clients/CommunicationForm.tsx`
+
+- [x] Complete
 
 Form with:
 - Event select dropdown (events for this client)
@@ -230,11 +263,14 @@ Form with:
 **Priority**: P1
 **File**: `apps/web/src/components/clients/FollowUpIndicator.tsx`
 
+- [x] Complete
+
 Badge component showing:
 - Due today: yellow
 - Overdue: red with days count
 - Completed: green checkmark
 - None: no indicator
+- Future: blue with date
 
 **Acceptance**: Correct styling based on follow-up state.
 
@@ -244,9 +280,11 @@ Badge component showing:
 **Priority**: P1
 **File**: `apps/web/src/components/clients/FollowUpBanner.tsx`
 
+- [x] Complete
+
 Dashboard banner with:
 - Icon and message about due follow-ups
-- Count of due items
+- Count of due items (overdue vs due today)
 - "View All" link to clients with pending follow-ups
 - Close/dismiss button
 
@@ -260,10 +298,12 @@ Dashboard banner with:
 **Priority**: P2
 **File**: `apps/web/src/app/api/cron/follow-ups/route.ts`
 
+- [x] Complete
+
 API route (can be triggered by Vercel cron or manually):
 - Query pending follow-ups
 - Log count for monitoring
-- Could be extended for email notifications later
+- Return summary with overdue/due today counts
 
 **Acceptance**: Route returns follow-up summary when called.
 
@@ -271,14 +311,16 @@ API route (can be triggered by Vercel cron or manually):
 
 ### T164: Add follow-up count to dashboard header
 **Priority**: P2
-**File**: Update existing dashboard or layout
+**File**: `apps/web/src/app/(dashboard)/page.tsx`
+
+- [x] Complete
 
 Add subtle indicator:
-- Bell icon with count badge
-- Tooltip showing "X follow-ups due"
-- Link to full follow-up list
+- StatCard with due follow-ups count
+- Links to clients page
+- Real-time query with trpc.clients.getDueFollowUps
 
-**Acceptance**: Header shows follow-up count when > 0.
+**Acceptance**: Dashboard shows follow-up count.
 
 ---
 
@@ -308,13 +350,13 @@ T164 (header count) ─── depends on T153 (P2)
 
 ## Verification Checklist
 
-- [ ] `pnpm db:push` succeeds with new communications table
-- [ ] `pnpm type-check` passes
-- [ ] `pnpm lint` passes
-- [ ] Clients list page loads at `/clients`
-- [ ] Client detail page loads at `/clients/[id]`
-- [ ] Can record a communication with type and notes
-- [ ] Can schedule a follow-up date
-- [ ] Can complete a follow-up
-- [ ] Dashboard shows due follow-ups count
-- [ ] SC-008: Communication history accessible for events
+- [x] `pnpm db:push` succeeds with new communications table
+- [x] `pnpm type-check` passes
+- [x] `pnpm lint` passes
+- [x] Clients list page loads at `/clients`
+- [x] Client detail page loads at `/clients/[id]`
+- [x] Can record a communication with type and notes
+- [x] Can schedule a follow-up date
+- [x] Can complete a follow-up
+- [x] Dashboard shows due follow-ups count
+- [x] SC-008: Communication history accessible for events

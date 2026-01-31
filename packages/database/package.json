@@ -20,8 +20,12 @@
   },
   "typesVersions": {
     "*": {
-      "schema": ["./src/schema/index.ts"],
-      "client": ["./src/client.ts"]
+      "schema": [
+        "./src/schema/index.ts"
+      ],
+      "client": [
+        "./src/client.ts"
+      ]
     }
   },
   "scripts": {
@@ -32,13 +36,14 @@
     "db:seed": "tsx src/seed.ts"
   },
   "dependencies": {
-    "drizzle-orm": "^0.36.0",
-    "postgres": "^3.4.5"
+    "drizzle-orm": "^0.45.1",
+    "postgres": "^3.4.8"
   },
   "devDependencies": {
-    "drizzle-kit": "^0.28.1",
-    "tsx": "^4.19.2",
-    "typescript": "^5.7.2",
-    "@types/node": "^22.10.2"
+    "@catering-event-manager/typescript-config": "workspace:^",
+    "@types/node": "^25.0.10",
+    "drizzle-kit": "^0.31.8",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
   }
 }
