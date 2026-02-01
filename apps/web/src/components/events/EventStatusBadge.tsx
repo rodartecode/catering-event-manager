@@ -13,7 +13,7 @@ const statusConfig = {
   },
   preparation: {
     label: 'Preparation',
-    className: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+    className: 'bg-amber-100 text-amber-900 border-amber-200',
   },
   in_progress: {
     label: 'In Progress',

@@ -1,8 +1,9 @@
 'use client';
 
 import { trpc } from '@/lib/trpc';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import toast from 'react-hot-toast';
+import { useFocusTrap, useDialogId } from '@/hooks/use-focus-trap';
 
 interface TaskAssignDialogProps {
   taskId: number;
@@ -15,6 +16,11 @@ interface TaskAssignDialogProps {
 export function TaskAssignDialog({ taskId, onClose, onSuccess }: TaskAssignDialogProps) {
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const titleId = useDialogId('assign-dialog-title');
+
+  // Trap focus within dialog and handle Escape key
+  useFocusTrap(dialogRef, { isOpen: true, onClose });
 
   // Fetch task details
   const { data: task } = trpc.task.getById.useQuery({ id: taskId });
@@ -50,14 +56,21 @@ export function TaskAssignDialog({ taskId, onClose, onSuccess }: TaskAssignDialo
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        className="bg-white rounded-lg p-6 max-w-md w-full mx-4"
+      >
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-xl font-semibold">Assign Task</h3>
+          <h3 id={titleId} className="text-xl font-semibold">Assign Task</h3>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
+            aria-label="Close dialog"
+            className="text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -84,8 +97,8 @@ export function TaskAssignDialog({ taskId, onClose, onSuccess }: TaskAssignDialo
             Select Team Member
           </label>
           {usersLoading ? (
-            <div className="flex justify-center py-4">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+            <div className="flex justify-center py-4" aria-busy="true" aria-label="Loading team members">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600" aria-hidden="true"></div>
             </div>
           ) : (
             <div className="space-y-2 max-h-60 overflow-y-auto">

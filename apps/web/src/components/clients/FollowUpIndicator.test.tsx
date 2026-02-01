@@ -75,7 +75,7 @@ describe('FollowUpIndicator', () => {
     );
 
     expect(screen.getByText('Due today')).toBeInTheDocument();
-    expect(screen.getByText('Due today')).toHaveClass('bg-yellow-100', 'text-yellow-800');
+    expect(screen.getByText('Due today')).toHaveClass('bg-amber-100', 'text-amber-900');
 
     // Should have clock icon
     const clockIcon = document.querySelector('svg[stroke="currentColor"]');

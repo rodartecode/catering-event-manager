@@ -1,7 +1,8 @@
 import { render, screen, fireEvent, waitFor } from '../../../test/helpers/render';
 import userEvent from '@testing-library/user-event';
 import { EventStatusUpdateDialog } from './EventStatusUpdateDialog';
-import { vi } from 'vitest';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { axe } from '../../../test/helpers/axe';
 
 // Track mutation calls
 let mutationCallback: (() => void) | undefined;
@@ -158,5 +159,33 @@ describe('EventStatusUpdateDialog', () => {
     await user.type(notesField, 'Test note');
 
     expect(notesField).toHaveValue('Test note');
+  });
+
+  describe('accessibility', () => {
+    it('has no accessibility violations when open', async () => {
+      const { container } = render(<EventStatusUpdateDialog {...defaultProps} />);
+
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
+    });
+
+    it('has dialog role and aria-modal', () => {
+      render(<EventStatusUpdateDialog {...defaultProps} />);
+
+      const dialog = screen.getByRole('dialog');
+      expect(dialog).toBeInTheDocument();
+      expect(dialog).toHaveAttribute('aria-modal', 'true');
+    });
+
+    it('has aria-labelledby pointing to the title', () => {
+      render(<EventStatusUpdateDialog {...defaultProps} />);
+
+      const dialog = screen.getByRole('dialog');
+      const labelId = dialog.getAttribute('aria-labelledby');
+      expect(labelId).toBeTruthy();
+
+      const title = document.getElementById(labelId!);
+      expect(title).toHaveTextContent('Update Event Status');
+    });
   });
 });

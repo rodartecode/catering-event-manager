@@ -5,7 +5,7 @@ describe('EventStatusBadge', () => {
   it.each([
     ['inquiry', 'Inquiry', 'bg-purple-100'],
     ['planning', 'Planning', 'bg-blue-100'],
-    ['preparation', 'Preparation', 'bg-yellow-100'],
+    ['preparation', 'Preparation', 'bg-amber-100'],
     ['in_progress', 'In Progress', 'bg-orange-100'],
     ['completed', 'Completed', 'bg-green-100'],
     ['follow_up', 'Follow Up', 'bg-gray-100'],

@@ -77,7 +77,7 @@ export function ConflictWarning({ conflicts, onDismiss }: ConflictWarningProps) 
             <button
               type="button"
               onClick={onDismiss}
-              className="inline-flex text-yellow-500 hover:text-yellow-600"
+              className="p-2 text-yellow-500 hover:text-yellow-600 hover:bg-yellow-100 rounded-lg transition"
             >
               <span className="sr-only">Dismiss</span>
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

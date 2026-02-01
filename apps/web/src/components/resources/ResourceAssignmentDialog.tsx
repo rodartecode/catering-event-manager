@@ -1,8 +1,9 @@
 'use client';
 
 import { trpc } from '@/lib/trpc';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ConflictWarning } from './ConflictWarning';
+import { useFocusTrap, useDialogId } from '@/hooks/use-focus-trap';
 
 interface ResourceAssignmentDialogProps {
   isOpen: boolean;
@@ -44,6 +45,19 @@ export function ResourceAssignmentDialog({
   const [editedStartTime, setEditedStartTime] = useState(startTime);
   const [editedEndTime, setEditedEndTime] = useState(endTime);
 
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const titleId = useDialogId('resource-assign-dialog-title');
+
+  const handleClose = () => {
+    setSelectedResources([]);
+    setResourceTypeFilter('');
+    setShowConflictWarning(false);
+    onClose();
+  };
+
+  // Trap focus within dialog and handle Escape key
+  useFocusTrap(dialogRef, { isOpen, onClose: handleClose });
+
   // Helper to format Date for datetime-local input
   const formatDateTimeLocal = (date: Date) => {
     const d = new Date(date);
@@ -77,13 +91,6 @@ export function ResourceAssignmentDialog({
       handleClose();
     },
   });
-
-  const handleClose = () => {
-    setSelectedResources([]);
-    setResourceTypeFilter('');
-    setShowConflictWarning(false);
-    onClose();
-  };
 
   const toggleResource = (resource: SelectedResource) => {
     setSelectedResources((prev) => {
@@ -140,19 +147,26 @@ export function ResourceAssignmentDialog({
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex items-center justify-center min-h-screen px-4">
         {/* Backdrop */}
-        <div className="fixed inset-0 bg-black bg-opacity-50" onClick={handleClose} />
+        <div className="fixed inset-0 bg-black bg-opacity-50" onClick={handleClose} aria-hidden="true" />
 
         {/* Dialog */}
-        <div className="relative bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
+        <div
+          ref={dialogRef}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={titleId}
+          className="relative bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden"
+        >
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b">
             <div>
-              <h2 className="text-xl font-semibold">Assign Resources</h2>
+              <h2 id={titleId} className="text-xl font-semibold">Assign Resources</h2>
               {allowTimeEdit ? (
                 <div className="flex flex-wrap gap-2 mt-2">
                   <div className="flex items-center gap-1">
-                    <label className="text-sm text-gray-500">From:</label>
+                    <label htmlFor="resource-start-time" className="text-sm text-gray-500">From:</label>
                     <input
+                      id="resource-start-time"
                       type="datetime-local"
                       value={formatDateTimeLocal(editedStartTime)}
                       onChange={(e) => setEditedStartTime(new Date(e.target.value))}
@@ -160,8 +174,9 @@ export function ResourceAssignmentDialog({
                     />
                   </div>
                   <div className="flex items-center gap-1">
-                    <label className="text-sm text-gray-500">To:</label>
+                    <label htmlFor="resource-end-time" className="text-sm text-gray-500">To:</label>
                     <input
+                      id="resource-end-time"
                       type="datetime-local"
                       value={formatDateTimeLocal(editedEndTime)}
                       onChange={(e) => setEditedEndTime(new Date(e.target.value))}
@@ -180,9 +195,10 @@ export function ResourceAssignmentDialog({
             </div>
             <button
               onClick={handleClose}
-              className="text-gray-400 hover:text-gray-500"
+              aria-label="Close dialog"
+              className="text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -203,7 +219,7 @@ export function ResourceAssignmentDialog({
               <div className="flex gap-2">
                 <button
                   onClick={() => setResourceTypeFilter('')}
-                  className={`px-3 py-1 rounded-full text-sm ${
+                  className={`px-3 py-1 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
                     resourceTypeFilter === ''
                       ? 'bg-blue-600 text-white'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -213,7 +229,7 @@ export function ResourceAssignmentDialog({
                 </button>
                 <button
                   onClick={() => setResourceTypeFilter('staff')}
-                  className={`px-3 py-1 rounded-full text-sm ${
+                  className={`px-3 py-1 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${
                     resourceTypeFilter === 'staff'
                       ? 'bg-purple-600 text-white'
                       : 'bg-purple-100 text-purple-700 hover:bg-purple-200'
@@ -223,7 +239,7 @@ export function ResourceAssignmentDialog({
                 </button>
                 <button
                   onClick={() => setResourceTypeFilter('equipment')}
-                  className={`px-3 py-1 rounded-full text-sm ${
+                  className={`px-3 py-1 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
                     resourceTypeFilter === 'equipment'
                       ? 'bg-blue-600 text-white'
                       : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
@@ -233,7 +249,7 @@ export function ResourceAssignmentDialog({
                 </button>
                 <button
                   onClick={() => setResourceTypeFilter('materials')}
-                  className={`px-3 py-1 rounded-full text-sm ${
+                  className={`px-3 py-1 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 ${
                     resourceTypeFilter === 'materials'
                       ? 'bg-green-600 text-white'
                       : 'bg-green-100 text-green-700 hover:bg-green-200'
@@ -266,8 +282,8 @@ export function ResourceAssignmentDialog({
 
             {/* Resource List */}
             {resourcesLoading ? (
-              <div className="flex justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+              <div className="flex justify-center py-8" aria-busy="true" aria-label="Loading resources">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" aria-hidden="true" />
               </div>
             ) : resources?.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
@@ -284,6 +300,8 @@ export function ResourceAssignmentDialog({
                   return (
                     <button
                       key={resource.id}
+                      role="checkbox"
+                      aria-checked={isSelected}
                       onClick={() =>
                         toggleResource({
                           id: resource.id,
@@ -291,7 +309,7 @@ export function ResourceAssignmentDialog({
                           type: resource.type,
                         })
                       }
-                      className={`w-full p-3 rounded-lg border text-left transition ${
+                      className={`w-full p-3 rounded-lg border text-left transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
                         isSelected
                           ? hasConflict
                             ? 'border-yellow-500 bg-yellow-50'
@@ -314,6 +332,7 @@ export function ResourceAssignmentDialog({
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
+                                aria-hidden="true"
                               >
                                 <path
                                   strokeLinecap="round"

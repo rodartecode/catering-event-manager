@@ -30,7 +30,8 @@ describe('TaskStatusButton', () => {
     render(<TaskStatusButton taskId={1} currentStatus="pending" />);
 
     const button = screen.getByRole('button', { name: 'Start' });
-    expect(button).toHaveClass('px-3', 'py-1', 'text-sm', 'font-medium', 'rounded', 'transition');
+    // Updated to px-4 py-2 for 44x44px touch target compliance
+    expect(button).toHaveClass('px-4', 'py-2', 'text-sm', 'font-medium', 'rounded', 'transition');
   });
 
   it('does not show error message initially', () => {

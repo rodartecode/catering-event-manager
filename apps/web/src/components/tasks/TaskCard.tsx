@@ -61,6 +61,7 @@ export function TaskCard({ task, onEdit, onAssign, onResources, showActions = tr
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
+              aria-hidden="true"
             >
               <path
                 strokeLinecap="round"
@@ -80,6 +81,7 @@ export function TaskCard({ task, onEdit, onAssign, onResources, showActions = tr
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
+              aria-hidden="true"
             >
               <path
                 strokeLinecap="round"
@@ -99,6 +101,7 @@ export function TaskCard({ task, onEdit, onAssign, onResources, showActions = tr
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
+              aria-hidden="true"
             >
               <path
                 strokeLinecap="round"
@@ -120,6 +123,7 @@ export function TaskCard({ task, onEdit, onAssign, onResources, showActions = tr
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
+              aria-hidden="true"
             >
               <path
                 strokeLinecap="round"

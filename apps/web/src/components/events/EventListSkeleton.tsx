@@ -2,7 +2,7 @@
 
 function EventCardSkeleton() {
   return (
-    <div className="bg-white rounded-lg shadow p-6 animate-pulse">
+    <div className="bg-white rounded-lg shadow p-6 animate-pulse" aria-hidden="true">
       <div className="flex justify-between items-start mb-4">
         <div className="h-6 bg-gray-200 rounded w-48" />
         <div className="h-6 bg-gray-200 rounded w-20" />
@@ -21,7 +21,11 @@ function EventCardSkeleton() {
 
 export function EventListSkeleton() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div
+      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+      aria-busy="true"
+      aria-label="Loading events"
+    >
       <EventCardSkeleton />
       <EventCardSkeleton />
       <EventCardSkeleton />

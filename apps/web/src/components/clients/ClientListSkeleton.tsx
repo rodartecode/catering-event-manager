@@ -2,7 +2,7 @@
 
 function ClientCardSkeleton() {
   return (
-    <div className="bg-white rounded-lg shadow p-6 animate-pulse">
+    <div className="bg-white rounded-lg shadow p-6 animate-pulse" aria-hidden="true">
       <div className="flex items-start gap-4">
         <div className="h-12 w-12 bg-gray-200 rounded-full" />
         <div className="flex-1">
@@ -24,7 +24,11 @@ function ClientCardSkeleton() {
 
 export function ClientListSkeleton() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div
+      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+      aria-busy="true"
+      aria-label="Loading clients"
+    >
       <ClientCardSkeleton />
       <ClientCardSkeleton />
       <ClientCardSkeleton />

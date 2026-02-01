@@ -5,7 +5,7 @@ interface TaskStatusBadgeProps {
 const statusConfig = {
   pending: {
     label: 'Pending',
-    className: 'bg-gray-100 text-gray-800 border-gray-200',
+    className: 'bg-gray-100 text-gray-900 border-gray-200',
   },
   in_progress: {
     label: 'In Progress',
