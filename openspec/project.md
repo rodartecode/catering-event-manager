@@ -80,6 +80,37 @@ Key goals:
 - All event status transitions recorded in `event_status_log` table
 - Enables audit trail and timeline visualization
 
+### Logging & Observability (OBS-001, OBS-002)
+
+**Structured JSON logging** via `@/lib/logger`:
+
+```typescript
+import { logger } from '@/lib/logger';
+
+// Always include context for traceability
+logger.info('Operation completed', { context: 'sendEmail', messageId });
+logger.warn('Fallback activated', { context: 'rateLimit', reason: 'Redis unavailable' });
+logger.error('Operation failed', error, { context: 'assignResources', taskId, resourceIds });
+```
+
+**Rules:**
+- **Never `console.*`** in production code (ESLint enforces)
+- **Include context metadata**: operation name, entity IDs, error codes
+- **Sanitize sensitive data**: No full emails, passwords, or tokens in logs
+- **Pass Error objects**: Preserves stack traces for debugging
+
+### Input Sanitization (DQ-001)
+
+All Zod input schemas apply normalization:
+
+```typescript
+// Strings: trim whitespace to prevent "Staff" vs "Staff " duplicates
+name: z.string().trim().min(1).max(255)
+
+// Emails: lowercase + trim for consistent matching
+email: z.string().trim().toLowerCase().email()
+```
+
 ### Testing Strategy
 
 - **Coverage target**: >80% overall, 100% for scheduling algorithms

@@ -2,21 +2,21 @@
 
 ## Phase 1: Error Handling UI
 
-- [ ] T01 Create global error boundary at `apps/web/src/app/error.tsx`
+- [x] T01 Create global error boundary at `apps/web/src/app/error.tsx`
   - Use 'use client' directive
   - Display user-friendly error message
   - Include "Try Again" button that calls reset()
   - Include "Return Home" link
   - Log error to console for debugging
 
-- [ ] T02 Create 404 page at `apps/web/src/app/not-found.tsx`
+- [x] T02 Create 404 page at `apps/web/src/app/not-found.tsx`
   - Display "Page Not Found" message
   - Include link back to dashboard
   - Maintain app styling consistency
 
 ## Phase 2: Production Dockerfiles
 
-- [ ] T03 [P] Create Next.js production Dockerfile at `apps/web/Dockerfile`
+- [x] T03 [P] Create Next.js production Dockerfile at `apps/web/Dockerfile`
   - Multi-stage build (deps, builder, runner)
   - Use node:20-alpine base image
   - Copy only necessary production files
@@ -24,7 +24,7 @@
   - Expose port 3000
   - Use standalone output mode
 
-- [ ] T04 [P] Create Go service production Dockerfile at `apps/scheduling-service/Dockerfile`
+- [x] T04 [P] Create Go service production Dockerfile at `apps/scheduling-service/Dockerfile`
   - Multi-stage build (builder, runner)
   - Use golang:1.23-alpine for build
   - Use alpine:latest for runtime
@@ -32,7 +32,7 @@
   - Expose port 8080
   - Non-root user for security
 
-- [ ] T05 Create production Docker Compose at `docker-compose.prod.yml`
+- [x] T05 Create production Docker Compose at `docker-compose.prod.yml`
   - PostgreSQL 17 with persistent volume
   - Next.js app building from Dockerfile
   - Go scheduler building from Dockerfile
@@ -42,7 +42,7 @@
 
 ## Phase 3: Database & Scripts
 
-- [ ] T06 Create database seed script at `packages/database/src/seed.ts`
+- [x] T06 Create database seed script at `packages/database/src/seed.ts`
   - Create admin user (admin@example.com)
   - Create sample clients (3-5)
   - Create sample events in various statuses
@@ -50,11 +50,11 @@
   - Create sample resources (staff, equipment)
   - Include CLI execution support
 
-- [ ] T07 Add seed script to package.json
+- [x] T07 Add seed script to package.json
   - Add `db:seed` script in packages/database
   - Add `db:seed` script in root package.json
 
-- [ ] T08 Create health check script at `scripts/health-check.sh`
+- [x] T08 Create health check script at `scripts/health-check.sh`
   - Check PostgreSQL connectivity
   - Check Next.js health endpoint
   - Check Go scheduler health endpoint
@@ -62,7 +62,7 @@
 
 ## Phase 4: Security Headers
 
-- [ ] T09 Add security headers to `apps/web/next.config.ts`
+- [x] T09 Add security headers to `apps/web/next.config.ts`
   - Content-Security-Policy (default-src, script-src, style-src)
   - X-Frame-Options: DENY
   - X-Content-Type-Options: nosniff
@@ -71,7 +71,7 @@
 
 ## Phase 5: Documentation
 
-- [ ] T10 Create CONTRIBUTING.md at repository root
+- [x] T10 Create CONTRIBUTING.md at repository root
   - Development environment setup
   - Branch naming: feature/, fix/, docs/
   - Commit format: conventional commits
@@ -82,19 +82,19 @@
 
 ## Phase 6: Verification
 
-- [ ] T11 Verify Docker builds locally
+- [x] T11 Verify Docker builds locally
   - `docker build -t catering-web apps/web`
   - `docker build -t catering-scheduler apps/scheduling-service`
 
-- [ ] T12 Verify docker-compose.prod.yml starts all services
+- [x] T12 Verify docker-compose.prod.yml starts all services
   - `docker-compose -f docker-compose.prod.yml up`
   - Verify health checks pass
 
-- [ ] T13 Verify seed script populates database
+- [x] T13 Verify seed script populates database
   - `pnpm db:seed`
   - Verify data in Drizzle Studio
 
-- [ ] T14 Verify error pages render correctly
+- [x] T14 Verify error pages render correctly
   - Navigate to /nonexistent-page (404)
   - Trigger an error in a component (error boundary)
 
