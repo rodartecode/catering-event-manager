@@ -408,6 +408,23 @@ See [specs/001-event-lifecycle-management/tasks.md](specs/001-event-lifecycle-ma
 
 ## Production Deployment
 
+### Live Environment
+
+The application is deployed across three managed platforms:
+
+| Service | Platform | URL |
+|---------|----------|-----|
+| Web App | Vercel | [catering-dev.vercel.app](https://catering-dev.vercel.app) |
+| Scheduler | Fly.io | [catering-scheduler-dev.fly.dev](https://catering-scheduler-dev.fly.dev) |
+| Database | Supabase | PostgreSQL 17.6 (us-west-2) |
+
+**Deployment workflow**:
+- **Web**: Push to `main` → Auto-deploys to Vercel
+- **Scheduler**: `cd apps/scheduling-service && fly deploy`
+- **Database**: Managed via Supabase Dashboard
+
+For detailed deployment commands, environment variables, and troubleshooting, see [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+
 ### Docker Production Setup
 
 **Multi-stage Dockerfiles** for optimized production builds:
