@@ -11,7 +11,7 @@
 | -------- | ------ |
 | All User Stories (US1-US5) | ✅ **Complete** |
 | Phase 8 Polish | ✅ **100% Complete** (36/36 tasks) |
-| Test Coverage | ✅ **366 TS tests + 46 Go tests passing** |
+| Test Coverage | ✅ **646 TS tests + 41 Go tests passing** |
 | Production Readiness | ✅ **Complete - Ready for deployment** |
 
 **Status**: All 200 tasks complete. Ready for production deployment.
@@ -31,7 +31,7 @@
 
 **Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
 
-**Tests**: ✅ Comprehensive testing infrastructure implemented post-MVP including PostgreSQL Testcontainers, tRPC router tests (366 tests across 29 files), Go service tests (46 tests with 91.7% scheduler coverage), and test utilities. See README.md Testing section for current status.
+**Tests**: ✅ Comprehensive testing infrastructure implemented post-MVP including PostgreSQL Testcontainers, tRPC router tests (646 tests across 41 files), Go service tests (41 tests with 91.7% scheduler coverage), and test utilities. See README.md Testing section for current status.
 
 ## Format: `- [ ] [ID] [P?] [Story?] Description`
 

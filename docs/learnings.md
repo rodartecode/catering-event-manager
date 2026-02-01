@@ -162,7 +162,7 @@ export default tseslint.config(
 - `specs/*/tasks.md` (Tests header section)
 - Run `pnpm test` and `go test ./...` to get accurate counts
 
-**Context**: Current status (2026-01-25): 366 TypeScript tests, 46 Go tests
+**Context**: Current status (2026-02-01): 646 TypeScript tests, 41 Go tests
 
 ---
 

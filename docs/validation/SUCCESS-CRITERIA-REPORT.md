@@ -477,18 +477,19 @@ func (h *Handlers) HealthCheck(c fiber.Ctx) error {
 
 | Category | Tests | Status |
 |----------|-------|--------|
-| Router tests | 366 | All passing |
+| Router tests | 400+ | All passing |
 | Component tests | 182 | All passing |
-| Utility tests | 96 | All passing |
-| **Total** | **644** | **All passing** |
+| Utility tests | 64 | All passing |
+| **Total** | **646** | **All passing** |
 
 ### Go Service Tests
 
 | Package | Tests | Coverage | Status |
 |---------|-------|----------|--------|
-| internal/scheduler | 8 | 91.7% | All passing |
-| internal/api | 38 | 88.2% | All passing |
-| **Total** | **46** | **90.0%** | **All passing** |
+| internal/scheduler | 22 | 91.7% | All passing |
+| internal/api | 15 | 88.2% | All passing |
+| internal/domain | 5 | 100% | All passing |
+| **Total** | **41** | **90.0%** | **All passing** |
 
 ### Scenario Tests
 

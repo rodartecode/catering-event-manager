@@ -180,8 +180,8 @@ chore(deps): update drizzle-orm to v0.45
 
 ### Current Test Status
 
-✅ **366 TypeScript tests passing** across 29 test files
-✅ **46 Go tests passing** with 91.7% scheduler coverage
+✅ **646 TypeScript tests passing** across 41 test files
+✅ **41 Go tests passing** with 91.7% scheduler coverage
 ✅ **Complete test infrastructure** with PostgreSQL TestContainers
 
 ### Test Types

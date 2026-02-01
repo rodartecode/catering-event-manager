@@ -192,10 +192,7 @@ describe('resource router', () => {
   });
 
   describe('resource.getById', () => {
-    // Note: getById has a Date serialization issue when counting upcoming assignments
-    // The router uses `sql\`${resourceSchedule.endTime} > ${now}\`` where now is a Date object
-    // This should be fixed to use now.toISOString() or Drizzle's gt() operator
-    it.skip('returns resource with details (blocked by Date serialization bug)', async () => {
+    it('returns resource with details', async () => {
       const caller = createManagerCaller(db);
       const resource = await createResource(db, { name: 'Test Resource', type: 'staff' });
 
@@ -406,9 +403,7 @@ describe('resource router', () => {
   });
 
   describe('resource.delete', () => {
-    // Note: delete has the same Date serialization issue when checking for active assignments
-    // The router uses `sql\`${resourceSchedule.endTime} > ${now}\`` where now is a Date object
-    it.skip('deletes a resource without assignments (blocked by Date serialization bug)', async () => {
+    it('deletes a resource without assignments', async () => {
       const caller = createAdminCaller(db);
       const resource = await createResource(db);
 

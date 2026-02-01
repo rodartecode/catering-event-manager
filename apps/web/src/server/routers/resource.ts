@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { router, protectedProcedure, adminProcedure } from '../trpc';
-import { resources, resourceSchedule, taskResources, events, tasks } from '@catering-event-manager/database/schema';
-import { eq, and, desc, sql, inArray } from 'drizzle-orm';
+import { resources, resourceSchedule } from '@catering-event-manager/database/schema';
+import { eq, and, sql, gt } from 'drizzle-orm';
 import { TRPCError } from '@trpc/server';
 import { logger } from '@/lib/logger';
 import { schedulingClient, SchedulingClientError } from '../services/scheduling-client';
@@ -154,7 +154,7 @@ export const resourceRouter = router({
         .where(
           and(
             eq(resourceSchedule.resourceId, input.id),
-            sql`${resourceSchedule.endTime} > ${now}`
+            gt(resourceSchedule.endTime, now)
           )
         );
 
@@ -351,7 +351,7 @@ export const resourceRouter = router({
         .where(
           and(
             eq(resourceSchedule.resourceId, input.id),
-            sql`${resourceSchedule.endTime} > ${now}`
+            gt(resourceSchedule.endTime, now)
           )
         )
         .limit(1);
