@@ -2,6 +2,8 @@ package api
 
 import (
 	"log"
+	"os"
+	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v3"
@@ -43,9 +45,13 @@ func RegisterMiddleware(app *fiber.App) {
 		SkipSuccessfulRequests: false,
 	}))
 
-	// CORS configuration
+	// CORS configuration - read allowed origins from environment
+	allowedOrigins := os.Getenv("ALLOWED_ORIGINS")
+	if allowedOrigins == "" {
+		allowedOrigins = "http://localhost:3000"
+	}
 	app.Use(cors.New(cors.Config{
-		AllowOrigins: []string{"http://localhost:3000"},
+		AllowOrigins: strings.Split(allowedOrigins, ","),
 		AllowMethods: []string{"GET", "POST", "PUT", "DELETE"},
 		AllowHeaders: []string{"Content-Type", "Authorization"},
 	}))
