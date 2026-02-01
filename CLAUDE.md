@@ -352,6 +352,24 @@ Comprehensive step-by-step guides located in `docs/implementation-guides/`:
 
 Each guide includes exact file paths, complete code examples, and verification commands.
 
+## Directory-Specific Context
+
+For focused guidance on specific areas of the codebase:
+
+### Application Contexts
+- **`apps/web/CLAUDE.md`** - Next.js application patterns, tRPC routers, components, testing
+- **`apps/scheduling-service/CLAUDE.md`** - Go service patterns, Fiber routing, scheduling algorithms
+
+### Package Contexts
+- **`packages/database/CLAUDE.md`** - Drizzle schemas, migrations, database patterns
+- **`packages/types/CLAUDE.md`** - Shared types, Zod validation patterns
+
+### Additional Contexts
+- **`docs/CLAUDE.md`** - Documentation standards, ADRs, implementation guides
+- **`specs/001-event-lifecycle-management/CLAUDE.md`** - Feature spec structure, task tracking
+
+These files provide targeted context for working efficiently in each area while avoiding duplication of project-wide guidance covered in this root CLAUDE.md.
+
 ## Session Context
 
 **At session start**, read these files to avoid re-learning known issues:
