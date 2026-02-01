@@ -32,7 +32,7 @@ async function verifyEventOwnership(db: Db, eventId: number, clientId: number) {
 export const portalRouter = router({
   // Request magic link for client portal login (public - no auth required)
   requestMagicLink: publicProcedure
-    .input(z.object({ email: z.string().email() }))
+    .input(z.object({ email: z.string().trim().toLowerCase().email() }))
     .mutation(async ({ ctx, input }) => {
       const { db } = ctx;
       const { email } = input;

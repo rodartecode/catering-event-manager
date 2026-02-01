@@ -18,7 +18,7 @@ const eventStatusEnum = z.enum([
 // Event create input schema
 const createEventInput = z.object({
   clientId: z.number().positive(),
-  eventName: z.string().min(1).max(255),
+  eventName: z.string().trim().min(1).max(255),
   eventDate: z.coerce.date(),
   location: z.string().max(500).optional(),
   estimatedAttendees: z.number().positive().optional(),
@@ -46,7 +46,7 @@ const listEventsInput = z.object({
 // Event update input schema
 const updateEventInput = z.object({
   id: z.number().positive(),
-  eventName: z.string().min(1).max(255).optional(),
+  eventName: z.string().trim().min(1).max(255).optional(),
   eventDate: z.coerce.date().optional(),
   location: z.string().max(500).optional(),
   estimatedAttendees: z.number().positive().optional(),

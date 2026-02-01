@@ -9,7 +9,7 @@ export const { GET } = handlers;
 // POST requests (login attempts) need strict rate limiting
 export async function POST(req: NextRequest) {
   const ip = getClientIp(req);
-  const rateLimitResult = rateLimitAuth(ip);
+  const rateLimitResult = await rateLimitAuth(ip);
 
   if (!rateLimitResult.success) {
     // Log rate-limited auth attempts for security monitoring

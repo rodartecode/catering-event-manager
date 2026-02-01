@@ -9,6 +9,7 @@ import {
 import { eq, desc, and, lte, sql } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { sendWelcomeEmail } from "@/lib/email";
+import { logger } from "@/lib/logger";
 
 export const clientsRouter = router({
   // ============================================
@@ -32,9 +33,9 @@ export const clientsRouter = router({
   create: adminProcedure
     .input(
       z.object({
-        companyName: z.string().min(1).max(255),
-        contactName: z.string().min(1).max(255),
-        email: z.string().email().max(255),
+        companyName: z.string().trim().min(1).max(255),
+        contactName: z.string().trim().min(1).max(255),
+        email: z.string().trim().toLowerCase().email().max(255),
         phone: z.string().max(50).optional(),
         address: z.string().optional(),
         notes: z.string().optional(),
@@ -49,9 +50,9 @@ export const clientsRouter = router({
     .input(
       z.object({
         id: z.number(),
-        companyName: z.string().min(1).max(255).optional(),
-        contactName: z.string().min(1).max(255).optional(),
-        email: z.string().email().max(255).optional(),
+        companyName: z.string().trim().min(1).max(255).optional(),
+        contactName: z.string().trim().min(1).max(255).optional(),
+        email: z.string().trim().toLowerCase().email().max(255).optional(),
         phone: z.string().max(50).optional(),
         address: z.string().optional(),
         notes: z.string().optional(),
@@ -249,7 +250,7 @@ export const clientsRouter = router({
     .input(
       z.object({
         clientId: z.number(),
-        contactEmail: z.string().email(),
+        contactEmail: z.string().trim().toLowerCase().email(),
         sendWelcome: z.boolean().default(true),
       })
     )
@@ -325,7 +326,10 @@ export const clientsRouter = router({
             portalUrl: `${baseUrl}/portal/login`,
           });
         } catch (error) {
-          console.error("[Portal] Failed to send welcome email:", error);
+          logger.error('Portal welcome email failed', error instanceof Error ? error : new Error(String(error)), {
+            clientId: client.id,
+            context: 'enablePortalAccess',
+          });
           // Don't fail the mutation if email fails
         }
       }

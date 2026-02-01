@@ -3,6 +3,7 @@ import { router, protectedProcedure, adminProcedure } from '../trpc';
 import { tasks, events, users, resources, taskResources, resourceSchedule } from '@catering-event-manager/database/schema';
 import { eq, and, desc, sql, ne, isNull, or, lt, inArray } from 'drizzle-orm';
 import { TRPCError } from '@trpc/server';
+import { logger } from '@/lib/logger';
 
 import { schedulingClient, SchedulingClientError } from '../services/scheduling-client';
 
@@ -15,7 +16,7 @@ const taskCategoryEnum = z.enum(['pre_event', 'during_event', 'post_event']);
 // Task create input schema
 const createTaskInput = z.object({
   eventId: z.number().positive(),
-  title: z.string().min(1).max(255),
+  title: z.string().trim().min(1).max(255),
   description: z.string().optional(),
   category: taskCategoryEnum,
   dueDate: z.coerce.date().optional(),
@@ -36,7 +37,7 @@ const listTasksInput = z.object({
 // Task update input schema
 const updateTaskInput = z.object({
   id: z.number().positive(),
-  title: z.string().min(1).max(255).optional(),
+  title: z.string().trim().min(1).max(255).optional(),
   description: z.string().optional(),
   category: taskCategoryEnum.optional(),
   dueDate: z.coerce.date().optional().nullable(),
@@ -352,6 +353,14 @@ export const taskRouter = router({
           }));
         }
       } catch (error) {
+        logger.error('Resource conflict check failed', error instanceof Error ? error : new Error(String(error)), {
+          context: 'assignResources',
+          taskId,
+          resourceIds: resourceIds.slice(0, 5),
+          timeRange: { start: startTime.toISOString(), end: endTime.toISOString() },
+          code: error instanceof SchedulingClientError ? error.code : undefined,
+        });
+
         if (error instanceof SchedulingClientError) {
           if (error.code === 'TIMEOUT' || error.code === 'CONNECTION_ERROR') {
             serviceUnavailable = true;

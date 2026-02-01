@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@catering-event-manager/database/client';
 import { communications, clients, events } from '@catering-event-manager/database/schema';
 import { eq, and, lte } from 'drizzle-orm';
+import { logger } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 
@@ -62,9 +63,12 @@ export async function GET() {
     const overdueCount = summary.filter((s) => s.status === 'overdue').length;
     const dueTodayCount = summary.filter((s) => s.status === 'due_today').length;
 
-    console.log(
-      `[Follow-Up Cron] Total: ${summary.length}, Overdue: ${overdueCount}, Due Today: ${dueTodayCount}`
-    );
+    logger.info('Follow-up cron completed', {
+      context: 'follow-ups-cron',
+      total: summary.length,
+      overdue: overdueCount,
+      dueToday: dueTodayCount,
+    });
 
     return NextResponse.json({
       success: true,
@@ -77,7 +81,9 @@ export async function GET() {
       followUps: summary,
     });
   } catch (error) {
-    console.error('[Follow-Up Cron] Error:', error);
+    logger.error('Follow-up cron failed', error instanceof Error ? error : new Error(String(error)), {
+      context: 'follow-ups-cron',
+    });
     return NextResponse.json(
       {
         success: false,

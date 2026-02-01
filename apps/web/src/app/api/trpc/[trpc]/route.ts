@@ -34,7 +34,7 @@ function validateOrigin(req: Request): boolean {
 const handler = async (req: Request) => {
   // Apply rate limiting
   const ip = getClientIp(req);
-  const rateLimitResult = rateLimitGeneral(ip);
+  const rateLimitResult = await rateLimitGeneral(ip);
 
   if (!rateLimitResult.success) {
     return createRateLimitResponse(rateLimitResult);

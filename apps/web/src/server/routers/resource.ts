@@ -3,6 +3,7 @@ import { router, protectedProcedure, adminProcedure } from '../trpc';
 import { resources, resourceSchedule, taskResources, events, tasks } from '@catering-event-manager/database/schema';
 import { eq, and, desc, sql, inArray } from 'drizzle-orm';
 import { TRPCError } from '@trpc/server';
+import { logger } from '@/lib/logger';
 import { schedulingClient, SchedulingClientError } from '../services/scheduling-client';
 
 // Resource type enum for validation
@@ -10,7 +11,7 @@ const resourceTypeEnum = z.enum(['staff', 'equipment', 'materials']);
 
 // Resource create input schema
 const createResourceInput = z.object({
-  name: z.string().min(1).max(255),
+  name: z.string().trim().min(1).max(255),
   type: resourceTypeEnum,
   hourlyRate: z.string().optional(), // numeric stored as string
   notes: z.string().optional(),
@@ -42,7 +43,7 @@ const checkConflictsInput = z.object({
 // Update resource input
 const updateResourceInput = z.object({
   id: z.number().positive(),
-  name: z.string().min(1).max(255).optional(),
+  name: z.string().trim().min(1).max(255).optional(),
   type: resourceTypeEnum.optional(),
   hourlyRate: z.string().optional().nullable(),
   isAvailable: z.boolean().optional(),
@@ -192,6 +193,13 @@ export const resourceRouter = router({
           })),
         };
       } catch (error) {
+        logger.error('Get resource schedule failed', error instanceof Error ? error : new Error(String(error)), {
+          context: 'getSchedule',
+          resourceId: input.resourceId,
+          dateRange: { start: input.startDate.toISOString(), end: input.endDate.toISOString() },
+          code: error instanceof SchedulingClientError ? error.code : undefined,
+        });
+
         if (error instanceof SchedulingClientError) {
           if (error.code === 'TIMEOUT' || error.code === 'CONNECTION_ERROR') {
             throw new TRPCError({
@@ -237,6 +245,13 @@ export const resourceRouter = router({
           })),
         };
       } catch (error) {
+        logger.error('Check conflicts failed', error instanceof Error ? error : new Error(String(error)), {
+          context: 'checkConflicts',
+          resourceIds: input.resourceIds.slice(0, 5),
+          timeRange: { start: input.startTime.toISOString(), end: input.endTime.toISOString() },
+          code: error instanceof SchedulingClientError ? error.code : undefined,
+        });
+
         if (error instanceof SchedulingClientError) {
           if (error.code === 'TIMEOUT' || error.code === 'CONNECTION_ERROR') {
             // Return empty conflicts with warning when service unavailable
