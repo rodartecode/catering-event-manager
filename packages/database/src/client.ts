@@ -2,11 +2,14 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import * as schema from './schema';
 
-const connectionString = process.env.DATABASE_URL!;
+const rawConnectionString = process.env.DATABASE_URL;
 
-if (!connectionString) {
+if (!rawConnectionString) {
   throw new Error('DATABASE_URL environment variable is not set');
 }
+
+// Trim whitespace/newlines that may have been accidentally added in env config
+const connectionString = rawConnectionString.trim();
 
 // Connection pool configuration
 // Total pool budget: 200 connections across all services
