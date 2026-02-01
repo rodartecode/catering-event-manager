@@ -1,11 +1,12 @@
 # Production Deployment Guide
 
-**Last updated**: 2026-01-24
+**Last updated**: 2026-02-01
 
 Complete guide for deploying the catering event management system to production environments including cloud platforms, containerization, monitoring, and maintenance procedures.
 
 ## Table of Contents
 
+- [Current Production Environment](#current-production-environment) ⬅️ **START HERE**
 - [Deployment Architecture](#deployment-architecture)
 - [Prerequisites](#prerequisites)
 - [Environment Configuration](#environment-configuration)
@@ -18,6 +19,188 @@ Complete guide for deploying the catering event management system to production 
 - [Security Configuration](#security-configuration)
 - [CI/CD Pipeline](#cicd-pipeline)
 - [Maintenance & Updates](#maintenance--updates)
+
+---
+
+## Current Production Environment
+
+**Live deployment** (as of 2026-02):
+
+| Service | Platform | URL/Config |
+|---------|----------|------------|
+| Web App | Vercel | `https://catering-dev.vercel.app` (auto-deploys from `main`) |
+| Scheduler | Fly.io | App: `catering-scheduler-dev`, Region: `ord` (Chicago) |
+| Database | Supabase | Project: `catering-event-manager`, Region: `us-west-2`, PostgreSQL 17.6 |
+
+**Supabase Project Details**:
+- **Project ID**: `mjcoyhnecepcizffppzq`
+- **API URL**: `https://mjcoyhnecepcizffppzq.supabase.co`
+- **Database Host**: `db.mjcoyhnecepcizffppzq.supabase.co`
+- **Dashboard**: [Supabase Dashboard](https://supabase.com/dashboard/project/mjcoyhnecepcizffppzq)
+
+### Production Quick Reference
+
+#### URLs & Endpoints
+
+| Endpoint | URL | Purpose |
+|----------|-----|---------|
+| Web Application | `https://catering-dev.vercel.app` | Main application UI |
+| Scheduler Service | `https://catering-scheduler-dev.fly.dev` | Go scheduling service |
+| Health Check (Web) | `https://catering-dev.vercel.app/api/health` | Next.js health endpoint |
+| Health Check (Scheduler) | `https://catering-scheduler-dev.fly.dev/api/v1/health` | Go service health endpoint |
+
+#### Deployment Commands
+
+**Next.js (Vercel)**: Automatic via GitHub integration
+
+```bash
+# Production deploy: Push to main branch
+git push origin main
+
+# Preview deploy: Create pull request
+git push origin feature-branch
+gh pr create --title "Feature" --body "Description"
+```
+
+**Go Scheduler (Fly.io)**:
+
+```bash
+cd apps/scheduling-service
+
+# Deploy current code
+fly deploy
+
+# Check deployment status
+fly status
+
+# View live logs
+fly logs
+
+# View logs with filtering
+fly logs --app catering-scheduler-dev | grep -i error
+
+# Set environment variables
+fly secrets set DATABASE_URL="postgresql://..."
+fly secrets set LOG_LEVEL=info
+
+# SSH into running machine (debugging)
+fly ssh console
+
+# Scale the service
+fly scale count 2  # Run 2 instances
+```
+
+**Database (Supabase)**:
+
+```bash
+# Schema changes (run locally, affects production)
+cd packages/database
+DATABASE_URL="your-supabase-connection-string" pnpm db:push
+
+# Generate and apply migrations (preferred for production)
+DATABASE_URL="your-supabase-connection-string" pnpm db:migrate
+
+# View current schema in Supabase dashboard
+# https://supabase.com/dashboard/project/YOUR_PROJECT/editor
+```
+
+### Environment Variables by Platform
+
+#### Vercel Dashboard Settings
+
+Configure in Vercel Project Settings → Environment Variables:
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `DATABASE_URL` | Supabase connection string | `postgresql://postgres:[PASSWORD]@db.[PROJECT].supabase.co:5432/postgres` |
+| `NEXTAUTH_SECRET` | Auth secret (32+ chars) | `openssl rand -base64 32` |
+| `NEXTAUTH_URL` | Production URL | `https://catering-dev.vercel.app` |
+| `SCHEDULING_SERVICE_URL` | Fly.io scheduler URL | `https://catering-scheduler-dev.fly.dev` |
+| `RESEND_API_KEY` | Email service API key | `re_...` |
+| `EMAIL_FROM` | Sender email address | `noreply@your-domain.com` |
+
+#### Fly.io Secrets
+
+Set via `fly secrets set`:
+
+```bash
+# Required
+fly secrets set DATABASE_URL="postgresql://..."
+
+# Optional (PORT is in fly.toml)
+fly secrets set LOG_LEVEL=info
+fly secrets set CORS_ALLOWED_ORIGINS="https://catering-dev.vercel.app"
+```
+
+**Note**: `PORT=8080` is already configured in `fly.toml`.
+
+### Monitoring & Logs
+
+| Platform | Access Method |
+|----------|---------------|
+| Vercel | Dashboard → Project → Deployments → Function Logs |
+| Fly.io | `fly logs` or Fly.io Dashboard → Monitoring |
+| Supabase | Dashboard → Project → Logs (filter by service) |
+
+#### Quick Health Checks
+
+```bash
+# Check all services
+curl -s https://catering-dev.vercel.app/api/health | jq
+curl -s https://catering-scheduler-dev.fly.dev/api/v1/health | jq
+
+# Verify database connectivity (via scheduler health)
+curl -s https://catering-scheduler-dev.fly.dev/api/v1/health | jq '.database'
+```
+
+### Troubleshooting Production
+
+#### Web App (Vercel) Issues
+
+```bash
+# View deployment logs
+# Vercel Dashboard → Deployments → Click deployment → View Function Logs
+
+# Check build output
+# Vercel Dashboard → Deployments → Click deployment → Building
+
+# Rollback to previous deployment
+# Vercel Dashboard → Deployments → Click previous → Promote to Production
+```
+
+#### Scheduler (Fly.io) Issues
+
+```bash
+# Check machine status
+fly status
+
+# View recent logs (last 100 lines)
+fly logs -n 100
+
+# Check machine resources
+fly scale show
+
+# Restart the service
+fly apps restart catering-scheduler-dev
+
+# View machine metrics
+fly dashboard
+```
+
+#### Database (Supabase) Issues
+
+```bash
+# Check connection from scheduler logs
+fly logs | grep -i database
+
+# Test connection locally
+psql "postgresql://postgres:[PASSWORD]@db.[PROJECT].supabase.co:5432/postgres" -c "SELECT 1;"
+
+# View query performance
+# Supabase Dashboard → Database → Query Performance
+```
+
+---
 
 ## Deployment Architecture
 
