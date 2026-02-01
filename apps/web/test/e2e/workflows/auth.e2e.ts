@@ -7,6 +7,7 @@
 import { test, expect } from '@playwright/test';
 import { login, logout, TEST_ADMIN, TEST_MANAGER } from '../helpers/auth';
 import { cleanTestDatabase, seedTestUser } from '../helpers/db';
+import { checkA11y } from '../helpers/axe';
 
 test.describe('Authentication Workflow', () => {
   test.beforeAll(async () => {
@@ -132,6 +133,19 @@ test.describe('Authentication Workflow', () => {
       // Should still be logged in (not redirected to login)
       await expect(page).toHaveURL('/');
       await expect(page.locator('nav, [data-testid="sidebar"]')).toBeVisible();
+    });
+  });
+
+  test.describe('Accessibility', () => {
+    test('login page is accessible', async ({ page }) => {
+      await page.goto('/login');
+      await checkA11y(page);
+    });
+
+    test('dashboard is accessible after login', async ({ page }) => {
+      await login(page, TEST_ADMIN.email, TEST_ADMIN.password);
+      await expect(page).toHaveURL('/');
+      await checkA11y(page);
     });
   });
 });
