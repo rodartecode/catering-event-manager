@@ -49,6 +49,13 @@ export default defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
+    // Quality gates project for visual regression, accessibility, and performance tests
+    {
+      name: 'quality-gates',
+      testDir: './test/e2e/quality-gates',
+      testMatch: '**/*.quality.ts',
+      use: { ...devices['Desktop Chrome'] },
+    },
     // Uncomment for additional browser testing
     // {
     //   name: 'firefox',
