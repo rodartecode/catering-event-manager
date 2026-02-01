@@ -32,7 +32,7 @@ export interface MagicLinkResult {
 // Create a magic link token for a user (with rate limiting)
 export async function createMagicLinkToken(email: string): Promise<MagicLinkResult> {
   // Apply rate limiting for magic link requests (3/5min per email)
-  const rateLimitResult = rateLimitMagicLink(email);
+  const rateLimitResult = await rateLimitMagicLink(email);
 
   if (!rateLimitResult.success) {
     logger.warn('Magic link rate limit exceeded', {
@@ -207,6 +207,24 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
   callbacks: {
+    async signIn({ user, account }) {
+      // Log authentication failures for security monitoring
+      if (!user) {
+        logger.security('auth.login.failed', {
+          reason: 'invalid_credentials',
+          provider: account?.provider,
+        });
+        return false;
+      }
+      if (!user.email) {
+        logger.security('auth.login.failed', {
+          reason: 'no_email',
+          provider: account?.provider,
+        });
+        return false;
+      }
+      return true;
+    },
     async jwt({ token, user }) {
       if (user?.id) {
         token.id = user.id;

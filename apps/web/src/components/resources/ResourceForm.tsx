@@ -4,6 +4,7 @@ import { trpc } from '@/lib/trpc';
 import { useState } from 'react';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
+import { useFormDirty } from '@/hooks/use-form-dirty';
 
 const resourceFormSchema = z.object({
   name: z
@@ -30,17 +31,26 @@ interface ResourceFormProps {
   onCancel: () => void;
 }
 
+const initialFormData: Partial<ResourceFormData> = {
+  name: '',
+  type: undefined,
+  hourlyRate: '',
+  notes: '',
+};
+
 export function ResourceForm({ onSuccess, onCancel }: ResourceFormProps) {
-  const [formData, setFormData] = useState<Partial<ResourceFormData>>({
-    name: '',
-    type: undefined,
-    hourlyRate: '',
-    notes: '',
-  });
+  const [formData, setFormData] = useState<Partial<ResourceFormData>>(initialFormData);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Track unsaved changes
+  const { markClean } = useFormDirty({
+    initialValues: initialFormData,
+    currentValues: formData,
+  });
 
   const createResourceMutation = trpc.resource.create.useMutation({
     onSuccess: (data) => {
+      markClean();
       toast.success('Resource created successfully');
       onSuccess(data);
     },

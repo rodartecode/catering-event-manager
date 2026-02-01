@@ -1,3 +1,7 @@
+/* eslint-disable no-console */
+// This is the structured logging utility - console calls here are intentional
+// All other code should use this logger instead of console.*
+
 type LogLevel = 'info' | 'warn' | 'error';
 
 interface LogEntry {
@@ -38,6 +42,18 @@ class Logger {
         : undefined,
     });
     console.error(JSON.stringify(entry));
+  }
+
+  /**
+   * Log security events (auth failures, authorization denials, rate limit exceeded, etc.)
+   * All security events are logged at warn level with category: 'security'
+   */
+  security(event: string, context?: Record<string, unknown>) {
+    const entry = this.formatEntry('warn', event, {
+      ...context,
+      category: 'security',
+    });
+    console.warn(JSON.stringify(entry));
   }
 }
 

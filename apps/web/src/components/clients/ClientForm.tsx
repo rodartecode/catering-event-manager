@@ -4,6 +4,7 @@ import { trpc } from '@/lib/trpc';
 import { useState } from 'react';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
+import { useFormDirty } from '@/hooks/use-form-dirty';
 
 const clientFormSchema = z.object({
   companyName: z
@@ -31,19 +32,28 @@ interface ClientFormProps {
   onCancel: () => void;
 }
 
+const initialFormData: Partial<ClientFormData> = {
+  companyName: '',
+  contactName: '',
+  email: '',
+  phone: '',
+  address: '',
+  notes: '',
+};
+
 export function ClientForm({ onSuccess, onCancel }: ClientFormProps) {
-  const [formData, setFormData] = useState<Partial<ClientFormData>>({
-    companyName: '',
-    contactName: '',
-    email: '',
-    phone: '',
-    address: '',
-    notes: '',
-  });
+  const [formData, setFormData] = useState<Partial<ClientFormData>>(initialFormData);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Track unsaved changes
+  const { markClean } = useFormDirty({
+    initialValues: initialFormData,
+    currentValues: formData,
+  });
 
   const createClientMutation = trpc.clients.create.useMutation({
     onSuccess: (data) => {
+      markClean();
       toast.success('Client created successfully');
       onSuccess(data);
     },

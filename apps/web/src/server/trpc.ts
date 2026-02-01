@@ -3,6 +3,7 @@ import type { FetchCreateContextFnOptions } from '@trpc/server/adapters/fetch';
 import { auth } from './auth';
 import { db } from '@catering-event-manager/database/client';
 import superjson from 'superjson';
+import { logger } from '@/lib/logger';
 
 export const createTRPCContext = async (opts: FetchCreateContextFnOptions) => {
   const session = await auth();
@@ -38,6 +39,11 @@ export const adminProcedure = t.procedure.use(({ ctx, next }) => {
     throw new TRPCError({ code: 'UNAUTHORIZED' });
   }
   if (ctx.session.user.role !== 'administrator') {
+    logger.security('authz.denied', {
+      userId: ctx.session.user.id,
+      attemptedRole: 'administrator',
+      actualRole: ctx.session.user.role,
+    });
     throw new TRPCError({ code: 'FORBIDDEN' });
   }
   return next({
@@ -54,10 +60,20 @@ export const clientProcedure = t.procedure.use(({ ctx, next }) => {
     throw new TRPCError({ code: 'UNAUTHORIZED' });
   }
   if (ctx.session.user.role !== 'client') {
+    logger.security('authz.denied', {
+      userId: ctx.session.user.id,
+      attemptedRole: 'client',
+      actualRole: ctx.session.user.role,
+    });
     throw new TRPCError({ code: 'FORBIDDEN', message: 'Client access required' });
   }
   const clientId = ctx.session.user.clientId;
   if (!clientId) {
+    logger.security('authz.denied', {
+      userId: ctx.session.user.id,
+      reason: 'no_client_association',
+      actualRole: ctx.session.user.role,
+    });
     throw new TRPCError({ code: 'FORBIDDEN', message: 'No client association' });
   }
   return next({

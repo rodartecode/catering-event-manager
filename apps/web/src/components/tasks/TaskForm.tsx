@@ -1,8 +1,10 @@
 'use client';
 
 import { trpc } from '@/lib/trpc';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import toast from 'react-hot-toast';
+import { useFocusTrap, useDialogId } from '@/hooks/use-focus-trap';
+import { useFormDirty } from '@/hooks/use-form-dirty';
 
 interface TaskFormProps {
   eventId: number;
@@ -27,6 +29,12 @@ export function TaskForm({ eventId, taskId, onClose, onSuccess }: TaskFormProps)
   const [dueDate, setDueDate] = useState('');
   const [dependsOnTaskId, setDependsOnTaskId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const titleId = useDialogId('task-dialog-title');
+
+  // Trap focus within dialog and handle Escape key
+  useFocusTrap(dialogRef, { isOpen: true, onClose });
 
   const isEditing = taskId !== undefined;
 
@@ -57,8 +65,26 @@ export function TaskForm({ eventId, taskId, onClose, onSuccess }: TaskFormProps)
     }
   }, [taskData]);
 
+  // Compute initial values from taskData for dirty tracking
+  const initialValues = useMemo(() => ({
+    title: taskData?.title ?? '',
+    description: taskData?.description ?? '',
+    category: taskData?.category ?? 'pre_event' as TaskCategory,
+    dueDate: taskData?.dueDate
+      ? new Date(taskData.dueDate).toISOString().slice(0, 16)
+      : '',
+    dependsOnTaskId: taskData?.dependsOnTaskId ?? null,
+  }), [taskData]);
+
+  // Track unsaved changes
+  const { markClean } = useFormDirty({
+    initialValues,
+    currentValues: { title, description, category, dueDate, dependsOnTaskId },
+  });
+
   const createMutation = trpc.task.create.useMutation({
     onSuccess: () => {
+      markClean();
       toast.success('Task created successfully');
       onSuccess();
     },
@@ -70,6 +96,7 @@ export function TaskForm({ eventId, taskId, onClose, onSuccess }: TaskFormProps)
 
   const updateMutation = trpc.task.update.useMutation({
     onSuccess: () => {
+      markClean();
       toast.success('Task updated successfully');
       onSuccess();
     },
@@ -81,6 +108,7 @@ export function TaskForm({ eventId, taskId, onClose, onSuccess }: TaskFormProps)
 
   const deleteMutation = trpc.task.delete.useMutation({
     onSuccess: () => {
+      markClean();
       toast.success('Task deleted successfully');
       onSuccess();
     },
@@ -125,16 +153,23 @@ export function TaskForm({ eventId, taskId, onClose, onSuccess }: TaskFormProps)
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        className="bg-white rounded-lg p-6 max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto"
+      >
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-xl font-semibold">
+          <h3 id={titleId} className="text-xl font-semibold">
             {isEditing ? 'Edit Task' : 'Create Task'}
           </h3>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
+            aria-label="Close dialog"
+            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"

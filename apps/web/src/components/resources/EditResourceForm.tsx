@@ -4,6 +4,7 @@ import { trpc } from '@/lib/trpc';
 import { useState } from 'react';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
+import { useFormDirty } from '@/hooks/use-form-dirty';
 
 const resourceFormSchema = z.object({
   name: z
@@ -43,19 +44,28 @@ interface EditResourceFormProps {
 }
 
 export function EditResourceForm({ resource, onSuccess, onCancel }: EditResourceFormProps) {
-  const [formData, setFormData] = useState<ResourceFormData>({
+  const initialFormData: ResourceFormData = {
     name: resource.name,
     type: resource.type,
     hourlyRate: resource.hourlyRate || '',
     notes: resource.notes || '',
     isAvailable: resource.isAvailable,
-  });
+  };
+
+  const [formData, setFormData] = useState<ResourceFormData>(initialFormData);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Track unsaved changes
+  const { markClean } = useFormDirty({
+    initialValues: initialFormData,
+    currentValues: formData,
+  });
 
   const utils = trpc.useUtils();
 
   const updateResourceMutation = trpc.resource.update.useMutation({
     onSuccess: () => {
+      markClean();
       toast.success('Resource updated successfully');
       utils.resource.getById.invalidate({ id: resource.id });
       utils.resource.list.invalidate();

@@ -4,6 +4,8 @@ import { trpc } from '@/lib/trpc';
 import { useState } from 'react';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
+import { getInputA11yProps, getErrorProps } from '@/lib/form-a11y';
+import { useFormDirty } from '@/hooks/use-form-dirty';
 
 // Form validation schema
 const eventFormSchema = z.object({
@@ -31,19 +33,28 @@ interface EventFormProps {
   onCancel: () => void;
 }
 
+const initialFormData: Partial<EventFormData> = {
+  eventName: '',
+  location: '',
+  notes: '',
+};
+
 export function EventForm({ onSuccess, onCancel }: EventFormProps) {
-  const [formData, setFormData] = useState<Partial<EventFormData>>({
-    eventName: '',
-    location: '',
-    notes: '',
-  });
+  const [formData, setFormData] = useState<Partial<EventFormData>>(initialFormData);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Track unsaved changes
+  const { markClean } = useFormDirty({
+    initialValues: initialFormData,
+    currentValues: formData,
+  });
 
   // Fetch clients for selection
   const { data: clientsList, isLoading: clientsLoading } = trpc.clients.list.useQuery();
 
   const createEventMutation = trpc.event.create.useMutation({
     onSuccess: (data) => {
+      markClean();
       toast.success('Event created successfully');
       onSuccess(data);
     },
@@ -96,10 +107,14 @@ export function EventForm({ onSuccess, onCancel }: EventFormProps) {
       {/* Client Selection */}
       <div>
         <label htmlFor="clientId" className="block text-sm font-medium text-gray-700 mb-2">
-          Client <span className="text-red-500">*</span>
+          Client <span className="text-red-500" aria-hidden="true">*</span>
+          <span className="sr-only">(required)</span>
         </label>
         <select
           id="clientId"
+          required
+          aria-required="true"
+          {...getInputA11yProps('clientId', !!errors.clientId)}
           value={formData.clientId || ''}
           onChange={(e) => updateField('clientId', Number(e.target.value))}
           className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
@@ -114,7 +129,11 @@ export function EventForm({ onSuccess, onCancel }: EventFormProps) {
             </option>
           ))}
         </select>
-        {errors.clientId && <p className="mt-1 text-sm text-red-600">{errors.clientId}</p>}
+        {errors.clientId && (
+          <p {...getErrorProps('clientId')} className="mt-1 text-sm text-red-600">
+            {errors.clientId}
+          </p>
+        )}
         {clientsList?.length === 0 && !clientsLoading && (
           <p className="mt-1 text-sm text-yellow-600">
             No clients available. You&apos;ll need to create a client first.
@@ -125,11 +144,15 @@ export function EventForm({ onSuccess, onCancel }: EventFormProps) {
       {/* Event Name */}
       <div>
         <label htmlFor="eventName" className="block text-sm font-medium text-gray-700 mb-2">
-          Event Name <span className="text-red-500">*</span>
+          Event Name <span className="text-red-500" aria-hidden="true">*</span>
+          <span className="sr-only">(required)</span>
         </label>
         <input
           id="eventName"
           type="text"
+          required
+          aria-required="true"
+          {...getInputA11yProps('eventName', !!errors.eventName)}
           value={formData.eventName || ''}
           onChange={(e) => updateField('eventName', e.target.value)}
           placeholder="e.g., Annual Company Gala"
@@ -137,17 +160,25 @@ export function EventForm({ onSuccess, onCancel }: EventFormProps) {
             errors.eventName ? 'border-red-500' : 'border-gray-300'
           }`}
         />
-        {errors.eventName && <p className="mt-1 text-sm text-red-600">{errors.eventName}</p>}
+        {errors.eventName && (
+          <p {...getErrorProps('eventName')} className="mt-1 text-sm text-red-600">
+            {errors.eventName}
+          </p>
+        )}
       </div>
 
       {/* Event Date */}
       <div>
         <label htmlFor="eventDate" className="block text-sm font-medium text-gray-700 mb-2">
-          Event Date <span className="text-red-500">*</span>
+          Event Date <span className="text-red-500" aria-hidden="true">*</span>
+          <span className="sr-only">(required)</span>
         </label>
         <input
           id="eventDate"
           type="date"
+          required
+          aria-required="true"
+          {...getInputA11yProps('eventDate', !!errors.eventDate)}
           value={
             formData.eventDate
               ? new Date(formData.eventDate).toISOString().split('T')[0]
@@ -158,7 +189,11 @@ export function EventForm({ onSuccess, onCancel }: EventFormProps) {
             errors.eventDate ? 'border-red-500' : 'border-gray-300'
           }`}
         />
-        {errors.eventDate && <p className="mt-1 text-sm text-red-600">{errors.eventDate}</p>}
+        {errors.eventDate && (
+          <p {...getErrorProps('eventDate')} className="mt-1 text-sm text-red-600">
+            {errors.eventDate}
+          </p>
+        )}
       </div>
 
       {/* Location */}
@@ -169,6 +204,7 @@ export function EventForm({ onSuccess, onCancel }: EventFormProps) {
         <input
           id="location"
           type="text"
+          {...getInputA11yProps('location', !!errors.location)}
           value={formData.location || ''}
           onChange={(e) => updateField('location', e.target.value)}
           placeholder="e.g., Grand Ballroom, 123 Main St"
@@ -176,7 +212,11 @@ export function EventForm({ onSuccess, onCancel }: EventFormProps) {
             errors.location ? 'border-red-500' : 'border-gray-300'
           }`}
         />
-        {errors.location && <p className="mt-1 text-sm text-red-600">{errors.location}</p>}
+        {errors.location && (
+          <p {...getErrorProps('location')} className="mt-1 text-sm text-red-600">
+            {errors.location}
+          </p>
+        )}
       </div>
 
       {/* Estimated Attendees */}
@@ -191,6 +231,7 @@ export function EventForm({ onSuccess, onCancel }: EventFormProps) {
           id="estimatedAttendees"
           type="number"
           min="1"
+          {...getInputA11yProps('estimatedAttendees', !!errors.estimatedAttendees)}
           value={formData.estimatedAttendees || ''}
           onChange={(e) =>
             updateField('estimatedAttendees', e.target.value ? Number(e.target.value) : undefined)
@@ -201,7 +242,9 @@ export function EventForm({ onSuccess, onCancel }: EventFormProps) {
           }`}
         />
         {errors.estimatedAttendees && (
-          <p className="mt-1 text-sm text-red-600">{errors.estimatedAttendees}</p>
+          <p {...getErrorProps('estimatedAttendees')} className="mt-1 text-sm text-red-600">
+            {errors.estimatedAttendees}
+          </p>
         )}
       </div>
 
@@ -213,6 +256,7 @@ export function EventForm({ onSuccess, onCancel }: EventFormProps) {
         <textarea
           id="notes"
           rows={4}
+          {...getInputA11yProps('notes', !!errors.notes)}
           value={formData.notes || ''}
           onChange={(e) => updateField('notes', e.target.value)}
           placeholder="Any additional notes or special requirements..."
@@ -220,12 +264,16 @@ export function EventForm({ onSuccess, onCancel }: EventFormProps) {
             errors.notes ? 'border-red-500' : 'border-gray-300'
           }`}
         />
-        {errors.notes && <p className="mt-1 text-sm text-red-600">{errors.notes}</p>}
+        {errors.notes && (
+          <p {...getErrorProps('notes')} className="mt-1 text-sm text-red-600">
+            {errors.notes}
+          </p>
+        )}
       </div>
 
       {/* Submit Error */}
       {errors.submit && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div role="alert" className="bg-red-50 border border-red-200 rounded-lg p-4">
           <p className="text-sm text-red-800">{errors.submit}</p>
         </div>
       )}
