@@ -3,6 +3,14 @@
   "version": "1.0.0",
   "private": true,
   "description": "Catering event lifecycle management system",
+  "pnpm": {
+    "overrides": {
+      "drizzle-orm": "$drizzle-orm"
+    }
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.45.1"
+  },
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
