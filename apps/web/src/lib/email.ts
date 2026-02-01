@@ -1,4 +1,5 @@
 import { Resend } from 'resend';
+import { logger } from './logger';
 
 let resend: Resend | null = null;
 
@@ -80,14 +81,23 @@ This link will expire in 15 minutes. If you didn't request this email, you can s
     });
 
     if (error) {
-      console.error('[Email] Failed to send magic link:', error);
+      logger.error('Magic link email failed', new Error(error.message), {
+        context: 'sendMagicLinkEmail',
+        recipientDomain: to.split('@')[1],
+      });
       throw new Error(`Failed to send email: ${error.message}`);
     }
 
-    console.log('[Email] Magic link sent successfully:', data?.id);
+    logger.info('Magic link sent successfully', {
+      messageId: data?.id,
+      context: 'sendMagicLinkEmail',
+    });
     return { success: true, messageId: data?.id };
   } catch (error) {
-    console.error('[Email] Error sending magic link:', error);
+    logger.error('Magic link email error', error instanceof Error ? error : new Error(String(error)), {
+      context: 'sendMagicLinkEmail',
+      recipientDomain: to.split('@')[1],
+    });
     throw error;
   }
 }
@@ -175,14 +185,23 @@ To sign in, you'll receive a secure login link via email each time - no password
     });
 
     if (error) {
-      console.error('[Email] Failed to send welcome email:', error);
+      logger.error('Welcome email failed', new Error(error.message), {
+        context: 'sendWelcomeEmail',
+        recipientDomain: to.split('@')[1],
+      });
       throw new Error(`Failed to send email: ${error.message}`);
     }
 
-    console.log('[Email] Welcome email sent successfully:', data?.id);
+    logger.info('Welcome email sent successfully', {
+      messageId: data?.id,
+      context: 'sendWelcomeEmail',
+    });
     return { success: true, messageId: data?.id };
   } catch (error) {
-    console.error('[Email] Error sending welcome email:', error);
+    logger.error('Welcome email error', error instanceof Error ? error : new Error(String(error)), {
+      context: 'sendWelcomeEmail',
+      recipientDomain: to.split('@')[1],
+    });
     throw error;
   }
 }

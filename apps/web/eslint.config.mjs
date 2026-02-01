@@ -16,6 +16,8 @@ export default tseslint.config(
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/triple-slash-reference': 'off',
+      // OBS-001: Discourage console.* in production code - use logger utility instead
+      'no-console': ['warn', { allow: ['error'] }],
     },
   },
   {

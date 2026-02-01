@@ -202,6 +202,38 @@ Events are **soft deleted** (archived), not permanently deleted:
 - Preserves historical data for analytics (SC-009)
 - Queries filter archived events by default unless explicitly requested
 
+### Logging Best Practices
+
+Use the structured `logger` utility (`@/lib/logger`) for all server-side logging:
+
+```typescript
+import { logger } from '@/lib/logger';
+
+// Info level - operational events
+logger.info('Email sent successfully', { messageId: 'abc123', context: 'sendWelcome' });
+
+// Warn level - recoverable issues
+logger.warn('Redis unavailable, using in-memory fallback', { context: 'rateLimit' });
+
+// Error level - failures with stack traces
+logger.error('Email send failed', error, {
+  context: 'sendMagicLink',
+  recipientDomain: email.split('@')[1],
+});
+```
+
+**Guidelines:**
+- **Never use `console.log/error/warn`** in production code (ESLint will warn)
+- **Include context metadata**: operation name, entity IDs (sanitized), error codes
+- **Sanitize sensitive data**: Log domains not full emails, truncate long arrays
+- **Error objects**: Pass actual Error instances to preserve stack traces
+- **Client-side exception**: `app/error.tsx` boundary uses console (documented)
+
+**Log output format** (JSON, parseable by log aggregators):
+```json
+{"timestamp":"2026-02-01T05:24:58.745Z","level":"error","message":"Get resource schedule failed","context":{"resourceId":1,"code":"TIMEOUT","error":{"message":"Timeout","stack":"..."}}}
+```
+
 ## Testing Strategy
 
 ### TypeScript Tests (Vitest)

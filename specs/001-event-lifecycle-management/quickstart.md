@@ -9,7 +9,7 @@
 This guide helps you set up the local development environment for the hybrid Next.js + Go microservices architecture. By the end, you'll have:
 
 - PostgreSQL 17 database running locally
-- Next.js 15 web application with tRPC + Drizzle
+- Next.js 16 web application with tRPC + Drizzle
 - Go Fiber scheduling service with SQLC
 - All services communicating via Docker Compose
 
@@ -32,9 +32,9 @@ Install these before proceeding:
    pnpm --version  # Should be 10.x.x
    ```
 
-3. **Go 1.23+**: https://go.dev/dl/
+3. **Go 1.24+**: https://go.dev/dl/
    ```bash
-   go version  # Should be go1.23.x
+   go version  # Should be go1.24.x
    ```
 
 4. **Docker Desktop**: https://www.docker.com/products/docker-desktop
@@ -252,10 +252,7 @@ cd apps/scheduling-service
 go run cmd/scheduler/main.go
 ```
 
-**Terminal 3 - tRPC Code Generation (watch mode)**:
-```bash
-pnpm dev:trpc
-```
+**Note**: tRPC types are generated automatically during development.
 
 ---
 
@@ -305,16 +302,16 @@ curl http://localhost:8080/api/v1/health
 pnpm test
 
 # Run only Next.js tests
-pnpm test:web
+cd apps/web && pnpm test && cd ../..
 
 # Run only Go tests
 cd apps/scheduling-service && go test ./... && cd ../..
 
 # Run E2E tests (Playwright)
-pnpm test:e2e
+cd apps/web && pnpm test:e2e && cd ../..
 
 # Watch mode (Vitest)
-pnpm test:watch
+cd apps/web && pnpm test:watch && cd ../..
 ```
 
 ### Database Management
@@ -327,11 +324,9 @@ pnpm db:generate
 # Apply migrations
 pnpm db:migrate
 
-# Rollback last migration
-pnpm db:rollback
-
-# Reset database (drop all + re-seed)
-pnpm db:reset
+# Reset database (drop schema and re-push)
+psql $DATABASE_URL -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+cd packages/database && pnpm db:push && pnpm db:seed && cd ../..
 
 # Open database GUI (Drizzle Studio)
 pnpm db:studio
@@ -340,9 +335,6 @@ pnpm db:studio
 ### Code Generation
 
 ```bash
-# Generate tRPC types (auto on save)
-pnpm dev:trpc
-
 # Generate SQLC code (Go service)
 cd apps/scheduling-service
 sqlc generate
@@ -355,11 +347,11 @@ cd ../..
 # Lint all packages
 pnpm lint
 
-# Fix linting issues
-pnpm lint:fix
-
-# Format code (Prettier + Biome)
+# Format code (Biome)
 pnpm format
+
+# Check formatting without writing
+pnpm format:check
 
 # Type check TypeScript
 pnpm type-check

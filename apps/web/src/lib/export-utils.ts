@@ -2,11 +2,13 @@
  * CSV Export utilities for analytics reports
  */
 
+import { logger } from './logger';
+
 type ExportableValue = string | number | boolean | null | undefined;
 
 export function exportToCSV(data: Record<string, ExportableValue>[], filename: string): void {
   if (data.length === 0) {
-    console.warn('No data to export');
+    logger.warn('No data to export', { context: 'exportToCSV', filename });
     return;
   }
 

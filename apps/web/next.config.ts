@@ -8,15 +8,36 @@ import type { NextConfig } from 'next';
  * - Next.js injects inline scripts for hydration and page transitions
  * - Tailwind generates inline styles for utility classes
  *
+ * Environment-based security:
+ * - Development: 'unsafe-eval' is allowed for Next.js HMR (hot module replacement)
+ * - Production: 'unsafe-eval' is removed for stricter XSS protection
+ *
  * Future enhancement: Implement nonce-based CSP via middleware for stricter security
  */
+const isDev = process.env.NODE_ENV === 'development';
+
+// Parse allowed origins from environment (comma-separated list)
+const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',').map((o) => o.trim()) || [];
+
+// Build script-src based on environment
+const scriptSrc = isDev
+  ? ["'self'", "'unsafe-inline'", "'unsafe-eval'"] // Dev: allow eval for HMR
+  : ["'self'", "'unsafe-inline'"]; // Prod: no eval for security
+
+// Build connect-src with scheduling service and any additional allowed origins
+const connectSrc = [
+  "'self'",
+  process.env.SCHEDULING_SERVICE_URL || 'http://localhost:8080',
+  ...allowedOrigins,
+];
+
 const cspDirectives = {
   'default-src': ["'self'"],
-  'script-src': ["'self'", "'unsafe-inline'", "'unsafe-eval'"], // unsafe-eval needed for Next.js dev mode
+  'script-src': scriptSrc,
   'style-src': ["'self'", "'unsafe-inline'"], // Required for Tailwind CSS
   'img-src': ["'self'", 'data:', 'blob:'],
   'font-src': ["'self'"],
-  'connect-src': ["'self'", 'http://localhost:8080'], // Go scheduling service
+  'connect-src': connectSrc,
   'frame-ancestors': ["'none'"], // Equivalent to X-Frame-Options: DENY
   'form-action': ["'self'"],
   'base-uri': ["'self'"],
