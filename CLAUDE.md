@@ -315,6 +315,33 @@ pnpm test:e2e:ui                # With Playwright UI
 
 **Coverage targets**: >80% overall, 100% for scheduling algorithms (critical business logic)
 
+### Quality Gates (Visual, Accessibility, Performance)
+
+Quality gates validate visual consistency, WCAG 2.1 AA accessibility compliance, and Core Web Vitals performance budgets for key pages.
+
+```bash
+cd apps/web
+pnpm test:quality               # Run quality gate tests
+pnpm test:quality:update        # Update visual baselines after intentional UI changes
+```
+
+**What's tested** (4 pages):
+- `/login` - Public entry point (unauthenticated)
+- `/` (dashboard) - Main protected page with charts/stats
+- `/events` - Event list with filters and pagination
+- `/clients` - Client list with search and follow-up banners
+
+**Each page validates**:
+- **Visual regression**: Screenshot comparison (1% pixel diff threshold)
+- **Accessibility**: WCAG 2.1 AA compliance via axe-core (critical/serious violations fail)
+- **Performance**: Core Web Vitals - LCP < 3s, CLS < 0.15
+
+**Updating baselines**: After intentional UI changes, run `pnpm test:quality:update` to regenerate baseline screenshots, then commit the updated `.png` files in `test/e2e/quality-gates/`.
+
+**CI behavior**: Quality gates run as an advisory job (`continue-on-error: true`) - failures are visible but don't block PRs. This allows incremental adoption while maintaining visibility.
+
+**Test files**: `apps/web/test/e2e/quality-gates/*.quality.ts`
+
 ## Implementation Guides
 
 Comprehensive step-by-step guides located in `docs/implementation-guides/`:

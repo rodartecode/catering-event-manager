@@ -224,3 +224,42 @@ Each skipped E2E test SHALL have a documented reason in both the test file (via 
 - **WHEN** reviewed against this specification
 - **THEN** every `test.skip` call has a corresponding entry in the table above with a reason
 
+### Requirement: Quality Gate Testing
+
+The system SHALL have quality gate tests that validate visual consistency, accessibility compliance, and performance budgets for key pages. Quality gates run as a separate Playwright project and CI job.
+
+#### Scenario: Visual regression testing
+- **GIVEN** an authenticated user on any quality-gated page (login, dashboard, events, clients)
+- **WHEN** the page is rendered
+- **THEN** the visual appearance matches the baseline screenshot within 1% pixel difference threshold
+
+#### Scenario: Accessibility compliance (WCAG 2.1 AA)
+- **GIVEN** any quality-gated page
+- **WHEN** scanned with axe-core accessibility engine
+- **THEN** zero critical or serious WCAG 2.1 AA violations are reported
+
+#### Scenario: Performance budgets (Core Web Vitals)
+- **GIVEN** any quality-gated page
+- **WHEN** Largest Contentful Paint (LCP) and Cumulative Layout Shift (CLS) are measured
+- **THEN** LCP is less than 3000ms AND CLS is less than 0.15
+
+#### Scenario: Quality gates are advisory in CI
+- **GIVEN** the quality-gates CI job
+- **WHEN** any quality gate test fails
+- **THEN** the failure is visible in the job log but does not block PR merge (`continue-on-error: true`)
+
+**Tested pages**:
+| Page | Auth | Rationale |
+|------|------|-----------|
+| `/login` | None | Public entry point, first impression |
+| `/` (dashboard) | Admin | Main page, stats/charts, most visited |
+| `/events` | Admin | Complex UI with filters, pagination |
+| `/clients` | Admin | Search, follow-up banners |
+
+**Implementation details**:
+- Playwright project: `quality-gates` in `playwright.config.ts`
+- Test files: `apps/web/test/e2e/quality-gates/*.quality.ts`
+- Performance helpers: `apps/web/test/e2e/helpers/performance.ts`
+- NPM scripts: `test:quality`, `test:quality:update`
+- CI job: `.github/workflows/ci.yml` (advisory only)
+
