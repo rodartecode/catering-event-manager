@@ -7,7 +7,7 @@
 
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import { createHash } from 'crypto';
+import bcrypt from 'bcryptjs';
 import {
   users,
   clients,
@@ -25,9 +25,9 @@ if (!connectionString) {
   process.exit(1);
 }
 
-// Simple password hashing for seed data (production uses bcrypt via NextAuth)
-function hashPassword(password: string): string {
-  return createHash('sha256').update(password).digest('hex');
+// Password hashing using bcrypt to match NextAuth's bcrypt.compare()
+async function hashPassword(password: string): Promise<string> {
+  return bcrypt.hash(password, 10);
 }
 
 async function seed() {
@@ -82,17 +82,21 @@ async function seed() {
     // =====================
     console.log('👤 Creating users...');
 
+    // Hash passwords before building user array
+    const adminPasswordHash = await hashPassword('password123');
+    const managerPasswordHash = await hashPassword('password123');
+
     const userData = [
       {
         email: 'admin@example.com',
-        passwordHash: hashPassword('password123'),
+        passwordHash: adminPasswordHash,
         name: 'Admin User',
         role: 'administrator' as const,
         isActive: true,
       },
       {
         email: 'manager@example.com',
-        passwordHash: hashPassword('password123'),
+        passwordHash: managerPasswordHash,
         name: 'Event Manager',
         role: 'manager' as const,
         isActive: true,
