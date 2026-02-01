@@ -54,7 +54,27 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>
         {children}
-        <Toaster position="top-right" />
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            // Success toasts use polite announcements (default)
+            success: {
+              duration: 4000,
+              ariaProps: {
+                role: 'status',
+                'aria-live': 'polite',
+              },
+            },
+            // Error toasts use assertive announcements for immediate attention
+            error: {
+              duration: 5000,
+              ariaProps: {
+                role: 'alert',
+                'aria-live': 'assertive',
+              },
+            },
+          }}
+        />
       </QueryClientProvider>
     </trpc.Provider>
   );

@@ -4,6 +4,7 @@ import { SessionProvider } from 'next-auth/react';
 import { Sidebar } from '@/components/dashboard/Sidebar';
 import { MobileNav } from '@/components/dashboard/MobileNav';
 import { SessionGuard } from '@/components/auth/SessionGuard';
+import { SkipLink } from '@/components/a11y/SkipLink';
 
 export default function DashboardLayout({
   children,
@@ -16,6 +17,7 @@ export default function DashboardLayout({
       refetchOnWindowFocus={true}
     >
       <SessionGuard loginPath="/login">
+        <SkipLink />
         <div className="flex min-h-screen bg-gray-100">
           {/* Desktop Sidebar */}
           <div className="hidden lg:block fixed inset-y-0 left-0 z-30">
@@ -26,7 +28,7 @@ export default function DashboardLayout({
           <MobileNav />
 
           {/* Main Content */}
-          <main className="flex-1 lg:ml-64">{children}</main>
+          <main id="main-content" className="flex-1 lg:ml-64">{children}</main>
         </div>
       </SessionGuard>
     </SessionProvider>

@@ -2,6 +2,7 @@
 
 import { SessionProvider, signOut, useSession } from 'next-auth/react';
 import { SessionGuard } from '@/components/auth/SessionGuard';
+import { SkipLink } from '@/components/a11y/SkipLink';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -67,8 +68,9 @@ function PortalHeader() {
 function PortalContent({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-gray-50">
+      <SkipLink />
       <PortalHeader />
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main id="main-content" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {children}
       </main>
     </div>
