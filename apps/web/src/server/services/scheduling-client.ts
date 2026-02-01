@@ -3,6 +3,8 @@
  * Handles conflict detection and resource availability queries.
  */
 
+import { logger } from '@/lib/logger';
+
 const SCHEDULING_SERVICE_URL = process.env.SCHEDULING_SERVICE_URL || 'http://localhost:8080';
 const TIMEOUT_MS = 5000;
 
@@ -125,16 +127,34 @@ export const schedulingClient = {
       return await response.json();
     } catch (error) {
       if (error instanceof SchedulingClientError) {
+        logger.error('Scheduling service conflict check failed', error, {
+          context: 'checkConflicts',
+          endpoint: url,
+          resourceIds: input.resource_ids.slice(0, 5),
+          code: error.code,
+        });
         throw error;
       }
       if (error instanceof Error && error.name === 'AbortError') {
-        throw new SchedulingClientError('Scheduling service timeout', undefined, 'TIMEOUT');
+        const timeoutError = new SchedulingClientError('Scheduling service timeout', undefined, 'TIMEOUT');
+        logger.error('Scheduling service timeout', timeoutError, {
+          context: 'checkConflicts',
+          endpoint: url,
+          resourceIds: input.resource_ids.slice(0, 5),
+        });
+        throw timeoutError;
       }
-      throw new SchedulingClientError(
+      const connectionError = new SchedulingClientError(
         `Failed to connect to scheduling service: ${error instanceof Error ? error.message : 'Unknown error'}`,
         undefined,
         'CONNECTION_ERROR'
       );
+      logger.error('Scheduling service connection error', connectionError, {
+        context: 'checkConflicts',
+        endpoint: url,
+        resourceIds: input.resource_ids.slice(0, 5),
+      });
+      throw connectionError;
     }
   },
 
@@ -168,16 +188,34 @@ export const schedulingClient = {
       return await response.json();
     } catch (error) {
       if (error instanceof SchedulingClientError) {
+        logger.error('Scheduling service availability check failed', error, {
+          context: 'getResourceAvailability',
+          endpoint: url,
+          resourceId: input.resource_id,
+          code: error.code,
+        });
         throw error;
       }
       if (error instanceof Error && error.name === 'AbortError') {
-        throw new SchedulingClientError('Scheduling service timeout', undefined, 'TIMEOUT');
+        const timeoutError = new SchedulingClientError('Scheduling service timeout', undefined, 'TIMEOUT');
+        logger.error('Scheduling service timeout', timeoutError, {
+          context: 'getResourceAvailability',
+          endpoint: url,
+          resourceId: input.resource_id,
+        });
+        throw timeoutError;
       }
-      throw new SchedulingClientError(
+      const connectionError = new SchedulingClientError(
         `Failed to connect to scheduling service: ${error instanceof Error ? error.message : 'Unknown error'}`,
         undefined,
         'CONNECTION_ERROR'
       );
+      logger.error('Scheduling service connection error', connectionError, {
+        context: 'getResourceAvailability',
+        endpoint: url,
+        resourceId: input.resource_id,
+      });
+      throw connectionError;
     }
   },
 

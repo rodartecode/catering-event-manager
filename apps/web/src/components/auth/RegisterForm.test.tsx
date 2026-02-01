@@ -2,7 +2,8 @@ import { render, screen, fireEvent, waitFor } from '../../../test/helpers/render
 import userEvent from '@testing-library/user-event';
 import { RegisterForm } from './RegisterForm';
 import { signIn } from 'next-auth/react';
-import { vi } from 'vitest';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { axe } from '../../../test/helpers/axe';
 
 // Mock next-auth/react
 vi.mock('next-auth/react', () => ({
@@ -180,6 +181,33 @@ describe('RegisterForm', () => {
 
     await waitFor(() => {
       expect(screen.queryByText(/name must be at least 2 characters/i)).not.toBeInTheDocument();
+    });
+  });
+
+  describe('accessibility', () => {
+    it('has no accessibility violations', async () => {
+      const { container } = render(<RegisterForm />);
+
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
+    });
+
+    it('all form fields have proper labels', () => {
+      render(<RegisterForm />);
+
+      expect(screen.getByLabelText(/full name/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/email address/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/^password$/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/confirm password/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/role/i)).toBeInTheDocument();
+    });
+
+    it('submit button is focusable and has accessible name', () => {
+      render(<RegisterForm />);
+
+      const submitButton = screen.getByRole('button', { name: /create account/i });
+      expect(submitButton).toBeInTheDocument();
+      expect(submitButton).not.toHaveAttribute('tabindex', '-1');
     });
   });
 });

@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { z } from 'zod';
 import Link from 'next/link';
+import { getInputA11yProps, getErrorProps } from '@/lib/form-a11y';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -101,6 +102,9 @@ export function LoginForm() {
                 id="email"
                 type="email"
                 autoComplete="email"
+                required
+                aria-required="true"
+                {...getInputA11yProps('email', !!errors.email)}
                 value={formData.email}
                 onChange={(e) => updateField('email', e.target.value)}
                 className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
@@ -108,7 +112,11 @@ export function LoginForm() {
                 }`}
                 placeholder="you@example.com"
               />
-              {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
+              {errors.email && (
+                <p {...getErrorProps('email')} className="mt-1 text-sm text-red-600">
+                  {errors.email}
+                </p>
+              )}
             </div>
 
             <div>
@@ -119,6 +127,9 @@ export function LoginForm() {
                 id="password"
                 type="password"
                 autoComplete="current-password"
+                required
+                aria-required="true"
+                {...getInputA11yProps('password', !!errors.password)}
                 value={formData.password}
                 onChange={(e) => updateField('password', e.target.value)}
                 className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
@@ -126,11 +137,15 @@ export function LoginForm() {
                 }`}
                 placeholder="Enter your password"
               />
-              {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
+              {errors.password && (
+                <p {...getErrorProps('password')} className="mt-1 text-sm text-red-600">
+                  {errors.password}
+                </p>
+              )}
             </div>
 
             {errors.submit && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <div role="alert" className="bg-red-50 border border-red-200 rounded-lg p-4">
                 <p className="text-sm text-red-800">{errors.submit}</p>
               </div>
             )}

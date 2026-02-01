@@ -2,7 +2,8 @@ import { render, screen, fireEvent, waitFor } from '../../../test/helpers/render
 import userEvent from '@testing-library/user-event';
 import { LoginForm } from './LoginForm';
 import { signIn } from 'next-auth/react';
-import { vi } from 'vitest';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { axe } from '../../../test/helpers/axe';
 
 // Mock next-auth/react
 vi.mock('next-auth/react', () => ({
@@ -62,9 +63,15 @@ describe('LoginForm', () => {
     render(<LoginForm />);
 
     await user.type(screen.getByLabelText(/email address/i), 'test@example.com');
-    await user.click(screen.getByRole('button', { name: /sign in/i }));
 
-    expect(screen.getByText(/password is required/i)).toBeInTheDocument();
+    // Use fireEvent.submit to bypass HTML5 required validation
+    const form = screen.getByRole('button', { name: /sign in/i }).closest('form')!;
+    fireEvent.submit(form);
+
+    // Wait for async validation
+    await waitFor(() => {
+      expect(screen.getByText(/password is required/i)).toBeInTheDocument();
+    });
   });
 
   it('calls signIn with credentials on valid submit', async () => {
@@ -131,6 +138,33 @@ describe('LoginForm', () => {
     // Wait for React state to update
     await waitFor(() => {
       expect(screen.queryByText(/invalid email address/i)).not.toBeInTheDocument();
+    });
+  });
+
+  describe('accessibility', () => {
+    it('has no accessibility violations', async () => {
+      const { container } = render(<LoginForm />);
+
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
+    });
+
+    it('form fields have proper labels', () => {
+      render(<LoginForm />);
+
+      const emailInput = screen.getByLabelText(/email address/i);
+      const passwordInput = screen.getByLabelText(/password/i);
+
+      expect(emailInput).toHaveAttribute('type', 'email');
+      expect(passwordInput).toHaveAttribute('type', 'password');
+    });
+
+    it('submit button is focusable and has accessible name', () => {
+      render(<LoginForm />);
+
+      const submitButton = screen.getByRole('button', { name: /sign in/i });
+      expect(submitButton).toBeInTheDocument();
+      expect(submitButton).not.toHaveAttribute('tabindex', '-1');
     });
   });
 });

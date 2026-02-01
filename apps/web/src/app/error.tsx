@@ -11,7 +11,9 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Log the error to console for debugging
+    // Client-side error logging - console.error is acceptable here
+    // as this is a React error boundary and server-side logger is unavailable.
+    // In production, integrate with a client-side error tracking service.
     console.error('Application error:', error);
   }, [error]);
 
