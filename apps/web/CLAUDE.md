@@ -496,6 +496,23 @@ pnpm test:integration
 
 Tests the actual Next.js ↔ Go scheduler communication:
 
+**Prerequisites**:
+- **Go 1.24.0 or newer** installed and available in PATH
+- Docker daemon running (for TestContainers PostgreSQL)
+- All dependencies installed (`pnpm install`)
+
+**How It Works**:
+- Tests build and spawn the real Go scheduling service
+- Creates isolated PostgreSQL via TestContainers
+- Runs actual HTTP requests between Next.js tRPC and Go API
+- Verifies resource conflict detection, availability calculation
+
+**Troubleshooting**:
+- **Go compilation fails**: Ensure `go.mod` in `apps/scheduling-service` is valid and Go version ≥1.24
+- **Container startup timeout**: Check Docker daemon is running, may need to increase timeout
+- **Service startup errors**: Check PostgreSQL TestContainer logs, verify connection string
+- **Port conflicts**: Tests use random ports but may conflict with other services
+
 ```typescript
 // test/integration/cross-service.test.ts
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';

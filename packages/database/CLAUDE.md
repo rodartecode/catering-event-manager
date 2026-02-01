@@ -360,10 +360,70 @@ pnpm db:push
 # Run seeding
 pnpm db:seed
 
-# Output provides login credentials
-# Admin: admin@example.com / password123
-# Manager: manager@example.com / password123
-# Portal: jane.smith@acme.test (magic link)
+# Output provides login credentials for testing
+echo "Default test users created:"
+echo "✅ Admin: admin@example.com / password123"
+echo "✅ Manager: manager@example.com / password123"
+echo "✅ Portal: jane.smith@acme.test (magic link only)"
+```
+
+### Default Test User Credentials
+
+After running `pnpm db:seed`, use these credentials for testing:
+
+**Administrator (Full Access)**:
+- Email: `admin@example.com`
+- Password: `password123`
+- Role: `administrator`
+- Access: All CRUD operations, user management, system settings
+
+**Manager (Limited Access)**:
+- Email: `manager@example.com`
+- Password: `password123`
+- Role: `manager`
+- Access: Read-only + update task status + assign resources (no delete)
+
+**Portal Clients (Magic Link Only)**:
+- `jane.smith@acme.test` (ACME Corp contact)
+- `john.doe@startup.test` (Tech Startup contact)
+- `sarah.johnson@events.test` (Wedding Planner contact)
+- Authentication: Magic link only (no password login)
+- Access: View own events, tasks, communications, timeline
+
+### Sample Data Includes
+
+**3 Clients**:
+- **ACME Corp** (Corporate events, multiple contacts)
+- **Tech Startup** (Smaller events, fast turnaround)
+- **Wedding Planning Co** (Personal events, high-touch service)
+
+**5 Events** (Mixed Statuses):
+- Corporate holiday party (completed → follow_up)
+- Product launch event (planning → preparation)
+- Wedding reception (inquiry → planning)
+- Team building event (in_progress)
+- Conference setup (preparation)
+
+**10 Tasks** (All Categories):
+- **pre_event**: Venue booking, catering planning, equipment rental
+- **during_event**: Setup, service, cleanup coordination
+- **post_event**: Equipment return, client feedback, invoicing
+
+**5 Resources**:
+- **Staff**: Event coordinator, head chef, service staff
+- **Equipment**: Sound system, lighting setup, catering equipment
+- **Materials**: Tables, chairs, linens, decorations
+
+**5 Communications**:
+- Phone consultations, email confirmations, meeting notes
+- Follow-up scheduling, status updates
+
+### Re-running Seed Script
+
+```bash
+# Clear existing data and re-seed
+dropdb --if-exists catering_events_dev && createdb catering_events_dev
+cd packages/database && pnpm db:push && pnpm db:seed
 ```
 
 ## Integration Points

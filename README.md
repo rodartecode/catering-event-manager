@@ -2,7 +2,7 @@
 
 **Production-ready event lifecycle management system** for catering companies - from initial inquiry to post-event follow-up.
 
-**Last updated**: January 27, 2026
+**Last updated**: February 1, 2026 (Quality gates, cross-service integration, distributed context)
 
 ## Architecture
 
@@ -327,6 +327,33 @@ pnpm test:e2e:ui
 - **React components**: 232+ tests across 19+ component files
 - **Go scheduler**: 91.7% coverage (exceeds 80% target)
 - **Critical algorithms**: 100% tested (conflict detection, availability)
+
+### Quality Gates (Visual, Accessibility, Performance)
+
+Automated quality checks for key pages to ensure visual consistency, accessibility compliance, and performance standards.
+
+```bash
+# Run quality gate tests
+pnpm test:quality
+
+# Update visual baselines after intentional UI changes
+pnpm test:quality:update
+```
+
+**Tested Pages**:
+- `/login` - Public entry point (unauthenticated)
+- `/` (dashboard) - Main protected page with charts/stats
+- `/events` - Event list with filters and pagination
+- `/clients` - Client list with search and follow-up banners
+
+**Quality Criteria**:
+- **Visual Regression**: <1% pixel difference from baseline screenshots
+- **Accessibility**: WCAG 2.1 AA compliance (zero critical/serious violations via axe-core)
+- **Performance**: Core Web Vitals - LCP < 3000ms, CLS < 0.15
+
+**CI Behavior**: Quality gates run as advisory job (`continue-on-error: true`) - failures are visible but don't block PRs.
+
+**Test Files**: `apps/web/test/e2e/quality-gates/*.quality.ts`
 
 ## Features
 
