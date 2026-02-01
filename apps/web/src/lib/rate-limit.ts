@@ -2,13 +2,17 @@
  * Rate Limiting Utility
  *
  * Provides request rate limiting with sliding window algorithm.
- * Uses in-memory storage for development, can be extended with Redis for production.
+ * Uses Redis (Upstash) for distributed rate limiting in production.
+ * Falls back to in-memory storage when Redis is unavailable.
  *
  * Limits:
  * - General API: 100 requests/minute per IP
  * - Auth endpoints: 5 requests/minute per IP
  * - Magic link requests: 3 requests/5 minutes per email
  */
+
+import { getRedisClient } from './redis';
+import { logger } from './logger';
 
 export interface RateLimitResult {
   success: boolean;
@@ -22,7 +26,7 @@ interface RateLimitEntry {
   resetAt: number;
 }
 
-// In-memory store for rate limiting (development/single-instance)
+// In-memory store for rate limiting (development/single-instance fallback)
 const rateLimitStore = new Map<string, RateLimitEntry>();
 
 // Cleanup old entries periodically (every 5 minutes)
@@ -49,9 +53,74 @@ function startCleanup() {
 startCleanup();
 
 /**
- * Check and update rate limit for a given key
+ * Check rate limit using Redis sliding window algorithm.
+ * Uses sorted sets for accurate sliding window counting.
+ *
+ * Algorithm:
+ * 1. Remove entries outside the window (older than now - windowMs)
+ * 2. Add the current request with timestamp as score
+ * 3. Count total entries in the set
+ * 4. Set TTL to clean up the key after the window expires
  */
-function checkRateLimit(
+async function checkRateLimitRedis(
+  key: string,
+  maxRequests: number,
+  windowMs: number
+): Promise<RateLimitResult> {
+  const redis = getRedisClient();
+  if (!redis) {
+    // Should not happen - caller should check first
+    return checkRateLimitInMemory(key, maxRequests, windowMs);
+  }
+
+  const now = Date.now();
+  const windowStart = now - windowMs;
+  const resetAt = now + windowMs;
+  const member = `${now}:${Math.random().toString(36).slice(2, 10)}`;
+
+  try {
+    // Use pipeline for atomic operations
+    const pipeline = redis.pipeline();
+
+    // Remove entries older than the window
+    pipeline.zremrangebyscore(key, 0, windowStart);
+
+    // Add the current request
+    pipeline.zadd(key, { score: now, member });
+
+    // Count total entries in the window
+    pipeline.zcard(key);
+
+    // Set TTL slightly longer than window to allow for cleanup
+    const ttlSeconds = Math.ceil(windowMs / 1000) + 1;
+    pipeline.expire(key, ttlSeconds);
+
+    const results = await pipeline.exec();
+
+    // zcard result is the 3rd command (index 2)
+    const count = (results[2] as number) ?? 1;
+
+    return {
+      success: count <= maxRequests,
+      remaining: Math.max(0, maxRequests - count),
+      reset: Math.ceil(resetAt / 1000),
+      limit: maxRequests,
+    };
+  } catch (error) {
+    // Log error and fall back to in-memory
+    logger.warn('Redis rate limit error, falling back to in-memory', {
+      context: 'checkRateLimitRedis',
+      key,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
+    return checkRateLimitInMemory(key, maxRequests, windowMs);
+  }
+}
+
+/**
+ * Check and update rate limit using in-memory storage (fallback)
+ */
+function checkRateLimitInMemory(
   key: string,
   maxRequests: number,
   windowMs: number
@@ -86,6 +155,24 @@ function checkRateLimit(
   };
 }
 
+/**
+ * Check rate limit with automatic Redis/in-memory selection.
+ * Uses Redis when available, falls back to in-memory otherwise.
+ */
+async function checkRateLimit(
+  key: string,
+  maxRequests: number,
+  windowMs: number
+): Promise<RateLimitResult> {
+  const redis = getRedisClient();
+
+  if (redis) {
+    return checkRateLimitRedis(`ratelimit:${key}`, maxRequests, windowMs);
+  }
+
+  return checkRateLimitInMemory(key, maxRequests, windowMs);
+}
+
 // Rate limit configurations
 const RATE_LIMITS = {
   // General API: 100 requests per minute
@@ -99,7 +186,7 @@ const RATE_LIMITS = {
 /**
  * Rate limiter for general API requests (100/min per IP)
  */
-export function rateLimitGeneral(ip: string): RateLimitResult {
+export async function rateLimitGeneral(ip: string): Promise<RateLimitResult> {
   const key = `general:${ip}`;
   return checkRateLimit(key, RATE_LIMITS.general.max, RATE_LIMITS.general.windowMs);
 }
@@ -107,7 +194,7 @@ export function rateLimitGeneral(ip: string): RateLimitResult {
 /**
  * Rate limiter for auth attempts (5/min per IP)
  */
-export function rateLimitAuth(ip: string): RateLimitResult {
+export async function rateLimitAuth(ip: string): Promise<RateLimitResult> {
   const key = `auth:${ip}`;
   return checkRateLimit(key, RATE_LIMITS.auth.max, RATE_LIMITS.auth.windowMs);
 }
@@ -115,9 +202,36 @@ export function rateLimitAuth(ip: string): RateLimitResult {
 /**
  * Rate limiter for magic link requests (3/5min per email)
  */
-export function rateLimitMagicLink(email: string): RateLimitResult {
+export async function rateLimitMagicLink(email: string): Promise<RateLimitResult> {
   const key = `magiclink:${email.toLowerCase()}`;
   return checkRateLimit(key, RATE_LIMITS.magicLink.max, RATE_LIMITS.magicLink.windowMs);
+}
+
+/**
+ * Synchronous rate limiter for general API requests (in-memory only).
+ * Use this when you need synchronous behavior and don't need distributed limiting.
+ */
+export function rateLimitGeneralSync(ip: string): RateLimitResult {
+  const key = `general:${ip}`;
+  return checkRateLimitInMemory(key, RATE_LIMITS.general.max, RATE_LIMITS.general.windowMs);
+}
+
+/**
+ * Synchronous rate limiter for auth attempts (in-memory only).
+ * Use this when you need synchronous behavior and don't need distributed limiting.
+ */
+export function rateLimitAuthSync(ip: string): RateLimitResult {
+  const key = `auth:${ip}`;
+  return checkRateLimitInMemory(key, RATE_LIMITS.auth.max, RATE_LIMITS.auth.windowMs);
+}
+
+/**
+ * Synchronous rate limiter for magic link requests (in-memory only).
+ * Use this when you need synchronous behavior and don't need distributed limiting.
+ */
+export function rateLimitMagicLinkSync(email: string): RateLimitResult {
+  const key = `magiclink:${email.toLowerCase()}`;
+  return checkRateLimitInMemory(key, RATE_LIMITS.magicLink.max, RATE_LIMITS.magicLink.windowMs);
 }
 
 /**

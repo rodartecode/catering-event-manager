@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
-  rateLimitGeneral,
-  rateLimitAuth,
-  rateLimitMagicLink,
+  rateLimitGeneralSync,
+  rateLimitAuthSync,
+  rateLimitMagicLinkSync,
   resetRateLimits,
   getRateLimitStoreSize,
   getClientIp,
@@ -16,12 +16,12 @@ describe('Rate Limiting', () => {
     resetRateLimits();
   });
 
-  describe('rateLimitGeneral', () => {
+  describe('rateLimitGeneralSync', () => {
     it('allows requests within limit (100/min)', () => {
       const ip = '192.168.1.1';
 
       // First request should succeed
-      const result = rateLimitGeneral(ip);
+      const result = rateLimitGeneralSync(ip);
       expect(result.success).toBe(true);
       expect(result.remaining).toBe(99);
       expect(result.limit).toBe(100);
@@ -32,10 +32,10 @@ describe('Rate Limiting', () => {
 
       // Make 5 requests
       for (let i = 0; i < 5; i++) {
-        rateLimitGeneral(ip);
+        rateLimitGeneralSync(ip);
       }
 
-      const result = rateLimitGeneral(ip);
+      const result = rateLimitGeneralSync(ip);
       expect(result.success).toBe(true);
       expect(result.remaining).toBe(94); // 100 - 6 = 94
     });
@@ -45,11 +45,11 @@ describe('Rate Limiting', () => {
 
       // Exhaust the limit
       for (let i = 0; i < 100; i++) {
-        rateLimitGeneral(ip);
+        rateLimitGeneralSync(ip);
       }
 
       // 101st request should fail
-      const result = rateLimitGeneral(ip);
+      const result = rateLimitGeneralSync(ip);
       expect(result.success).toBe(false);
       expect(result.remaining).toBe(0);
     });
@@ -60,21 +60,21 @@ describe('Rate Limiting', () => {
 
       // Exhaust ip1 limit
       for (let i = 0; i < 100; i++) {
-        rateLimitGeneral(ip1);
+        rateLimitGeneralSync(ip1);
       }
 
       // ip2 should still have full quota
-      const result = rateLimitGeneral(ip2);
+      const result = rateLimitGeneralSync(ip2);
       expect(result.success).toBe(true);
       expect(result.remaining).toBe(99);
     });
   });
 
-  describe('rateLimitAuth', () => {
+  describe('rateLimitAuthSync', () => {
     it('allows requests within limit (5/min)', () => {
       const ip = '192.168.1.10';
 
-      const result = rateLimitAuth(ip);
+      const result = rateLimitAuthSync(ip);
       expect(result.success).toBe(true);
       expect(result.remaining).toBe(4);
       expect(result.limit).toBe(5);
@@ -85,11 +85,11 @@ describe('Rate Limiting', () => {
 
       // Exhaust the auth limit (5 requests)
       for (let i = 0; i < 5; i++) {
-        rateLimitAuth(ip);
+        rateLimitAuthSync(ip);
       }
 
       // 6th request should fail
-      const result = rateLimitAuth(ip);
+      const result = rateLimitAuthSync(ip);
       expect(result.success).toBe(false);
       expect(result.remaining).toBe(0);
     });
@@ -98,16 +98,16 @@ describe('Rate Limiting', () => {
       const ip = '192.168.1.12';
 
       // Auth allows only 5, general allows 100
-      expect(rateLimitAuth(ip).limit).toBe(5);
-      expect(rateLimitGeneral(ip).limit).toBe(100);
+      expect(rateLimitAuthSync(ip).limit).toBe(5);
+      expect(rateLimitGeneralSync(ip).limit).toBe(100);
     });
   });
 
-  describe('rateLimitMagicLink', () => {
+  describe('rateLimitMagicLinkSync', () => {
     it('allows requests within limit (3/5min)', () => {
       const email = 'user@example.com';
 
-      const result = rateLimitMagicLink(email);
+      const result = rateLimitMagicLinkSync(email);
       expect(result.success).toBe(true);
       expect(result.remaining).toBe(2);
       expect(result.limit).toBe(3);
@@ -118,11 +118,11 @@ describe('Rate Limiting', () => {
 
       // Exhaust the limit (3 requests)
       for (let i = 0; i < 3; i++) {
-        rateLimitMagicLink(email);
+        rateLimitMagicLinkSync(email);
       }
 
       // 4th request should fail
-      const result = rateLimitMagicLink(email);
+      const result = rateLimitMagicLinkSync(email);
       expect(result.success).toBe(false);
       expect(result.remaining).toBe(0);
     });
@@ -132,12 +132,12 @@ describe('Rate Limiting', () => {
       const email2 = 'user@example.com';
 
       // Both should share the same rate limit bucket
-      rateLimitMagicLink(email1);
-      rateLimitMagicLink(email1);
-      rateLimitMagicLink(email2);
+      rateLimitMagicLinkSync(email1);
+      rateLimitMagicLinkSync(email1);
+      rateLimitMagicLinkSync(email2);
 
       // Should be exhausted now
-      const result = rateLimitMagicLink(email2);
+      const result = rateLimitMagicLinkSync(email2);
       expect(result.success).toBe(false);
     });
   });
@@ -239,9 +239,9 @@ describe('Rate Limiting', () => {
   describe('resetRateLimits', () => {
     it('clears all rate limit entries', () => {
       // Create some entries
-      rateLimitGeneral('ip1');
-      rateLimitGeneral('ip2');
-      rateLimitAuth('ip3');
+      rateLimitGeneralSync('ip1');
+      rateLimitGeneralSync('ip2');
+      rateLimitAuthSync('ip3');
 
       expect(getRateLimitStoreSize()).toBeGreaterThan(0);
 

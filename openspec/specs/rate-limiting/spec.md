@@ -5,7 +5,7 @@ TBD - created by archiving change add-security-hardening. Update Purpose after a
 ## Requirements
 ### Requirement: tRPC API Rate Limiting (SEC-001)
 
-The system SHALL rate limit all tRPC API requests to prevent abuse.
+The system SHALL rate limit all tRPC API requests to prevent abuse using distributed storage for multi-instance deployments.
 
 #### Scenario: Normal API usage within limits
 
@@ -28,6 +28,21 @@ Given an API client who exceeded the rate limit
 When the 1-minute window expires
 Then subsequent requests are accepted normally
 And the rate limit counter resets
+
+#### Scenario: Distributed rate limiting across instances
+
+Given multiple Next.js instances behind a load balancer
+When a client makes requests distributed across instances
+Then the rate limit is shared across all instances via Redis
+And the total request count is accurate regardless of which instance handles requests
+
+#### Scenario: Redis unavailability fallback
+
+Given Redis is temporarily unavailable
+When the rate limiter cannot connect to Redis
+Then the system falls back to in-memory rate limiting per instance
+And a warning is logged indicating degraded rate limiting mode
+And the system continues to function without crashing
 
 ---
 
@@ -109,7 +124,7 @@ And the Secure attribute is true in production
 
 ### Requirement: Content Security Policy (SEC-005)
 
-The system SHALL enforce Content Security Policy headers to mitigate XSS attacks.
+The system SHALL enforce Content Security Policy headers to mitigate XSS attacks with environment-appropriate strictness.
 
 #### Scenario: CSP headers present on all responses
 
@@ -118,6 +133,20 @@ When examining the response headers
 Then the Content-Security-Policy header is present
 And includes `default-src 'self'` directive
 And includes `frame-ancestors 'none'` directive
+
+#### Scenario: Production CSP strictness
+
+Given the application is running in production (`NODE_ENV=production`)
+When examining the Content-Security-Policy header
+Then the `script-src` directive does NOT include `'unsafe-eval'`
+And the CSP is stricter than development mode
+
+#### Scenario: Development CSP flexibility
+
+Given the application is running in development (`NODE_ENV=development`)
+When examining the Content-Security-Policy header
+Then the `script-src` directive MAY include `'unsafe-eval'` for hot reloading
+And a comment in the configuration explains this exception
 
 #### Scenario: Inline script injection blocked
 
@@ -132,8 +161,6 @@ Given the application page is loaded
 When the browser parses the CSP header
 Then only scripts from 'self' and explicitly allowed sources load
 And scripts from arbitrary external domains are blocked
-
----
 
 ### Requirement: Security Headers (SEC-006)
 
