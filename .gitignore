@@ -84,3 +84,5 @@ tmp/
 *.tmp
 .vercel
 .eslintcache
+# next-agents-md
+.next-docs/
