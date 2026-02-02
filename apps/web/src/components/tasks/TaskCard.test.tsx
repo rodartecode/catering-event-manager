@@ -1,15 +1,17 @@
-import { render, screen } from '../../../test/helpers/render';
 import userEvent from '@testing-library/user-event';
-import { TaskCard } from './TaskCard';
 import { vi } from 'vitest';
+import { render, screen } from '../../../test/helpers/render';
+import { TaskCard } from './TaskCard';
 
 // Mock the child components that use tRPC
 vi.mock('./TaskStatusButton', () => ({
-  TaskStatusButton: ({ taskId, currentStatus }: { taskId: number; currentStatus: string }) => (
-    <button data-testid="task-status-button">
-      Status: {currentStatus}
-    </button>
-  ),
+  TaskStatusButton: ({
+    taskId: _taskId,
+    currentStatus,
+  }: {
+    taskId: number;
+    currentStatus: string;
+  }) => <button data-testid="task-status-button">Status: {currentStatus}</button>,
 }));
 
 describe('TaskCard', () => {
@@ -82,7 +84,8 @@ describe('TaskCard', () => {
   });
 
   it('does not render resource count when undefined', () => {
-    const { resourceCount, ...taskWithoutResources } = mockTask;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { resourceCount: _, ...taskWithoutResources } = mockTask;
     render(<TaskCard task={taskWithoutResources} />);
 
     expect(screen.queryByText(/resource/i)).not.toBeInTheDocument();

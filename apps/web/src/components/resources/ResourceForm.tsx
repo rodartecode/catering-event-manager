@@ -1,10 +1,10 @@
 'use client';
 
-import { trpc } from '@/lib/trpc';
 import { useState } from 'react';
-import { z } from 'zod';
 import toast from 'react-hot-toast';
+import { z } from 'zod';
 import { useFormDirty } from '@/hooks/use-form-dirty';
+import { trpc } from '@/lib/trpc';
 
 const resourceFormSchema = z.object({
   name: z
@@ -17,17 +17,14 @@ const resourceFormSchema = z.object({
   hourlyRate: z
     .string()
     .optional()
-    .refine(
-      (val) => !val || !isNaN(parseFloat(val)),
-      'Hourly rate must be a valid number'
-    ),
+    .refine((val) => !val || !isNaN(parseFloat(val)), 'Hourly rate must be a valid number'),
   notes: z.string().optional(),
 });
 
 type ResourceFormData = z.infer<typeof resourceFormSchema>;
 
 interface ResourceFormProps {
-  onSuccess: (resource: any) => void;
+  onSuccess: (resource: { id: number; name: string; type: string }) => void;
   onCancel: () => void;
 }
 
@@ -85,7 +82,7 @@ export function ResourceForm({ onSuccess, onCancel }: ResourceFormProps) {
     }
   };
 
-  const updateField = (field: keyof ResourceFormData, value: any) => {
+  const updateField = (field: keyof ResourceFormData, value: ResourceFormData[typeof field]) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors((prev) => {

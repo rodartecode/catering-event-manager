@@ -1,11 +1,21 @@
-import { z } from 'zod';
-import { router, protectedProcedure, adminProcedure } from '../trpc';
-import { tasks, events, users, resources, taskResources, resourceSchedule } from '@catering-event-manager/database/schema';
-import { eq, and, desc, sql, ne, isNull, or, lt, inArray } from 'drizzle-orm';
+import type { db as dbClient } from '@catering-event-manager/database/client';
+import {
+  events,
+  resourceSchedule,
+  resources,
+  taskResources,
+  tasks,
+  users,
+} from '@catering-event-manager/database/schema';
 import { TRPCError } from '@trpc/server';
+import { and, eq, inArray, lt, ne, sql } from 'drizzle-orm';
+import { z } from 'zod';
 import { logger } from '@/lib/logger';
+import { SchedulingClientError, schedulingClient } from '../services/scheduling-client';
+import { adminProcedure, protectedProcedure, router } from '../trpc';
 
-import { schedulingClient, SchedulingClientError } from '../services/scheduling-client';
+// Type alias for the database client
+type DB = typeof dbClient;
 
 // Task status enum for validation
 const taskStatusEnum = z.enum(['pending', 'in_progress', 'completed']);
@@ -61,7 +71,7 @@ const updateStatusInput = z.object({
  * Returns true if adding dependsOnTaskId would create a cycle.
  */
 async function detectCircularDependency(
-  db: any,
+  db: DB,
   taskId: number,
   dependsOnTaskId: number,
   eventId: number
@@ -104,7 +114,7 @@ async function detectCircularDependency(
  * Returns the blocking task if dependency is not complete, null otherwise.
  */
 async function checkDependencyCompletion(
-  db: any,
+  db: DB,
   taskId: number
 ): Promise<{ id: number; title: string; status: string } | null> {
   const [task] = await db
@@ -138,138 +148,124 @@ async function checkDependencyCompletion(
 
 export const taskRouter = router({
   // FR-008: Create task (administrators only)
-  create: adminProcedure
-    .input(createTaskInput)
-    .mutation(async ({ ctx, input }) => {
-      const { db } = ctx;
+  create: adminProcedure.input(createTaskInput).mutation(async ({ ctx, input }) => {
+    const { db } = ctx;
 
-      // Verify event exists and is not archived
-      const [event] = await db
-        .select()
-        .from(events)
-        .where(eq(events.id, input.eventId))
-        .limit(1);
+    // Verify event exists and is not archived
+    const [event] = await db.select().from(events).where(eq(events.id, input.eventId)).limit(1);
 
-      if (!event) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Event not found',
-        });
-      }
+    if (!event) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Event not found',
+      });
+    }
 
-      if (event.isArchived) {
-        throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'Cannot add tasks to archived event',
-        });
-      }
+    if (event.isArchived) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'Cannot add tasks to archived event',
+      });
+    }
 
-      // Validate dependency if provided
-      if (input.dependsOnTaskId) {
-        const [dependentTask] = await db
-          .select()
-          .from(tasks)
-          .where(eq(tasks.id, input.dependsOnTaskId))
-          .limit(1);
-
-        if (!dependentTask) {
-          throw new TRPCError({
-            code: 'NOT_FOUND',
-            message: 'Dependent task not found',
-          });
-        }
-
-        if (dependentTask.eventId !== input.eventId) {
-          throw new TRPCError({
-            code: 'BAD_REQUEST',
-            message: 'Dependent task must belong to the same event',
-          });
-        }
-      }
-
-      // Create task
-      const [task] = await db
-        .insert(tasks)
-        .values({
-          eventId: input.eventId,
-          title: input.title,
-          description: input.description,
-          category: input.category,
-          dueDate: input.dueDate,
-          dependsOnTaskId: input.dependsOnTaskId,
-        })
-        .returning();
-
-      return task;
-    }),
-
-  // FR-009: Assign task to team member (administrators only)
-  assign: adminProcedure
-    .input(assignTaskInput)
-    .mutation(async ({ ctx, input }) => {
-      const { db } = ctx;
-
-      // Verify task exists
-      const [task] = await db
+    // Validate dependency if provided
+    if (input.dependsOnTaskId) {
+      const [dependentTask] = await db
         .select()
         .from(tasks)
-        .where(eq(tasks.id, input.taskId))
+        .where(eq(tasks.id, input.dependsOnTaskId))
         .limit(1);
 
-      if (!task) {
+      if (!dependentTask) {
         throw new TRPCError({
           code: 'NOT_FOUND',
-          message: 'Task not found',
+          message: 'Dependent task not found',
         });
       }
 
-      // Verify user exists if assigning
-      if (input.userId) {
-        const [user] = await db
-          .select()
-          .from(users)
-          .where(eq(users.id, input.userId))
-          .limit(1);
+      if (dependentTask.eventId !== input.eventId) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Dependent task must belong to the same event',
+        });
+      }
+    }
 
-        if (!user) {
-          throw new TRPCError({
-            code: 'NOT_FOUND',
-            message: 'User not found',
-          });
-        }
+    // Create task
+    const [task] = await db
+      .insert(tasks)
+      .values({
+        eventId: input.eventId,
+        title: input.title,
+        description: input.description,
+        category: input.category,
+        dueDate: input.dueDate,
+        dependsOnTaskId: input.dependsOnTaskId,
+      })
+      .returning();
 
-        if (!user.isActive) {
-          throw new TRPCError({
-            code: 'BAD_REQUEST',
-            message: 'Cannot assign task to inactive user',
-          });
-        }
+    return task;
+  }),
+
+  // FR-009: Assign task to team member (administrators only)
+  assign: adminProcedure.input(assignTaskInput).mutation(async ({ ctx, input }) => {
+    const { db } = ctx;
+
+    // Verify task exists
+    const [task] = await db.select().from(tasks).where(eq(tasks.id, input.taskId)).limit(1);
+
+    if (!task) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Task not found',
+      });
+    }
+
+    // Verify user exists if assigning
+    if (input.userId) {
+      const [user] = await db.select().from(users).where(eq(users.id, input.userId)).limit(1);
+
+      if (!user) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'User not found',
+        });
       }
 
-      // Update task assignment
-      const [updatedTask] = await db
-        .update(tasks)
-        .set({
-          assignedTo: input.userId,
-          updatedAt: new Date(),
-        })
-        .where(eq(tasks.id, input.taskId))
-        .returning();
+      if (!user.isActive) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Cannot assign task to inactive user',
+        });
+      }
+    }
 
-      return updatedTask;
-    }),
+    // Update task assignment
+    const [updatedTask] = await db
+      .update(tasks)
+      .set({
+        assignedTo: input.userId,
+        updatedAt: new Date(),
+      })
+      .where(eq(tasks.id, input.taskId))
+      .returning();
+
+    return updatedTask;
+  }),
 
   // FR-016: Assign multiple resources to a task with conflict checking
   assignResources: adminProcedure
-    .input(z.object({
-      taskId: z.number().positive(),
-      resourceIds: z.array(z.number().positive()),
-      startTime: z.coerce.date(),
-      endTime: z.coerce.date(),
-      force: z.boolean().optional().default(false), // Allow assignment despite conflicts
-    }))
+    .input(
+      z.object({
+        taskId: z.number().positive(),
+        resourceIds: z.array(z.number().positive()),
+        startTime: z.coerce.date(),
+        endTime: z.coerce.date(),
+        force: z.boolean().optional().default(false), // Allow assignment despite conflicts
+      })
+    )
     .mutation(async ({ ctx, input }) => {
-      const { db, session } = ctx;
+      const { db } = ctx;
       const { taskId, resourceIds, startTime, endTime, force } = input;
 
       // Validate time range
@@ -346,20 +342,24 @@ export const taskRouter = router({
         });
 
         if (conflictResult.has_conflicts) {
-          conflicts = conflictResult.conflicts.map(c => ({
+          conflicts = conflictResult.conflicts.map((c) => ({
             resourceId: c.resource_id,
             resourceName: c.resource_name,
             message: c.message,
           }));
         }
       } catch (error) {
-        logger.error('Resource conflict check failed', error instanceof Error ? error : new Error(String(error)), {
-          context: 'assignResources',
-          taskId,
-          resourceIds: resourceIds.slice(0, 5),
-          timeRange: { start: startTime.toISOString(), end: endTime.toISOString() },
-          code: error instanceof SchedulingClientError ? error.code : undefined,
-        });
+        logger.error(
+          'Resource conflict check failed',
+          error instanceof Error ? error : new Error(String(error)),
+          {
+            context: 'assignResources',
+            taskId,
+            resourceIds: resourceIds.slice(0, 5),
+            timeRange: { start: startTime.toISOString(), end: endTime.toISOString() },
+            code: error instanceof SchedulingClientError ? error.code : undefined,
+          }
+        );
 
         if (error instanceof SchedulingClientError) {
           if (error.code === 'TIMEOUT' || error.code === 'CONNECTION_ERROR') {
@@ -413,7 +413,9 @@ export const taskRouter = router({
         success: true,
         assignedResources: resourceIds.length,
         conflicts: conflicts.length > 0 ? conflicts : undefined,
-        warning: serviceUnavailable ? 'Conflicts could not be verified - scheduling service unavailable' : undefined,
+        warning: serviceUnavailable
+          ? 'Conflicts could not be verified - scheduling service unavailable'
+          : undefined,
         forceOverride: conflicts.length > 0 && force,
       };
     }),
@@ -454,146 +456,138 @@ export const taskRouter = router({
     }),
 
   // FR-010, FR-014: Update task status with dependency check
-  updateStatus: protectedProcedure
-    .input(updateStatusInput)
-    .mutation(async ({ ctx, input }) => {
-      const { db, session } = ctx;
+  updateStatus: protectedProcedure.input(updateStatusInput).mutation(async ({ ctx, input }) => {
+    const { db, session } = ctx;
 
-      // Get task
-      const [task] = await db
-        .select()
-        .from(tasks)
-        .where(eq(tasks.id, input.id))
-        .limit(1);
+    // Get task
+    const [task] = await db.select().from(tasks).where(eq(tasks.id, input.id)).limit(1);
 
-      if (!task) {
+    if (!task) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Task not found',
+      });
+    }
+
+    // Check if user is admin or assigned to this task
+    const userRole = (session.user as { role?: string }).role;
+    const isAdmin = userRole === 'administrator';
+    const isAssigned = task.assignedTo === parseInt(session.user.id, 10);
+
+    if (!isAdmin && !isAssigned) {
+      throw new TRPCError({
+        code: 'FORBIDDEN',
+        message: 'You can only update status of tasks assigned to you',
+      });
+    }
+
+    // FR-014: Check dependency completion before allowing progress
+    if (input.newStatus !== 'pending') {
+      const blockingTask = await checkDependencyCompletion(db, input.id);
+      if (blockingTask) {
         throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Task not found',
+          code: 'BAD_REQUEST',
+          message: `Cannot progress task: dependency "${blockingTask.title}" is not completed yet`,
         });
       }
+    }
 
-      // Check if user is admin or assigned to this task
-      const userRole = (session.user as { role?: string }).role;
-      const isAdmin = userRole === 'administrator';
-      const isAssigned = task.assignedTo === parseInt(session.user.id, 10);
+    // Update task status
+    const updateData: Partial<typeof tasks.$inferInsert> = {
+      status: input.newStatus,
+      updatedAt: new Date(),
+    };
 
-      if (!isAdmin && !isAssigned) {
-        throw new TRPCError({
-          code: 'FORBIDDEN',
-          message: 'You can only update status of tasks assigned to you',
-        });
-      }
+    // Set completedAt if completing, clear if reverting
+    if (input.newStatus === 'completed') {
+      updateData.completedAt = new Date();
+      updateData.isOverdue = false; // Clear overdue flag on completion
+    } else if (task.status === 'completed') {
+      updateData.completedAt = null;
+    }
 
-      // FR-014: Check dependency completion before allowing progress
-      if (input.newStatus !== 'pending') {
-        const blockingTask = await checkDependencyCompletion(db, input.id);
-        if (blockingTask) {
-          throw new TRPCError({
-            code: 'BAD_REQUEST',
-            message: `Cannot progress task: dependency "${blockingTask.title}" is not completed yet`,
-          });
-        }
-      }
+    const [updatedTask] = await db
+      .update(tasks)
+      .set(updateData)
+      .where(eq(tasks.id, input.id))
+      .returning();
 
-      // Update task status
-      const updateData: any = {
-        status: input.newStatus,
-        updatedAt: new Date(),
-      };
-
-      // Set completedAt if completing, clear if reverting
-      if (input.newStatus === 'completed') {
-        updateData.completedAt = new Date();
-        updateData.isOverdue = false; // Clear overdue flag on completion
-      } else if (task.status === 'completed') {
-        updateData.completedAt = null;
-      }
-
-      const [updatedTask] = await db
-        .update(tasks)
-        .set(updateData)
-        .where(eq(tasks.id, input.id))
-        .returning();
-
-      return updatedTask;
-    }),
+    return updatedTask;
+  }),
 
   // FR-011: List tasks for event with filters
-  listByEvent: protectedProcedure
-    .input(listTasksInput)
-    .query(async ({ ctx, input }) => {
-      const { db, session } = ctx;
-      const { eventId, status, category, overdueOnly, assignedToMe, limit, cursor } = input;
+  listByEvent: protectedProcedure.input(listTasksInput).query(async ({ ctx, input }) => {
+    const { db, session } = ctx;
+    const { eventId, status, category, overdueOnly, assignedToMe, limit, cursor } = input;
 
-      // Build where conditions
-      const conditions = [eq(tasks.eventId, eventId)];
+    // Build where conditions
+    const conditions = [eq(tasks.eventId, eventId)];
 
-      if (status && status !== 'all') {
-        conditions.push(eq(tasks.status, status));
-      }
+    if (status && status !== 'all') {
+      conditions.push(eq(tasks.status, status));
+    }
 
-      if (category && category !== 'all') {
-        conditions.push(eq(tasks.category, category));
-      }
+    if (category && category !== 'all') {
+      conditions.push(eq(tasks.category, category));
+    }
 
-      if (overdueOnly) {
-        conditions.push(eq(tasks.isOverdue, true));
-      }
+    if (overdueOnly) {
+      conditions.push(eq(tasks.isOverdue, true));
+    }
 
-      if (assignedToMe) {
-        conditions.push(eq(tasks.assignedTo, parseInt(session.user.id, 10)));
-      }
+    if (assignedToMe) {
+      conditions.push(eq(tasks.assignedTo, parseInt(session.user.id, 10)));
+    }
 
-      if (cursor) {
-        conditions.push(sql`${tasks.id} >= ${cursor}`);
-      }
+    if (cursor) {
+      conditions.push(sql`${tasks.id} >= ${cursor}`);
+    }
 
-      // Query tasks with assignee info
-      const results = await db
-        .select({
-          id: tasks.id,
-          eventId: tasks.eventId,
-          title: tasks.title,
-          description: tasks.description,
-          category: tasks.category,
-          status: tasks.status,
-          dueDate: tasks.dueDate,
-          dependsOnTaskId: tasks.dependsOnTaskId,
-          isOverdue: tasks.isOverdue,
-          completedAt: tasks.completedAt,
-          createdAt: tasks.createdAt,
-          updatedAt: tasks.updatedAt,
-          assignedTo: tasks.assignedTo,
-          assignee: {
-            id: users.id,
-            name: users.name,
-            email: users.email,
-          },
-        })
-        .from(tasks)
-        .leftJoin(users, eq(tasks.assignedTo, users.id))
-        .where(and(...conditions))
-        .orderBy(tasks.dueDate, tasks.createdAt)
-        .limit(limit + 1);
+    // Query tasks with assignee info
+    const results = await db
+      .select({
+        id: tasks.id,
+        eventId: tasks.eventId,
+        title: tasks.title,
+        description: tasks.description,
+        category: tasks.category,
+        status: tasks.status,
+        dueDate: tasks.dueDate,
+        dependsOnTaskId: tasks.dependsOnTaskId,
+        isOverdue: tasks.isOverdue,
+        completedAt: tasks.completedAt,
+        createdAt: tasks.createdAt,
+        updatedAt: tasks.updatedAt,
+        assignedTo: tasks.assignedTo,
+        assignee: {
+          id: users.id,
+          name: users.name,
+          email: users.email,
+        },
+      })
+      .from(tasks)
+      .leftJoin(users, eq(tasks.assignedTo, users.id))
+      .where(and(...conditions))
+      .orderBy(tasks.dueDate, tasks.createdAt)
+      .limit(limit + 1);
 
-      let nextCursor: number | null = null;
-      if (results.length > limit) {
-        const nextItem = results.pop();
-        nextCursor = nextItem!.id;
-      }
+    let nextCursor: number | null = null;
+    if (results.length > limit) {
+      const nextItem = results.pop();
+      nextCursor = nextItem!.id;
+    }
 
-      // Transform results to handle null assignees
-      const items = results.map((r: typeof results[number]) => ({
-        ...r,
-        assignee: r.assignee?.id ? r.assignee : null,
-      }));
+    // Transform results to handle null assignees
+    const items = results.map((r: (typeof results)[number]) => ({
+      ...r,
+      assignee: r.assignee?.id ? r.assignee : null,
+    }));
 
-      return {
-        items,
-        nextCursor,
-      };
-    }),
+    return {
+      items,
+      nextCursor,
+    };
+  }),
 
   // FR-011: Get task by ID with details
   getById: protectedProcedure
@@ -669,103 +663,97 @@ export const taskRouter = router({
     }),
 
   // FR-012: Update task details (administrators only)
-  update: adminProcedure
-    .input(updateTaskInput)
-    .mutation(async ({ ctx, input }) => {
-      const { db } = ctx;
-      const { id, ...updates } = input;
+  update: adminProcedure.input(updateTaskInput).mutation(async ({ ctx, input }) => {
+    const { db } = ctx;
+    const { id, ...updates } = input;
 
-      // Verify task exists
-      const [existingTask] = await db
-        .select()
-        .from(tasks)
-        .where(eq(tasks.id, id))
-        .limit(1);
+    // Verify task exists
+    const [existingTask] = await db.select().from(tasks).where(eq(tasks.id, id)).limit(1);
 
-      if (!existingTask) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Task not found',
-        });
-      }
+    if (!existingTask) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Task not found',
+      });
+    }
 
-      // Check event is not archived
-      const [event] = await db
-        .select()
-        .from(events)
-        .where(eq(events.id, existingTask.eventId))
-        .limit(1);
+    // Check event is not archived
+    const [event] = await db
+      .select()
+      .from(events)
+      .where(eq(events.id, existingTask.eventId))
+      .limit(1);
 
-      if (event?.isArchived) {
+    if (event?.isArchived) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'Cannot update tasks in archived event',
+      });
+    }
+
+    // Validate dependency if being updated
+    if (updates.dependsOnTaskId !== undefined && updates.dependsOnTaskId !== null) {
+      // Cannot depend on self
+      if (updates.dependsOnTaskId === id) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
-          message: 'Cannot update tasks in archived event',
+          message: 'Task cannot depend on itself',
         });
       }
 
-      // Validate dependency if being updated
-      if (updates.dependsOnTaskId !== undefined && updates.dependsOnTaskId !== null) {
-        // Cannot depend on self
-        if (updates.dependsOnTaskId === id) {
-          throw new TRPCError({
-            code: 'BAD_REQUEST',
-            message: 'Task cannot depend on itself',
-          });
-        }
+      // Verify dependent task exists and belongs to same event
+      const [dependentTask] = await db
+        .select()
+        .from(tasks)
+        .where(eq(tasks.id, updates.dependsOnTaskId))
+        .limit(1);
 
-        // Verify dependent task exists and belongs to same event
-        const [dependentTask] = await db
-          .select()
-          .from(tasks)
-          .where(eq(tasks.id, updates.dependsOnTaskId))
-          .limit(1);
-
-        if (!dependentTask) {
-          throw new TRPCError({
-            code: 'NOT_FOUND',
-            message: 'Dependent task not found',
-          });
-        }
-
-        if (dependentTask.eventId !== existingTask.eventId) {
-          throw new TRPCError({
-            code: 'BAD_REQUEST',
-            message: 'Dependent task must belong to the same event',
-          });
-        }
-
-        // Check for circular dependency
-        const hasCircularDep = await detectCircularDependency(
-          db,
-          id,
-          updates.dependsOnTaskId,
-          existingTask.eventId
-        );
-
-        if (hasCircularDep) {
-          throw new TRPCError({
-            code: 'BAD_REQUEST',
-            message: 'Cannot create circular dependency',
-          });
-        }
+      if (!dependentTask) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Dependent task not found',
+        });
       }
 
-      // Build update object
-      const updateData: any = { updatedAt: new Date() };
-      if (updates.title !== undefined) updateData.title = updates.title;
-      if (updates.description !== undefined) updateData.description = updates.description;
-      if (updates.category !== undefined) updateData.category = updates.category;
-      if (updates.dueDate !== undefined) updateData.dueDate = updates.dueDate;
-      if (updates.dependsOnTaskId !== undefined) updateData.dependsOnTaskId = updates.dependsOnTaskId;
+      if (dependentTask.eventId !== existingTask.eventId) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Dependent task must belong to the same event',
+        });
+      }
 
-      const [updatedTask] = await db
-        .update(tasks)
-        .set(updateData)
-        .where(eq(tasks.id, id))
-        .returning();
+      // Check for circular dependency
+      const hasCircularDep = await detectCircularDependency(
+        db,
+        id,
+        updates.dependsOnTaskId,
+        existingTask.eventId
+      );
 
-      return updatedTask;
-    }),
+      if (hasCircularDep) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Cannot create circular dependency',
+        });
+      }
+    }
+
+    // Build update object
+    const updateData: Partial<typeof tasks.$inferInsert> = { updatedAt: new Date() };
+    if (updates.title !== undefined) updateData.title = updates.title;
+    if (updates.description !== undefined) updateData.description = updates.description;
+    if (updates.category !== undefined) updateData.category = updates.category;
+    if (updates.dueDate !== undefined) updateData.dueDate = updates.dueDate;
+    if (updates.dependsOnTaskId !== undefined) updateData.dependsOnTaskId = updates.dependsOnTaskId;
+
+    const [updatedTask] = await db
+      .update(tasks)
+      .set(updateData)
+      .where(eq(tasks.id, id))
+      .returning();
+
+    return updatedTask;
+  }),
 
   // FR-013: Delete task (administrators only)
   delete: adminProcedure
@@ -774,11 +762,7 @@ export const taskRouter = router({
       const { db } = ctx;
 
       // Verify task exists
-      const [task] = await db
-        .select()
-        .from(tasks)
-        .where(eq(tasks.id, input.id))
-        .limit(1);
+      const [task] = await db.select().from(tasks).where(eq(tasks.id, input.id)).limit(1);
 
       if (!task) {
         throw new TRPCError({
@@ -827,10 +811,12 @@ export const taskRouter = router({
 
   // Get tasks available as dependencies (for dropdown)
   getAvailableDependencies: protectedProcedure
-    .input(z.object({
-      eventId: z.number().positive(),
-      excludeTaskId: z.number().positive().optional(),
-    }))
+    .input(
+      z.object({
+        eventId: z.number().positive(),
+        excludeTaskId: z.number().positive().optional(),
+      })
+    )
     .query(async ({ ctx, input }) => {
       const { db } = ctx;
       const { eventId, excludeTaskId } = input;
@@ -869,13 +855,7 @@ export const taskRouter = router({
         isOverdue: true,
         updatedAt: new Date(),
       })
-      .where(
-        and(
-          lt(tasks.dueDate, now),
-          ne(tasks.status, 'completed'),
-          eq(tasks.isOverdue, false)
-        )
-      )
+      .where(and(lt(tasks.dueDate, now), ne(tasks.status, 'completed'), eq(tasks.isOverdue, false)))
       .returning({ id: tasks.id });
 
     return { markedCount: result.length };

@@ -1,11 +1,8 @@
-import { render, screen, fireEvent, waitFor } from '../../../test/helpers/render';
 import userEvent from '@testing-library/user-event';
-import { EventStatusUpdateDialog } from './EventStatusUpdateDialog';
-import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { axe } from '../../../test/helpers/axe';
-
-// Track mutation calls
-let mutationCallback: (() => void) | undefined;
+import { fireEvent, render, screen, waitFor } from '../../../test/helpers/render';
+import { EventStatusUpdateDialog } from './EventStatusUpdateDialog';
 
 // Mock tRPC
 vi.mock('@/lib/trpc', () => ({
@@ -13,7 +10,6 @@ vi.mock('@/lib/trpc', () => ({
     event: {
       updateStatus: {
         useMutation: (options: { onSuccess?: () => void }) => {
-          mutationCallback = options.onSuccess;
           return {
             mutate: vi.fn().mockImplementation(() => {
               options.onSuccess?.();
@@ -113,9 +109,7 @@ describe('EventStatusUpdateDialog', () => {
     render(<EventStatusUpdateDialog {...defaultProps} />);
 
     // Find the close button (X icon) - it's the first button with an SVG
-    const closeButton = screen.getAllByRole('button').find(
-      (btn) => btn.querySelector('svg')
-    );
+    const closeButton = screen.getAllByRole('button').find((btn) => btn.querySelector('svg'));
     if (closeButton) {
       await user.click(closeButton);
     }

@@ -1,24 +1,22 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import {
-  setupTestDatabase,
   cleanDatabase,
-  teardownTestDatabase,
+  setupTestDatabase,
   type TestDatabase,
+  teardownTestDatabase,
 } from '../../../test/helpers/db';
+import {
+  createArchivedEvent,
+  createClient,
+  createUser,
+  resetFactoryCounter,
+} from '../../../test/helpers/factories';
 import {
   createAdminCaller,
   createManagerCaller,
   createUnauthenticatedCaller,
+  testUsers,
 } from '../../../test/helpers/trpc';
-import {
-  createClient,
-  createUser,
-  createEvent,
-  createArchivedEvent,
-  createEventStatusLog,
-  resetFactoryCounter,
-} from '../../../test/helpers/factories';
-import { testUsers } from '../../../test/helpers/trpc';
 
 describe('event router', () => {
   let db: TestDatabase;
@@ -387,9 +385,9 @@ describe('event router', () => {
     it('throws NOT_FOUND for non-existent event', async () => {
       const caller = createAdminCaller(db);
 
-      await expect(
-        caller.event.updateStatus({ id: 9999, newStatus: 'planning' })
-      ).rejects.toThrow('Event not found');
+      await expect(caller.event.updateStatus({ id: 9999, newStatus: 'planning' })).rejects.toThrow(
+        'Event not found'
+      );
     });
 
     it('rejects manager users (admin only)', async () => {
@@ -452,17 +450,17 @@ describe('event router', () => {
       const client = await createClient(db);
       const archived = await createArchivedEvent(db, client.id, 1);
 
-      await expect(
-        caller.event.update({ id: archived.id, eventName: 'New Name' })
-      ).rejects.toThrow('Cannot update archived event');
+      await expect(caller.event.update({ id: archived.id, eventName: 'New Name' })).rejects.toThrow(
+        'Cannot update archived event'
+      );
     });
 
     it('throws NOT_FOUND for non-existent event', async () => {
       const caller = createAdminCaller(db);
 
-      await expect(
-        caller.event.update({ id: 9999, eventName: 'No Event' })
-      ).rejects.toThrow('Event not found');
+      await expect(caller.event.update({ id: 9999, eventName: 'No Event' })).rejects.toThrow(
+        'Event not found'
+      );
     });
   });
 
@@ -491,9 +489,9 @@ describe('event router', () => {
         eventDate: new Date('2026-06-15'),
       });
 
-      await expect(
-        caller.event.archive({ id: event.id })
-      ).rejects.toThrow('Only completed events can be archived');
+      await expect(caller.event.archive({ id: event.id })).rejects.toThrow(
+        'Only completed events can be archived'
+      );
     });
 
     it('rejects archiving non-completed events (planning)', async () => {
@@ -506,9 +504,9 @@ describe('event router', () => {
       });
       await caller.event.updateStatus({ id: event.id, newStatus: 'planning' });
 
-      await expect(
-        caller.event.archive({ id: event.id })
-      ).rejects.toThrow('Only completed events can be archived');
+      await expect(caller.event.archive({ id: event.id })).rejects.toThrow(
+        'Only completed events can be archived'
+      );
     });
 
     it('rejects archiving already-archived events', async () => {
@@ -522,9 +520,9 @@ describe('event router', () => {
       await caller.event.updateStatus({ id: event.id, newStatus: 'completed' });
       await caller.event.archive({ id: event.id });
 
-      await expect(
-        caller.event.archive({ id: event.id })
-      ).rejects.toThrow('Event is already archived');
+      await expect(caller.event.archive({ id: event.id })).rejects.toThrow(
+        'Event is already archived'
+      );
     });
   });
 
@@ -574,9 +572,7 @@ describe('event router', () => {
     it('throws NOT_FOUND for non-existent event', async () => {
       const caller = createManagerCaller(db);
 
-      await expect(
-        caller.event.getById({ id: 9999 })
-      ).rejects.toThrow('Event not found');
+      await expect(caller.event.getById({ id: 9999 })).rejects.toThrow('Event not found');
     });
 
     it('returns archived events when accessed by ID', async () => {

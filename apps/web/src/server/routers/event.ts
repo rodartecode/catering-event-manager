@@ -1,9 +1,8 @@
-import { z } from 'zod';
-import { router, protectedProcedure, adminProcedure } from '../trpc';
-import { events, eventStatusLog, clients, users } from '@catering-event-manager/database/schema';
-import { eq, and, gte, lte, desc, sql } from 'drizzle-orm';
+import { clients, eventStatusLog, events, users } from '@catering-event-manager/database/schema';
 import { TRPCError } from '@trpc/server';
-
+import { and, desc, eq, gte, lte, sql } from 'drizzle-orm';
+import { z } from 'zod';
+import { adminProcedure, protectedProcedure, router } from '../trpc';
 
 // Event status enum for validation
 const eventStatusEnum = z.enum([
@@ -27,15 +26,9 @@ const createEventInput = z.object({
 
 // Event list input schema
 const listEventsInput = z.object({
-  status: z.enum([
-    'inquiry',
-    'planning',
-    'preparation',
-    'in_progress',
-    'completed',
-    'follow_up',
-    'all',
-  ]).optional(),
+  status: z
+    .enum(['inquiry', 'planning', 'preparation', 'in_progress', 'completed', 'follow_up', 'all'])
+    .optional(),
   clientId: z.number().optional(),
   dateFrom: z.coerce.date().optional(),
   dateTo: z.coerce.date().optional(),
@@ -62,115 +55,104 @@ const updateStatusInput = z.object({
 
 export const eventRouter = router({
   // FR-001: Create event (administrators only)
-  create: adminProcedure
-    .input(createEventInput)
-    .mutation(async ({ ctx, input }) => {
-      const { db, session } = ctx;
+  create: adminProcedure.input(createEventInput).mutation(async ({ ctx, input }) => {
+    const { db, session } = ctx;
 
-      // Verify client exists
-      const [client] = await db
-        .select()
-        .from(clients)
-        .where(eq(clients.id, input.clientId))
-        .limit(1);
+    // Verify client exists
+    const [client] = await db.select().from(clients).where(eq(clients.id, input.clientId)).limit(1);
 
-      if (!client) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Client not found',
-        });
-      }
-
-      // Create event
-      const [event] = await db
-        .insert(events)
-        .values({
-          clientId: input.clientId,
-          eventName: input.eventName,
-          eventDate: input.eventDate,
-          location: input.location,
-          estimatedAttendees: input.estimatedAttendees,
-          notes: input.notes,
-          status: 'inquiry',
-          createdBy: parseInt(session.user.id, 10),
-        })
-        .returning();
-
-      // Log initial status
-      await db.insert(eventStatusLog).values({
-        eventId: event.id,
-        oldStatus: null,
-        newStatus: 'inquiry',
-        changedBy: parseInt(session.user.id, 10),
-        notes: 'Event created',
+    if (!client) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Client not found',
       });
+    }
 
-      return event;
-    }),
+    // Create event
+    const [event] = await db
+      .insert(events)
+      .values({
+        clientId: input.clientId,
+        eventName: input.eventName,
+        eventDate: input.eventDate,
+        location: input.location,
+        estimatedAttendees: input.estimatedAttendees,
+        notes: input.notes,
+        status: 'inquiry',
+        createdBy: parseInt(session.user.id, 10),
+      })
+      .returning();
+
+    // Log initial status
+    await db.insert(eventStatusLog).values({
+      eventId: event.id,
+      oldStatus: null,
+      newStatus: 'inquiry',
+      changedBy: parseInt(session.user.id, 10),
+      notes: 'Event created',
+    });
+
+    return event;
+  }),
 
   // FR-004: List events with filters and pagination
-  list: protectedProcedure
-    .input(listEventsInput)
-    .query(async ({ ctx, input }) => {
-      const { db } = ctx;
-      const { status, clientId, dateFrom, dateTo, limit, cursor } = input;
+  list: protectedProcedure.input(listEventsInput).query(async ({ ctx, input }) => {
+    const { db } = ctx;
+    const { status, clientId, dateFrom, dateTo, limit, cursor } = input;
 
-      // Build where conditions
-      const conditions = [eq(events.isArchived, false)];
+    // Build where conditions
+    const conditions = [eq(events.isArchived, false)];
 
-      if (status && status !== 'all') {
-        conditions.push(eq(events.status, status));
-      }
+    if (status && status !== 'all') {
+      conditions.push(eq(events.status, status));
+    }
 
-      if (clientId) {
-        conditions.push(eq(events.clientId, clientId));
-      }
+    if (clientId) {
+      conditions.push(eq(events.clientId, clientId));
+    }
 
-      if (dateFrom) {
-        conditions.push(gte(events.eventDate, dateFrom));
-      }
+    if (dateFrom) {
+      conditions.push(gte(events.eventDate, dateFrom));
+    }
 
-      if (dateTo) {
-        conditions.push(lte(events.eventDate, dateTo));
-      }
+    if (dateTo) {
+      conditions.push(lte(events.eventDate, dateTo));
+    }
 
-      if (cursor) {
-        conditions.push(gte(events.id, cursor));
-      }
+    if (cursor) {
+      conditions.push(gte(events.id, cursor));
+    }
 
-      // Query events with client info and task counts
-      const results = await db
-        .select({
-          id: events.id,
-          eventName: events.eventName,
-          clientName: clients.companyName,
-          eventDate: events.eventDate,
-          status: events.status,
-          taskCount: sql<number>`COALESCE(COUNT(DISTINCT tasks.id), 0)`,
-          completedTaskCount: sql<number>`COALESCE(COUNT(DISTINCT CASE WHEN tasks.status = 'completed' THEN tasks.id END), 0)`,
-        })
-        .from(events)
-        .leftJoin(clients, eq(events.clientId, clients.id))
-        .leftJoin(
-          sql`tasks`,
-          sql`tasks.event_id = ${events.id}`
-        )
-        .where(and(...conditions))
-        .groupBy(events.id, clients.companyName)
-        .orderBy(desc(events.eventDate))
-        .limit(limit + 1);
+    // Query events with client info and task counts
+    const results = await db
+      .select({
+        id: events.id,
+        eventName: events.eventName,
+        clientName: clients.companyName,
+        eventDate: events.eventDate,
+        status: events.status,
+        taskCount: sql<number>`COALESCE(COUNT(DISTINCT tasks.id), 0)`,
+        completedTaskCount: sql<number>`COALESCE(COUNT(DISTINCT CASE WHEN tasks.status = 'completed' THEN tasks.id END), 0)`,
+      })
+      .from(events)
+      .leftJoin(clients, eq(events.clientId, clients.id))
+      .leftJoin(sql`tasks`, sql`tasks.event_id = ${events.id}`)
+      .where(and(...conditions))
+      .groupBy(events.id, clients.companyName)
+      .orderBy(desc(events.eventDate))
+      .limit(limit + 1);
 
-      let nextCursor: number | null = null;
-      if (results.length > limit) {
-        const nextItem = results.pop();
-        nextCursor = nextItem!.id;
-      }
+    let nextCursor: number | null = null;
+    if (results.length > limit) {
+      const nextItem = results.pop();
+      nextCursor = nextItem!.id;
+    }
 
-      return {
-        items: results,
-        nextCursor,
-      };
-    }),
+    return {
+      items: results,
+      nextCursor,
+    };
+  }),
 
   // FR-005: Get event by ID with full details
   getById: protectedProcedure
@@ -228,7 +210,7 @@ export const eventRouter = router({
         .orderBy(desc(eventStatusLog.changedAt));
 
       // Get tasks (placeholder until tasks are implemented)
-      const tasks: any[] = [];
+      const tasks: { id: number; title: string; status: string }[] = [];
 
       return {
         ...event,
@@ -238,96 +220,84 @@ export const eventRouter = router({
     }),
 
   // FR-002: Update event status
-  updateStatus: adminProcedure
-    .input(updateStatusInput)
-    .mutation(async ({ ctx, input }) => {
-      const { db, session } = ctx;
+  updateStatus: adminProcedure.input(updateStatusInput).mutation(async ({ ctx, input }) => {
+    const { db, session } = ctx;
 
-      // Get current event
-      const [currentEvent] = await db
-        .select()
-        .from(events)
-        .where(eq(events.id, input.id))
-        .limit(1);
+    // Get current event
+    const [currentEvent] = await db.select().from(events).where(eq(events.id, input.id)).limit(1);
 
-      if (!currentEvent) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Event not found',
-        });
-      }
-
-      if (currentEvent.isArchived) {
-        throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'Cannot update status of archived event',
-        });
-      }
-
-      // Update event status in a transaction
-      await db.transaction(async (tx) => {
-        // Update event
-        await tx
-          .update(events)
-          .set({
-            status: input.newStatus,
-            updatedAt: new Date(),
-          })
-          .where(eq(events.id, input.id));
-
-        // Log status change
-        await tx.insert(eventStatusLog).values({
-          eventId: input.id,
-          oldStatus: currentEvent.status,
-          newStatus: input.newStatus,
-          changedBy: parseInt(session.user.id, 10),
-          notes: input.notes,
-        });
+    if (!currentEvent) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Event not found',
       });
+    }
 
-      return { success: true };
-    }),
+    if (currentEvent.isArchived) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'Cannot update status of archived event',
+      });
+    }
 
-  // FR-006: Update event details
-  update: adminProcedure
-    .input(updateEventInput)
-    .mutation(async ({ ctx, input }) => {
-      const { db } = ctx;
-      const { id, ...updates } = input;
-
-      // Verify event exists
-      const [existingEvent] = await db
-        .select()
-        .from(events)
-        .where(eq(events.id, id))
-        .limit(1);
-
-      if (!existingEvent) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Event not found',
-        });
-      }
-
-      if (existingEvent.isArchived) {
-        throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'Cannot update archived event',
-        });
-      }
-
+    // Update event status in a transaction
+    await db.transaction(async (tx) => {
       // Update event
-      const [updatedEvent] = await db
+      await tx
         .update(events)
         .set({
-          ...updates,
+          status: input.newStatus,
           updatedAt: new Date(),
         })
-        .where(eq(events.id, id))
-        .returning();
+        .where(eq(events.id, input.id));
 
-      return updatedEvent;
-    }),
+      // Log status change
+      await tx.insert(eventStatusLog).values({
+        eventId: input.id,
+        oldStatus: currentEvent.status,
+        newStatus: input.newStatus,
+        changedBy: parseInt(session.user.id, 10),
+        notes: input.notes,
+      });
+    });
+
+    return { success: true };
+  }),
+
+  // FR-006: Update event details
+  update: adminProcedure.input(updateEventInput).mutation(async ({ ctx, input }) => {
+    const { db } = ctx;
+    const { id, ...updates } = input;
+
+    // Verify event exists
+    const [existingEvent] = await db.select().from(events).where(eq(events.id, id)).limit(1);
+
+    if (!existingEvent) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Event not found',
+      });
+    }
+
+    if (existingEvent.isArchived) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'Cannot update archived event',
+      });
+    }
+
+    // Update event
+    const [updatedEvent] = await db
+      .update(events)
+      .set({
+        ...updates,
+        updatedAt: new Date(),
+      })
+      .where(eq(events.id, id))
+      .returning();
+
+    return updatedEvent;
+  }),
 
   // FR-007: Archive event
   archive: adminProcedure
@@ -336,11 +306,7 @@ export const eventRouter = router({
       const { db, session } = ctx;
 
       // Get event
-      const [event] = await db
-        .select()
-        .from(events)
-        .where(eq(events.id, input.id))
-        .limit(1);
+      const [event] = await db.select().from(events).where(eq(events.id, input.id)).limit(1);
 
       if (!event) {
         throw new TRPCError({

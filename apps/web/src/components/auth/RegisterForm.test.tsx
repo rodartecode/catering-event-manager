@@ -1,9 +1,8 @@
-import { render, screen, fireEvent, waitFor } from '../../../test/helpers/render';
 import userEvent from '@testing-library/user-event';
-import { RegisterForm } from './RegisterForm';
-import { signIn } from 'next-auth/react';
-import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { axe } from '../../../test/helpers/axe';
+import { fireEvent, render, screen, waitFor } from '../../../test/helpers/render';
+import { RegisterForm } from './RegisterForm';
 
 // Mock next-auth/react
 vi.mock('next-auth/react', () => ({
@@ -24,7 +23,10 @@ vi.mock('@/lib/trpc', () => ({
   trpc: {
     user: {
       register: {
-        useMutation: (options: { onSuccess?: (data: unknown) => void; onError?: (error: Error) => void }) => ({
+        useMutation: (options: {
+          onSuccess?: (data: unknown) => void;
+          onError?: (error: Error) => void;
+        }) => ({
           mutate: mockMutate.mockImplementation((data) => {
             // Call onSuccess by default
             options.onSuccess?.({ id: '1', email: data.email, name: data.name });

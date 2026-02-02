@@ -1,9 +1,9 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
+import { useDialogId, useFocusTrap } from '@/hooks/use-focus-trap';
 import { trpc } from '@/lib/trpc';
-import { useState, useEffect, useRef } from 'react';
 import { ConflictWarning } from './ConflictWarning';
-import { useFocusTrap, useDialogId } from '@/hooks/use-focus-trap';
 
 interface ResourceAssignmentDialogProps {
   isOpen: boolean;
@@ -33,14 +33,16 @@ export function ResourceAssignmentDialog({
   isOpen,
   onClose,
   taskId,
-  eventId,
+  eventId: _eventId,
   startTime,
   endTime,
   allowTimeEdit = true,
   onSuccess,
 }: ResourceAssignmentDialogProps) {
   const [selectedResources, setSelectedResources] = useState<SelectedResource[]>([]);
-  const [resourceTypeFilter, setResourceTypeFilter] = useState<'staff' | 'equipment' | 'materials' | ''>('');
+  const [resourceTypeFilter, setResourceTypeFilter] = useState<
+    'staff' | 'equipment' | 'materials' | ''
+  >('');
   const [showConflictWarning, setShowConflictWarning] = useState(false);
   const [editedStartTime, setEditedStartTime] = useState(startTime);
   const [editedEndTime, setEditedEndTime] = useState(endTime);
@@ -147,7 +149,11 @@ export function ResourceAssignmentDialog({
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex items-center justify-center min-h-screen px-4">
         {/* Backdrop */}
-        <div className="fixed inset-0 bg-black bg-opacity-50" onClick={handleClose} aria-hidden="true" />
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50"
+          onClick={handleClose}
+          aria-hidden="true"
+        />
 
         {/* Dialog */}
         <div
@@ -160,11 +166,15 @@ export function ResourceAssignmentDialog({
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b">
             <div>
-              <h2 id={titleId} className="text-xl font-semibold">Assign Resources</h2>
+              <h2 id={titleId} className="text-xl font-semibold">
+                Assign Resources
+              </h2>
               {allowTimeEdit ? (
                 <div className="flex flex-wrap gap-2 mt-2">
                   <div className="flex items-center gap-1">
-                    <label htmlFor="resource-start-time" className="text-sm text-gray-500">From:</label>
+                    <label htmlFor="resource-start-time" className="text-sm text-gray-500">
+                      From:
+                    </label>
                     <input
                       id="resource-start-time"
                       type="datetime-local"
@@ -174,7 +184,9 @@ export function ResourceAssignmentDialog({
                     />
                   </div>
                   <div className="flex items-center gap-1">
-                    <label htmlFor="resource-end-time" className="text-sm text-gray-500">To:</label>
+                    <label htmlFor="resource-end-time" className="text-sm text-gray-500">
+                      To:
+                    </label>
                     <input
                       id="resource-end-time"
                       type="datetime-local"
@@ -198,7 +210,13 @@ export function ResourceAssignmentDialog({
               aria-label="Close dialog"
               className="text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -213,9 +231,7 @@ export function ResourceAssignmentDialog({
           <div className="p-6 overflow-y-auto max-h-[60vh]">
             {/* Type Filter */}
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Filter by Type
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Type</label>
               <div className="flex gap-2">
                 <button
                   onClick={() => setResourceTypeFilter('')}
@@ -282,13 +298,18 @@ export function ResourceAssignmentDialog({
 
             {/* Resource List */}
             {resourcesLoading ? (
-              <div className="flex justify-center py-8" aria-busy="true" aria-label="Loading resources">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" aria-hidden="true" />
+              <div
+                className="flex justify-center py-8"
+                aria-busy="true"
+                aria-label="Loading resources"
+              >
+                <div
+                  className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
+                  aria-hidden="true"
+                />
               </div>
             ) : resources?.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                No available resources found
-              </div>
+              <div className="text-center py-8 text-gray-500">No available resources found</div>
             ) : (
               <div className="space-y-2">
                 {resources?.map((resource: AvailableResource) => {
@@ -321,9 +342,7 @@ export function ResourceAssignmentDialog({
                         <div className="flex items-center gap-3">
                           <div
                             className={`w-5 h-5 rounded border flex items-center justify-center ${
-                              isSelected
-                                ? 'bg-blue-600 border-blue-600'
-                                : 'border-gray-300'
+                              isSelected ? 'bg-blue-600 border-blue-600' : 'border-gray-300'
                             }`}
                           >
                             {isSelected && (
@@ -365,7 +384,8 @@ export function ResourceAssignmentDialog({
           {/* Footer */}
           <div className="flex items-center justify-between p-6 border-t bg-gray-50">
             <div className="text-sm text-gray-500">
-              {selectedResources.length} resource{selectedResources.length !== 1 ? 's' : ''} selected
+              {selectedResources.length} resource{selectedResources.length !== 1 ? 's' : ''}{' '}
+              selected
             </div>
             <div className="flex gap-3">
               <button
@@ -376,7 +396,11 @@ export function ResourceAssignmentDialog({
               </button>
               <button
                 onClick={handleAssign}
-                disabled={selectedResources.length === 0 || assignMutation.isPending || editedEndTime <= editedStartTime}
+                disabled={
+                  selectedResources.length === 0 ||
+                  assignMutation.isPending ||
+                  editedEndTime <= editedStartTime
+                }
                 className={`px-4 py-2 rounded-lg text-white transition disabled:opacity-50 disabled:cursor-not-allowed ${
                   conflictData?.hasConflicts && showConflictWarning
                     ? 'bg-yellow-600 hover:bg-yellow-700'
@@ -386,10 +410,10 @@ export function ResourceAssignmentDialog({
                 {assignMutation.isPending
                   ? 'Assigning...'
                   : conflictData?.hasConflicts && showConflictWarning
-                  ? 'Assign Anyway'
-                  : conflictsLoading
-                  ? 'Checking...'
-                  : 'Assign Resources'}
+                    ? 'Assign Anyway'
+                    : conflictsLoading
+                      ? 'Checking...'
+                      : 'Assign Resources'}
               </button>
             </div>
           </div>
