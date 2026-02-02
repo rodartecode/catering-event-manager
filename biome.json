@@ -31,7 +31,9 @@
       "!**/coverage",
       "!**/.turbo",
       "!**/*.config.js",
-      "!**/*.config.ts"
+      "!**/*.config.ts",
+      "!**/.claude/**",
+      "!**/next-env.d.ts"
     ]
   }
 }
