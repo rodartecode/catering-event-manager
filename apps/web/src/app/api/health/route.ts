@@ -2,6 +2,9 @@ import { db } from '@catering-event-manager/database';
 import { sql } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
 
+// Mark as dynamic since health checks require runtime database connectivity
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     await db.execute(sql`SELECT 1`);
