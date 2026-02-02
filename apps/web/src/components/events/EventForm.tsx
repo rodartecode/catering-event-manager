@@ -1,6 +1,6 @@
 'use client';
 
-import { trpc } from '@/lib/trpc';
+import { trpc, type RouterOutput } from '@/lib/trpc';
 import { useState } from 'react';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
@@ -29,7 +29,7 @@ const eventFormSchema = z.object({
 type EventFormData = z.infer<typeof eventFormSchema>;
 
 interface EventFormProps {
-  onSuccess: (event: any) => void;
+  onSuccess: (event: RouterOutput['event']['create']) => void;
   onCancel: () => void;
 }
 
@@ -90,7 +90,7 @@ export function EventForm({ onSuccess, onCancel }: EventFormProps) {
     }
   };
 
-  const updateField = (field: keyof EventFormData, value: any) => {
+  const updateField = (field: keyof EventFormData, value: EventFormData[keyof EventFormData]) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     // Clear error for this field when user starts typing
     if (errors[field]) {
