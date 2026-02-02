@@ -39,10 +39,7 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
         data: {
           ...shape.data,
           // Remove stack trace in production
-          stack:
-            process.env.NODE_ENV === 'development'
-              ? shape.data?.stack
-              : undefined,
+          stack: process.env.NODE_ENV === 'development' ? shape.data?.stack : undefined,
         },
       };
     }
