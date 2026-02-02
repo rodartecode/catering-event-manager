@@ -15,6 +15,13 @@
       "when": 1768965419630,
       "tag": "0002_tasks",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1770056393452,
+      "tag": "0002_strong_vindicator",
+      "breakpoints": true
     }
   ]
 }

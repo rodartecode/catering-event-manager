@@ -17,6 +17,38 @@ export const createTRPCContext = async (opts: FetchCreateContextFnOptions) => {
 
 const t = initTRPC.context<typeof createTRPCContext>().create({
   transformer: superjson,
+  errorFormatter: ({ shape, error }) => {
+    // Log full error server-side for debugging
+    logger.error('tRPC error', error, {
+      code: shape.code,
+      path: shape.data?.path,
+    });
+
+    // Sanitize database/internal errors for client
+    const isDatabaseError =
+      error.cause?.name === 'PostgresError' ||
+      error.message?.includes('Failed query:') ||
+      error.message?.includes('SELECT') ||
+      error.message?.includes('INSERT') ||
+      error.message?.includes('UPDATE');
+
+    if (isDatabaseError || shape.data?.code === 'INTERNAL_SERVER_ERROR') {
+      return {
+        ...shape,
+        message: 'An error occurred. Please try again later.',
+        data: {
+          ...shape.data,
+          // Remove stack trace in production
+          stack:
+            process.env.NODE_ENV === 'development'
+              ? shape.data?.stack
+              : undefined,
+        },
+      };
+    }
+
+    return shape;
+  },
 });
 
 export const router = t.router;

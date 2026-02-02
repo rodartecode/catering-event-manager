@@ -5,6 +5,9 @@ import { Providers } from './providers';
 export const metadata: Metadata = {
   title: 'Catering Event Manager',
   description: 'Manage catering events from inquiry to follow-up',
+  icons: {
+    icon: '/api/icon',
+  },
 };
 
 export default function RootLayout({

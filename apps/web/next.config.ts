@@ -62,6 +62,15 @@ const nextConfig: NextConfig = {
       bodySizeLimit: '2mb',
     },
   },
+  async redirects() {
+    return [
+      {
+        source: '/favicon.ico',
+        destination: '/api/icon',
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {

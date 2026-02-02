@@ -5,6 +5,11 @@ export default auth((req) => {
   const isLoggedIn = !!req.auth;
   const { pathname } = req.nextUrl;
 
+  // Skip auth for static assets and icons
+  if (pathname === '/icon.svg' || pathname === '/favicon.ico') {
+    return;
+  }
+
   const isAuthPage = pathname.startsWith('/login') || pathname.startsWith('/register');
 
   // Redirect authenticated users away from auth pages
@@ -30,5 +35,5 @@ export default auth((req) => {
 });
 
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|icon.svg|.*\\.png$|.*\\.ico$).*)'],
 };
