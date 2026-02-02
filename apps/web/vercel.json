@@ -1,4 +1,7 @@
 {
+  "git": {
+    "deploymentEnabled": false
+  },
   "buildCommand": "cd ../.. && pnpm build --filter=@catering-event-manager/web",
   "installCommand": "cd ../.. && pnpm install",
   "framework": "nextjs",

@@ -5,6 +5,6 @@ export default defineConfig({
   out: './src/migrations',
   dialect: 'postgresql',
   dbCredentials: {
-    url: process.env.DATABASE_URL || 'postgresql://admin:changeme@localhost:5432/catering_events',
+    url: process.env.SUPABASE_DIRECT_URL || process.env.DATABASE_URL || 'postgresql://admin:changeme@localhost:5432/catering_events',
   },
 });
