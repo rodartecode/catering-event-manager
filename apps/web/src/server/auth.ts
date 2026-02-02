@@ -1,13 +1,13 @@
-import NextAuth from 'next-auth';
-import CredentialsProvider from 'next-auth/providers/credentials';
 import { DrizzleAdapter } from '@auth/drizzle-adapter';
 import { db } from '@catering-event-manager/database/client';
 import { users, verificationTokens } from '@catering-event-manager/database/schema';
-import { eq, and, gt } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
-import type { UserRole } from '@/types/next-auth';
-import { rateLimitMagicLink } from '@/lib/rate-limit';
+import { and, eq, gt } from 'drizzle-orm';
+import NextAuth from 'next-auth';
+import CredentialsProvider from 'next-auth/providers/credentials';
 import { logger } from '@/lib/logger';
+import { rateLimitMagicLink } from '@/lib/rate-limit';
+import type { UserRole } from '@/types/next-auth';
 
 // Magic link token expiry (15 minutes)
 const MAGIC_LINK_EXPIRY_MINUTES = 15;
@@ -76,7 +76,13 @@ export async function createMagicLinkToken(email: string): Promise<MagicLinkResu
 export async function verifyMagicLinkToken(
   email: string,
   token: string
-): Promise<{ id: string; email: string; name: string; role: UserRole; clientId: number | null } | null> {
+): Promise<{
+  id: string;
+  email: string;
+  name: string;
+  role: UserRole;
+  clientId: number | null;
+} | null> {
   // Find the token
   const tokenRecords = await db
     .select()
@@ -135,6 +141,7 @@ export async function verifyMagicLinkToken(
 export const { handlers, signIn, signOut, auth } = NextAuth({
   // Cast needed to resolve version conflict between @auth/drizzle-adapter and @auth/core
   // biome-ignore lint/suspicious/noExplicitAny: DrizzleAdapter type mismatch
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   adapter: DrizzleAdapter(db) as any,
   session: {
     strategy: 'jwt',

@@ -1,10 +1,10 @@
 'use client';
 
-import { signIn } from 'next-auth/react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { signIn } from 'next-auth/react';
 import { useState } from 'react';
 import { z } from 'zod';
-import Link from 'next/link';
 import { trpc } from '@/lib/trpc';
 
 const registerSchema = z
@@ -35,7 +35,7 @@ export function RegisterForm() {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const registerMutation = trpc.user.register.useMutation({
-    onSuccess: async (user) => {
+    onSuccess: async (_user) => {
       // Auto-login after registration
       const result = await signIn('credentials', {
         email: formData.email,
@@ -97,12 +97,8 @@ export function RegisterForm() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div>
-          <h1 className="text-center text-3xl font-bold text-gray-900">
-            Catering Event Manager
-          </h1>
-          <h2 className="mt-6 text-center text-xl text-gray-600">
-            Create your account
-          </h2>
+          <h1 className="text-center text-3xl font-bold text-gray-900">Catering Event Manager</h1>
+          <h2 className="mt-6 text-center text-xl text-gray-600">Create your account</h2>
         </div>
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-6">
@@ -162,7 +158,10 @@ export function RegisterForm() {
             </div>
 
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="confirmPassword"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Confirm Password
               </label>
               <input
@@ -198,7 +197,8 @@ export function RegisterForm() {
               </select>
               {errors.role && <p className="mt-1 text-sm text-red-600">{errors.role}</p>}
               <p className="mt-1 text-xs text-gray-500">
-                Administrators have full access. Managers have read-only access with limited update permissions.
+                Administrators have full access. Managers have read-only access with limited update
+                permissions.
               </p>
             </div>
 
