@@ -4,7 +4,7 @@
  * for end-to-end testing with the real conflict detection engine.
  */
 
-import { execSync, spawn, type ChildProcess } from 'child_process';
+import { type ChildProcess, execSync, spawn } from 'child_process';
 import net from 'net';
 import path from 'path';
 
@@ -109,11 +109,7 @@ export async function startGoService(dbUrl: string): Promise<number> {
 /**
  * Poll the health check endpoint until it responds or retries are exhausted.
  */
-async function waitForHealthCheck(
-  port: number,
-  retries = 10,
-  intervalMs = 1000
-): Promise<void> {
+async function waitForHealthCheck(port: number, retries = 10, intervalMs = 1000): Promise<void> {
   const url = `http://localhost:${port}/api/v1/health`;
 
   for (let i = 0; i < retries; i++) {

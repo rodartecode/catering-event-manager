@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server';
 import { db } from '@catering-event-manager/database';
 import { sql } from 'drizzle-orm';
+import { NextResponse } from 'next/server';
 
 export async function GET() {
   try {

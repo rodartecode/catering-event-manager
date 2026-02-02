@@ -1,7 +1,7 @@
 'use client';
 
-import { ResourceForm } from '@/components/resources/ResourceForm';
 import { useRouter } from 'next/navigation';
+import { ResourceForm } from '@/components/resources/ResourceForm';
 
 export default function NewResourcePage() {
   const router = useRouter();

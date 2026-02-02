@@ -86,3 +86,5 @@ tmp/
 .eslintcache
 # next-agents-md
 .next-docs/
+.env
+.mcp.json

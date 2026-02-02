@@ -1,13 +1,6 @@
-import {
-  pgTable,
-  serial,
-  integer,
-  timestamp,
-  text,
-  index,
-} from 'drizzle-orm/pg-core';
-import { resources } from './resources';
+import { index, integer, pgTable, serial, text, timestamp } from 'drizzle-orm/pg-core';
 import { events } from './events';
+import { resources } from './resources';
 import { tasks } from './tasks';
 
 // Note: PostgreSQL tstzrange type is not directly supported by Drizzle ORM

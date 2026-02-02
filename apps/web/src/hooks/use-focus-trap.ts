@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useCallback, type RefObject } from 'react';
+import { type RefObject, useCallback, useEffect, useRef } from 'react';
 
 /**
  * A list of focusable element selectors.
@@ -79,9 +79,7 @@ export function useFocusTrap<T extends HTMLElement = HTMLElement>(
   const getFocusableElements = useCallback((): HTMLElement[] => {
     if (!containerRef.current) return [];
     const elements = containerRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTORS);
-    return Array.from(elements).filter(
-      (el) => !el.hasAttribute('disabled') && el.tabIndex !== -1
-    );
+    return Array.from(elements).filter((el) => !el.hasAttribute('disabled') && el.tabIndex !== -1);
   }, [containerRef]);
 
   /**

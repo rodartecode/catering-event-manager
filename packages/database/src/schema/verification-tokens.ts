@@ -1,4 +1,4 @@
-import { pgTable, varchar, timestamp, primaryKey } from 'drizzle-orm/pg-core';
+import { pgTable, primaryKey, timestamp, varchar } from 'drizzle-orm/pg-core';
 
 // Next-Auth verification tokens for magic link authentication
 export const verificationTokens = pgTable(

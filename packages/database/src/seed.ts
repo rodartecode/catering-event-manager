@@ -5,23 +5,18 @@
  * Run: pnpm db:seed (from packages/database or root)
  */
 
+import bcrypt from 'bcryptjs';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import bcrypt from 'bcryptjs';
-import {
-  users,
-  clients,
-  events,
-  tasks,
-  resources,
-  communications,
-} from './schema';
+import { clients, communications, events, resources, tasks, users } from './schema';
 
 const connectionString = process.env.DATABASE_URL;
 
 if (!connectionString) {
   console.error('ERROR: DATABASE_URL environment variable is not set');
-  console.error('Example: DATABASE_URL="postgresql://admin:changeme@localhost:5432/catering_events"');
+  console.error(
+    'Example: DATABASE_URL="postgresql://admin:changeme@localhost:5432/catering_events"'
+  );
   process.exit(1);
 }
 

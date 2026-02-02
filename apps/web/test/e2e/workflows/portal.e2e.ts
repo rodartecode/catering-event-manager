@@ -8,15 +8,15 @@
  * - Data isolation (clients only see their own data)
  */
 
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
+import { login, TEST_ADMIN } from '../helpers/auth';
 import {
   cleanTestDatabase,
-  seedPortalTestData,
-  seedTestEvent,
-  seedTestClient,
   createMagicLinkToken,
+  seedPortalTestData,
+  seedTestClient,
+  seedTestEvent,
 } from '../helpers/db';
-import { TEST_ADMIN, login } from '../helpers/auth';
 
 test.describe('Client Portal Workflow', () => {
   let portalData: Awaited<ReturnType<typeof seedPortalTestData>>;
@@ -61,9 +61,9 @@ test.describe('Client Portal Workflow', () => {
       await page.click('button[type="submit"]');
 
       // Should show success message (without revealing if email exists)
-      await expect(
-        page.locator('text=/check your email|magic link|email sent/i')
-      ).toBeVisible({ timeout: 10000 });
+      await expect(page.locator('text=/check your email|magic link|email sent/i')).toBeVisible({
+        timeout: 10000,
+      });
     });
 
     test('magic link request handles unknown email gracefully', async ({ page }) => {
@@ -76,9 +76,9 @@ test.describe('Client Portal Workflow', () => {
       await page.click('button[type="submit"]');
 
       // Should show same message (prevent email enumeration)
-      await expect(
-        page.locator('text=/check your email|magic link|email sent/i')
-      ).toBeVisible({ timeout: 10000 });
+      await expect(page.locator('text=/check your email|magic link|email sent/i')).toBeVisible({
+        timeout: 10000,
+      });
     });
   });
 
@@ -88,20 +88,24 @@ test.describe('Client Portal Workflow', () => {
       const token = await createMagicLinkToken(portalData.client.email);
 
       // Navigate to portal with magic link parameters
-      await page.goto(`/portal/login?email=${encodeURIComponent(portalData.client.email)}&token=${token}`);
+      await page.goto(
+        `/portal/login?email=${encodeURIComponent(portalData.client.email)}&token=${token}`
+      );
 
       // Should redirect to portal dashboard (or show dashboard content)
       await page.waitForURL(/\/portal(?!\/login)/, { timeout: 10000 });
 
       // Should see welcome message or dashboard content
-      await expect(
-        page.locator('text=/welcome|dashboard|your events/i')
-      ).toBeVisible({ timeout: 10000 });
+      await expect(page.locator('text=/welcome|dashboard|your events/i')).toBeVisible({
+        timeout: 10000,
+      });
     });
 
     test('portal shows client name in welcome', async ({ page }) => {
       const token = await createMagicLinkToken(portalData.client.email);
-      await page.goto(`/portal/login?email=${encodeURIComponent(portalData.client.email)}&token=${token}`);
+      await page.goto(
+        `/portal/login?email=${encodeURIComponent(portalData.client.email)}&token=${token}`
+      );
       await page.waitForURL(/\/portal(?!\/login)/, { timeout: 10000 });
 
       // Should show client or company info
@@ -115,18 +119,24 @@ test.describe('Client Portal Workflow', () => {
 
     test('portal shows client events', async ({ page }) => {
       const token = await createMagicLinkToken(portalData.client.email);
-      await page.goto(`/portal/login?email=${encodeURIComponent(portalData.client.email)}&token=${token}`);
+      await page.goto(
+        `/portal/login?email=${encodeURIComponent(portalData.client.email)}&token=${token}`
+      );
       await page.waitForURL(/\/portal(?!\/login)/, { timeout: 10000 });
 
       // Should show the event created for this client
-      await expect(page.locator(`text=${portalData.event.eventName}`)).toBeVisible({ timeout: 10000 });
+      await expect(page.locator(`text=${portalData.event.eventName}`)).toBeVisible({
+        timeout: 10000,
+      });
     });
   });
 
   test.describe('Event Details', () => {
     test('portal user can view event details', async ({ page }) => {
       const token = await createMagicLinkToken(portalData.client.email);
-      await page.goto(`/portal/login?email=${encodeURIComponent(portalData.client.email)}&token=${token}`);
+      await page.goto(
+        `/portal/login?email=${encodeURIComponent(portalData.client.email)}&token=${token}`
+      );
       await page.waitForURL(/\/portal(?!\/login)/, { timeout: 10000 });
 
       // Click on the event
@@ -141,7 +151,9 @@ test.describe('Client Portal Workflow', () => {
 
     test('event details show status', async ({ page }) => {
       const token = await createMagicLinkToken(portalData.client.email);
-      await page.goto(`/portal/login?email=${encodeURIComponent(portalData.client.email)}&token=${token}`);
+      await page.goto(
+        `/portal/login?email=${encodeURIComponent(portalData.client.email)}&token=${token}`
+      );
       await page.waitForURL(/\/portal(?!\/login)/, { timeout: 10000 });
 
       // Navigate to event details
@@ -171,7 +183,9 @@ test.describe('Client Portal Workflow', () => {
 
       // Login as the original portal user
       const token = await createMagicLinkToken(portalData.client.email);
-      await page.goto(`/portal/login?email=${encodeURIComponent(portalData.client.email)}&token=${token}`);
+      await page.goto(
+        `/portal/login?email=${encodeURIComponent(portalData.client.email)}&token=${token}`
+      );
       await page.waitForURL(/\/portal(?!\/login)/, { timeout: 10000 });
 
       // Should NOT see the other client's event
@@ -199,7 +213,9 @@ test.describe('Client Portal Workflow', () => {
 
       // Login as the original portal user
       const token = await createMagicLinkToken(portalData.client.email);
-      await page.goto(`/portal/login?email=${encodeURIComponent(portalData.client.email)}&token=${token}`);
+      await page.goto(
+        `/portal/login?email=${encodeURIComponent(portalData.client.email)}&token=${token}`
+      );
       await page.waitForURL(/\/portal(?!\/login)/, { timeout: 10000 });
 
       // Try to access the other client's event directly
@@ -211,7 +227,8 @@ test.describe('Client Portal Workflow', () => {
 
       // Should show error or redirect to portal
       const url = page.url();
-      const showsError = pageContent?.toLowerCase().includes('not found') ||
+      const showsError =
+        pageContent?.toLowerCase().includes('not found') ||
         pageContent?.toLowerCase().includes('access denied') ||
         pageContent?.toLowerCase().includes('error');
       const redirected = !url.includes(`/portal/events/${otherEvent.id}`);
@@ -223,7 +240,9 @@ test.describe('Client Portal Workflow', () => {
   test.describe('Portal vs Staff Separation', () => {
     test('portal users cannot access staff dashboard', async ({ page }) => {
       const token = await createMagicLinkToken(portalData.client.email);
-      await page.goto(`/portal/login?email=${encodeURIComponent(portalData.client.email)}&token=${token}`);
+      await page.goto(
+        `/portal/login?email=${encodeURIComponent(portalData.client.email)}&token=${token}`
+      );
       await page.waitForURL(/\/portal(?!\/login)/, { timeout: 10000 });
 
       // Try to access staff dashboard
@@ -245,7 +264,8 @@ test.describe('Client Portal Workflow', () => {
       // (staff auth doesn't work for portal)
       const url = page.url();
       const redirectedToPortalLogin = url.includes('/portal/login');
-      const stillOnMainApp = !url.includes('/portal') || url === 'http://localhost:3000/portal/login';
+      const stillOnMainApp =
+        !url.includes('/portal') || url === 'http://localhost:3000/portal/login';
 
       expect(redirectedToPortalLogin || stillOnMainApp).toBe(true);
     });
@@ -254,17 +274,23 @@ test.describe('Client Portal Workflow', () => {
   test.describe('Portal Navigation', () => {
     test('portal has navigation to events list', async ({ page }) => {
       const token = await createMagicLinkToken(portalData.client.email);
-      await page.goto(`/portal/login?email=${encodeURIComponent(portalData.client.email)}&token=${token}`);
+      await page.goto(
+        `/portal/login?email=${encodeURIComponent(portalData.client.email)}&token=${token}`
+      );
       await page.waitForURL(/\/portal(?!\/login)/, { timeout: 10000 });
 
       // Should have link to events
-      const eventsLink = page.locator('a[href*="/portal/events"], a:has-text("Events"), a:has-text("View All")');
+      const eventsLink = page.locator(
+        'a[href*="/portal/events"], a:has-text("Events"), a:has-text("View All")'
+      );
       await expect(eventsLink.first()).toBeVisible();
     });
 
     test('portal user can navigate back to dashboard from event', async ({ page }) => {
       const token = await createMagicLinkToken(portalData.client.email);
-      await page.goto(`/portal/login?email=${encodeURIComponent(portalData.client.email)}&token=${token}`);
+      await page.goto(
+        `/portal/login?email=${encodeURIComponent(portalData.client.email)}&token=${token}`
+      );
       await page.waitForURL(/\/portal(?!\/login)/, { timeout: 10000 });
 
       // Navigate to event
@@ -272,8 +298,10 @@ test.describe('Client Portal Workflow', () => {
       await page.waitForURL(/\/portal\/events\/\d+/, { timeout: 10000 });
 
       // Find and click back/home link
-      const backLink = page.locator('a[href="/portal"], a:has-text("Back"), a:has-text("Dashboard"), a:has-text("Home")');
-      if (await backLink.count() > 0) {
+      const backLink = page.locator(
+        'a[href="/portal"], a:has-text("Back"), a:has-text("Dashboard"), a:has-text("Home")'
+      );
+      if ((await backLink.count()) > 0) {
         await backLink.first().click();
         await page.waitForURL(/\/portal(?:\/)?$/, { timeout: 10000 });
       } else {
@@ -292,7 +320,9 @@ test.describe('Client Portal Workflow', () => {
       const token = await createMagicLinkToken(portalData.client.email, -1);
 
       // Try to use the expired token
-      await page.goto(`/portal/login?email=${encodeURIComponent(portalData.client.email)}&token=${token}`);
+      await page.goto(
+        `/portal/login?email=${encodeURIComponent(portalData.client.email)}&token=${token}`
+      );
 
       // Should stay on login page or show error
       await page.waitForLoadState('networkidle');
@@ -301,7 +331,8 @@ test.describe('Client Portal Workflow', () => {
       const pageContent = await page.textContent('body');
 
       const isOnLogin = url.includes('/portal/login');
-      const showsError = pageContent?.toLowerCase().includes('expired') ||
+      const showsError =
+        pageContent?.toLowerCase().includes('expired') ||
         pageContent?.toLowerCase().includes('invalid') ||
         pageContent?.toLowerCase().includes('error');
 

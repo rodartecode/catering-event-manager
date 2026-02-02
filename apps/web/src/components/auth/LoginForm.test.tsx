@@ -1,9 +1,9 @@
-import { render, screen, fireEvent, waitFor } from '../../../test/helpers/render';
 import userEvent from '@testing-library/user-event';
-import { LoginForm } from './LoginForm';
 import { signIn } from 'next-auth/react';
-import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { axe } from '../../../test/helpers/axe';
+import { fireEvent, render, screen, waitFor } from '../../../test/helpers/render';
+import { LoginForm } from './LoginForm';
 
 // Mock next-auth/react
 vi.mock('next-auth/react', () => ({
@@ -75,7 +75,12 @@ describe('LoginForm', () => {
   });
 
   it('calls signIn with credentials on valid submit', async () => {
-    vi.mocked(signIn).mockResolvedValue({ error: undefined, ok: true, status: 200, url: '' } as never);
+    vi.mocked(signIn).mockResolvedValue({
+      error: undefined,
+      ok: true,
+      status: 200,
+      url: '',
+    } as never);
 
     render(<LoginForm />);
 
@@ -91,7 +96,12 @@ describe('LoginForm', () => {
   });
 
   it('shows error message on failed login', async () => {
-    vi.mocked(signIn).mockResolvedValue({ error: 'CredentialsSignin', ok: false, status: 401, url: '' } as never);
+    vi.mocked(signIn).mockResolvedValue({
+      error: 'CredentialsSignin',
+      ok: false,
+      status: 401,
+      url: '',
+    } as never);
 
     render(<LoginForm />);
 

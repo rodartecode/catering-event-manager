@@ -94,10 +94,14 @@ This link will expire in 15 minutes. If you didn't request this email, you can s
     });
     return { success: true, messageId: data?.id };
   } catch (error) {
-    logger.error('Magic link email error', error instanceof Error ? error : new Error(String(error)), {
-      context: 'sendMagicLinkEmail',
-      recipientDomain: to.split('@')[1],
-    });
+    logger.error(
+      'Magic link email error',
+      error instanceof Error ? error : new Error(String(error)),
+      {
+        context: 'sendMagicLinkEmail',
+        recipientDomain: to.split('@')[1],
+      }
+    );
     throw error;
   }
 }

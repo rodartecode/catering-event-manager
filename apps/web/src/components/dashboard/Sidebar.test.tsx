@@ -1,5 +1,5 @@
-import { render, screen } from '../../../test/helpers/render';
 import { userEvent } from '@testing-library/user-event';
+import { render, screen } from '../../../test/helpers/render';
 import { Sidebar } from './Sidebar';
 
 // Mock Next.js navigation hooks

@@ -10,12 +10,10 @@ export default function NotFound() {
           </div>
         </div>
 
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">
-          Page Not Found
-        </h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">Page Not Found</h1>
         <p className="text-gray-600 mb-8">
-          Sorry, we couldn&apos;t find the page you&apos;re looking for. The page may have
-          been moved, deleted, or never existed.
+          Sorry, we couldn&apos;t find the page you&apos;re looking for. The page may have been
+          moved, deleted, or never existed.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">

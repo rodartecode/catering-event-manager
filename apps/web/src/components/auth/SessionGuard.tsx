@@ -1,7 +1,7 @@
 'use client';
 
+import { usePathname, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useRef } from 'react';
 
 interface SessionGuardProps {

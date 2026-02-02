@@ -11,8 +11,8 @@
  * - Magic link requests: 3 requests/5 minutes per email
  */
 
-import { getRedisClient } from './redis';
 import { logger } from './logger';
+import { getRedisClient } from './redis';
 
 export interface RateLimitResult {
   success: boolean;
@@ -284,10 +284,7 @@ export function createRateLimitResponse(result: RateLimitResult): Response {
 /**
  * Add rate limit headers to a response
  */
-export function addRateLimitHeaders(
-  response: Response,
-  result: RateLimitResult
-): Response {
+export function addRateLimitHeaders(response: Response, result: RateLimitResult): Response {
   const headers = new Headers(response.headers);
   headers.set('X-RateLimit-Limit', String(result.limit));
   headers.set('X-RateLimit-Remaining', String(result.remaining));

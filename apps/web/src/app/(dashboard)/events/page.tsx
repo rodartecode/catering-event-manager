@@ -1,13 +1,20 @@
 'use client';
 
-import { trpc } from '@/lib/trpc';
+import Link from 'next/link';
 import { useState } from 'react';
 import { EventCard } from '@/components/events/EventCard';
 import { EventListSkeleton } from '@/components/events/EventListSkeleton';
+import { trpc } from '@/lib/trpc';
 import { useIsAdmin } from '@/lib/use-auth';
-import Link from 'next/link';
 
-type EventStatus = 'inquiry' | 'planning' | 'preparation' | 'in_progress' | 'completed' | 'follow_up' | 'all';
+type EventStatus =
+  | 'inquiry'
+  | 'planning'
+  | 'preparation'
+  | 'in_progress'
+  | 'completed'
+  | 'follow_up'
+  | 'all';
 
 export default function EventsPage() {
   const { isAdmin } = useIsAdmin();
@@ -115,10 +122,7 @@ export default function EventsPage() {
       ) : events.length === 0 ? (
         <div className="bg-white rounded-lg shadow p-12 text-center">
           <p className="text-gray-500 text-lg">No events found</p>
-          <Link
-            href="/events/new"
-            className="inline-block mt-4 text-blue-600 hover:text-blue-700"
-          >
+          <Link href="/events/new" className="inline-block mt-4 text-blue-600 hover:text-blue-700">
             Create your first event
           </Link>
         </div>

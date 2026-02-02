@@ -4,10 +4,10 @@
  * Tests login, logout, and role-based access control.
  */
 
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 import { login, logout, TEST_ADMIN, TEST_MANAGER } from '../helpers/auth';
-import { cleanTestDatabase, seedTestUser } from '../helpers/db';
 import { checkA11y } from '../helpers/axe';
+import { cleanTestDatabase, seedTestUser } from '../helpers/db';
 
 test.describe('Authentication Workflow', () => {
   test.beforeAll(async () => {

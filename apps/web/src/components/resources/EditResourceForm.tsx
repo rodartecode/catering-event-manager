@@ -1,10 +1,10 @@
 'use client';
 
-import { trpc } from '@/lib/trpc';
 import { useState } from 'react';
-import { z } from 'zod';
 import toast from 'react-hot-toast';
+import { z } from 'zod';
 import { useFormDirty } from '@/hooks/use-form-dirty';
+import { trpc } from '@/lib/trpc';
 
 const resourceFormSchema = z.object({
   name: z
@@ -18,10 +18,7 @@ const resourceFormSchema = z.object({
     .string()
     .optional()
     .nullable()
-    .refine(
-      (val) => !val || !isNaN(parseFloat(val)),
-      'Hourly rate must be a valid number'
-    ),
+    .refine((val) => !val || !isNaN(parseFloat(val)), 'Hourly rate must be a valid number'),
   notes: z.string().optional().nullable(),
   isAvailable: z.boolean(),
 });

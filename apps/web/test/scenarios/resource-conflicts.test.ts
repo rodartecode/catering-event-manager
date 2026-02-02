@@ -1,21 +1,18 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-  setupTestDatabase,
   cleanDatabase,
-  teardownTestDatabase,
+  setupTestDatabase,
   type TestDatabase,
+  teardownTestDatabase,
 } from '../helpers/db';
 import {
-  createAdminCaller,
-  testUsers,
-} from '../helpers/trpc';
-import {
-  createUser,
   createClient,
   createEvent,
-  createTask,
   createResource,
+  createTask,
+  createUser,
 } from '../helpers/factories';
+import { createAdminCaller, testUsers } from '../helpers/trpc';
 
 // Mock the scheduling client
 vi.mock('@/server/services/scheduling-client', () => ({
@@ -36,7 +33,7 @@ vi.mock('@/server/services/scheduling-client', () => ({
   },
 }));
 
-import { schedulingClient, SchedulingClientError } from '@/server/services/scheduling-client';
+import { SchedulingClientError, schedulingClient } from '@/server/services/scheduling-client';
 
 const mockCheckConflicts = vi.mocked(schedulingClient.checkConflicts);
 

@@ -2,7 +2,10 @@
 
 function TaskCardSkeleton() {
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4 animate-pulse" aria-hidden="true">
+    <div
+      className="bg-white rounded-lg border border-gray-200 p-4 animate-pulse"
+      aria-hidden="true"
+    >
       <div className="flex justify-between items-start mb-3">
         <div className="h-5 bg-gray-200 rounded w-40" />
         <div className="h-5 bg-gray-200 rounded w-20" />

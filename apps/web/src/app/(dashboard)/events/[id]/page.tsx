@@ -1,13 +1,13 @@
 'use client';
 
-import { trpc } from '@/lib/trpc';
 import { useParams, useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { EventStatusBadge } from '@/components/events/EventStatusBadge';
 import { EventStatusTimeline } from '@/components/events/EventStatusTimeline';
 import { EventStatusUpdateDialog } from '@/components/events/EventStatusUpdateDialog';
 import { TaskList } from '@/components/tasks';
+import { trpc } from '@/lib/trpc';
 import { useIsAdmin } from '@/lib/use-auth';
-import { useState } from 'react';
 
 export default function EventDetailPage() {
   const { isAdmin } = useIsAdmin();
@@ -17,10 +17,11 @@ export default function EventDetailPage() {
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
   const [isArchiveDialogOpen, setIsArchiveDialogOpen] = useState(false);
 
-  const { data: event, isLoading, error } = trpc.event.getById.useQuery(
-    { id: eventId },
-    { refetchInterval: 5000 },
-  );
+  const {
+    data: event,
+    isLoading,
+    error,
+  } = trpc.event.getById.useQuery({ id: eventId }, { refetchInterval: 5000 });
   const archiveMutation = trpc.event.archive.useMutation({
     onSuccess: () => {
       setIsArchiveDialogOpen(false);
@@ -127,18 +128,14 @@ export default function EventDetailPage() {
 
               {event.estimatedAttendees && (
                 <div>
-                  <label className="text-sm font-medium text-gray-500">
-                    Estimated Attendees
-                  </label>
+                  <label className="text-sm font-medium text-gray-500">Estimated Attendees</label>
                   <p className="text-gray-900">{event.estimatedAttendees}</p>
                 </div>
               )}
 
               <div>
                 <label className="text-sm font-medium text-gray-500">Created</label>
-                <p className="text-gray-900">
-                  {new Date(event.createdAt).toLocaleDateString()}
-                </p>
+                <p className="text-gray-900">{new Date(event.createdAt).toLocaleDateString()}</p>
               </div>
             </div>
 

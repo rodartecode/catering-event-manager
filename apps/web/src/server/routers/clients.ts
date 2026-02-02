@@ -1,15 +1,10 @@
-import { z } from "zod";
-import { router, protectedProcedure, adminProcedure } from "../trpc";
-import {
-  clients,
-  communications,
-  events,
-  users,
-} from "@catering-event-manager/database/schema";
-import { eq, desc, and, lte, sql } from "drizzle-orm";
-import { TRPCError } from "@trpc/server";
-import { sendWelcomeEmail } from "@/lib/email";
-import { logger } from "@/lib/logger";
+import { clients, communications, events, users } from '@catering-event-manager/database/schema';
+import { TRPCError } from '@trpc/server';
+import { and, desc, eq, lte, sql } from 'drizzle-orm';
+import { z } from 'zod';
+import { sendWelcomeEmail } from '@/lib/email';
+import { logger } from '@/lib/logger';
+import { adminProcedure, protectedProcedure, router } from '../trpc';
 
 export const clientsRouter = router({
   // ============================================
@@ -20,15 +15,10 @@ export const clientsRouter = router({
     return ctx.db.select().from(clients).orderBy(desc(clients.createdAt));
   }),
 
-  getById: protectedProcedure
-    .input(z.object({ id: z.number() }))
-    .query(async ({ ctx, input }) => {
-      const [client] = await ctx.db
-        .select()
-        .from(clients)
-        .where(eq(clients.id, input.id));
-      return client;
-    }),
+  getById: protectedProcedure.input(z.object({ id: z.number() })).query(async ({ ctx, input }) => {
+    const [client] = await ctx.db.select().from(clients).where(eq(clients.id, input.id));
+    return client;
+  }),
 
   create: adminProcedure
     .input(
@@ -78,9 +68,7 @@ export const clientsRouter = router({
       return ctx.db
         .select()
         .from(events)
-        .where(
-          and(eq(events.clientId, input.clientId), eq(events.isArchived, false))
-        )
+        .where(and(eq(events.clientId, input.clientId), eq(events.isArchived, false)))
         .orderBy(desc(events.eventDate));
     }),
 
@@ -93,7 +81,7 @@ export const clientsRouter = router({
       z.object({
         eventId: z.number(),
         clientId: z.number(),
-        type: z.enum(["email", "phone", "meeting", "other"]),
+        type: z.enum(['email', 'phone', 'meeting', 'other']),
         subject: z.string().max(255).optional(),
         notes: z.string().optional(),
         contactedAt: z.date().optional(),
@@ -215,10 +203,7 @@ export const clientsRouter = router({
       .innerJoin(clients, eq(communications.clientId, clients.id))
       .innerJoin(events, eq(communications.eventId, events.id))
       .where(
-        and(
-          lte(communications.followUpDate, today),
-          eq(communications.followUpCompleted, false)
-        )
+        and(lte(communications.followUpDate, today), eq(communications.followUpCompleted, false))
       )
       .orderBy(communications.followUpDate);
 
@@ -228,9 +213,7 @@ export const clientsRouter = router({
         const now = new Date();
         now.setHours(0, 0, 0, 0);
         const daysOverdue = followUpDate
-          ? Math.floor(
-              (now.getTime() - followUpDate.getTime()) / (1000 * 60 * 60 * 24)
-            )
+          ? Math.floor((now.getTime() - followUpDate.getTime()) / (1000 * 60 * 60 * 24))
           : 0;
 
         return {
@@ -258,27 +241,21 @@ export const clientsRouter = router({
       const { clientId, contactEmail, sendWelcome } = input;
 
       // Check if client exists
-      const [client] = await ctx.db
-        .select()
-        .from(clients)
-        .where(eq(clients.id, clientId));
+      const [client] = await ctx.db.select().from(clients).where(eq(clients.id, clientId));
 
       if (!client) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Client not found" });
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Client not found' });
       }
 
       // Check if user already exists with this email
-      const [existingUser] = await ctx.db
-        .select()
-        .from(users)
-        .where(eq(users.email, contactEmail));
+      const [existingUser] = await ctx.db.select().from(users).where(eq(users.email, contactEmail));
 
       if (existingUser) {
         // If user exists but is linked to a different client, error
         if (existingUser.clientId && existingUser.clientId !== clientId) {
           throw new TRPCError({
-            code: "CONFLICT",
-            message: "Email already associated with another client",
+            code: 'CONFLICT',
+            message: 'Email already associated with another client',
           });
         }
 
@@ -286,7 +263,7 @@ export const clientsRouter = router({
         await ctx.db
           .update(users)
           .set({
-            role: "client",
+            role: 'client',
             clientId: clientId,
             isActive: true,
             updatedAt: new Date(),
@@ -297,7 +274,7 @@ export const clientsRouter = router({
         await ctx.db.insert(users).values({
           email: contactEmail,
           name: client.contactName,
-          role: "client",
+          role: 'client',
           clientId: clientId,
           isActive: true,
           passwordHash: null, // Magic link users don't have passwords
@@ -317,7 +294,7 @@ export const clientsRouter = router({
 
       // Send welcome email if requested
       if (sendWelcome) {
-        const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+        const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
         try {
           await sendWelcomeEmail({
             to: contactEmail,
@@ -326,10 +303,14 @@ export const clientsRouter = router({
             portalUrl: `${baseUrl}/portal/login`,
           });
         } catch (error) {
-          logger.error('Portal welcome email failed', error instanceof Error ? error : new Error(String(error)), {
-            clientId: client.id,
-            context: 'enablePortalAccess',
-          });
+          logger.error(
+            'Portal welcome email failed',
+            error instanceof Error ? error : new Error(String(error)),
+            {
+              clientId: client.id,
+              context: 'enablePortalAccess',
+            }
+          );
           // Don't fail the mutation if email fails
         }
       }
@@ -352,7 +333,7 @@ export const clientsRouter = router({
           isActive: false,
           updatedAt: new Date(),
         })
-        .where(and(eq(users.clientId, clientId), eq(users.role, "client")));
+        .where(and(eq(users.clientId, clientId), eq(users.role, 'client')));
 
       // Disable portal for the client
       const [updatedClient] = await ctx.db
@@ -382,7 +363,7 @@ export const clientsRouter = router({
           createdAt: users.createdAt,
         })
         .from(users)
-        .where(and(eq(users.clientId, input.clientId), eq(users.role, "client")));
+        .where(and(eq(users.clientId, input.clientId), eq(users.role, 'client')));
 
       return portalUser ?? null;
     }),

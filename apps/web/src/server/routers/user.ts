@@ -1,9 +1,9 @@
-import { router, publicProcedure } from '../trpc';
-import { z } from 'zod';
 import { users } from '@catering-event-manager/database/schema';
-import { eq } from 'drizzle-orm';
-import bcrypt from 'bcryptjs';
 import { TRPCError } from '@trpc/server';
+import bcrypt from 'bcryptjs';
+import { eq } from 'drizzle-orm';
+import { z } from 'zod';
+import { publicProcedure, router } from '../trpc';
 
 export const userRouter = router({
   register: publicProcedure

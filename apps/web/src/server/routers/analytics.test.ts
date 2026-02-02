@@ -1,25 +1,25 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import {
-  setupTestDatabase,
   cleanDatabase,
-  teardownTestDatabase,
+  setupTestDatabase,
   type TestDatabase,
+  teardownTestDatabase,
 } from '../../../test/helpers/db';
+import {
+  createClient,
+  createEvent,
+  createResource,
+  createResourceSchedule,
+  createTask,
+  createUser,
+  resetFactoryCounter,
+} from '../../../test/helpers/factories';
 import {
   createAdminCaller,
   createManagerCaller,
   createUnauthenticatedCaller,
   testUsers,
 } from '../../../test/helpers/trpc';
-import {
-  createUser,
-  createClient,
-  createEvent,
-  createTask,
-  createResource,
-  createResourceSchedule,
-  resetFactoryCounter,
-} from '../../../test/helpers/factories';
 
 describe('analytics router', () => {
   let db: TestDatabase;

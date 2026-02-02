@@ -1,9 +1,9 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render as rtlRender, RenderOptions } from '@testing-library/react';
-import { ReactElement, ReactNode } from 'react';
-import { trpc } from '@/lib/trpc';
+import { type RenderOptions, render as rtlRender } from '@testing-library/react';
 import { httpBatchLink } from '@trpc/client';
+import type { ReactElement, ReactNode } from 'react';
 import superjson from 'superjson';
+import { trpc } from '@/lib/trpc';
 
 /**
  * Custom render wrapper for component tests.

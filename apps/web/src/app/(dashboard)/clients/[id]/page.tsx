@@ -1,13 +1,13 @@
 'use client';
 
-import { useState } from 'react';
-import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { trpc } from '@/lib/trpc';
+import { useParams } from 'next/navigation';
+import { useState } from 'react';
 import { CommunicationForm } from '@/components/clients/CommunicationForm';
 import { CommunicationList } from '@/components/clients/CommunicationList';
-import { EventStatusBadge } from '@/components/events/EventStatusBadge';
 import { PortalAccessSection } from '@/components/clients/PortalAccessSection';
+import { EventStatusBadge } from '@/components/events/EventStatusBadge';
+import { trpc } from '@/lib/trpc';
 
 type Tab = 'info' | 'events' | 'communications' | 'portal';
 
@@ -16,7 +16,11 @@ export default function ClientDetailPage() {
   const clientId = Number(params.id);
   const [activeTab, setActiveTab] = useState<Tab>('communications');
 
-  const { data: client, isLoading: clientLoading, refetch: refetchClient } = trpc.clients.getById.useQuery({
+  const {
+    data: client,
+    isLoading: clientLoading,
+    refetch: refetchClient,
+  } = trpc.clients.getById.useQuery({
     id: clientId,
   });
 
@@ -222,31 +226,39 @@ export default function ClientDetailPage() {
       {activeTab === 'communications' && (
         <div>
           {/* Pending Follow-ups */}
-          {communicationsData?.communications && (() => {
-            const pendingFollowUps = communicationsData.communications.filter(
-              (c) => c.communication.followUpDate && !c.communication.followUpCompleted
-            );
-            if (pendingFollowUps.length === 0) return null;
-            return (
-              <div data-testid="follow-ups" className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
-                <h3 className="text-sm font-semibold text-amber-800 mb-2">
-                  Pending Follow-ups ({pendingFollowUps.length})
-                </h3>
-                <ul className="space-y-2">
-                  {pendingFollowUps.map((c) => (
-                    <li key={c.communication.id} className="flex items-center justify-between text-sm">
-                      <span className="text-amber-900">
-                        {c.communication.notes?.slice(0, 60)}{c.communication.notes && c.communication.notes.length > 60 ? '...' : ''}
-                      </span>
-                      <span className="text-amber-600 text-xs ml-2 whitespace-nowrap">
-                        Due {new Date(c.communication.followUpDate!).toLocaleDateString()}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            );
-          })()}
+          {communicationsData?.communications &&
+            (() => {
+              const pendingFollowUps = communicationsData.communications.filter(
+                (c) => c.communication.followUpDate && !c.communication.followUpCompleted
+              );
+              if (pendingFollowUps.length === 0) return null;
+              return (
+                <div
+                  data-testid="follow-ups"
+                  className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6"
+                >
+                  <h3 className="text-sm font-semibold text-amber-800 mb-2">
+                    Pending Follow-ups ({pendingFollowUps.length})
+                  </h3>
+                  <ul className="space-y-2">
+                    {pendingFollowUps.map((c) => (
+                      <li
+                        key={c.communication.id}
+                        className="flex items-center justify-between text-sm"
+                      >
+                        <span className="text-amber-900">
+                          {c.communication.notes?.slice(0, 60)}
+                          {c.communication.notes && c.communication.notes.length > 60 ? '...' : ''}
+                        </span>
+                        <span className="text-amber-600 text-xs ml-2 whitespace-nowrap">
+                          Due {new Date(c.communication.followUpDate!).toLocaleDateString()}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              );
+            })()}
 
           {clientEvents && clientEvents.length > 0 && (
             <CommunicationForm

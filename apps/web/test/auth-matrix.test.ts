@@ -1,25 +1,24 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
-import { vi } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-  setupTestDatabase,
   cleanDatabase,
-  teardownTestDatabase,
+  setupTestDatabase,
   type TestDatabase,
+  teardownTestDatabase,
 } from './helpers/db';
+import { resetFactoryCounter } from './helpers/factories';
 import {
-  createTestCaller,
+  type AccessLevel,
+  type AuthMatrixData,
+  allProcedures,
+  getProcedureInput,
+  setupAuthMatrixData,
+} from './helpers/input-factories';
+import {
   createClientCaller,
+  createTestCaller,
   createUnauthenticatedCaller,
   type TestUser,
 } from './helpers/trpc';
-import { resetFactoryCounter } from './helpers/factories';
-import {
-  setupAuthMatrixData,
-  getProcedureInput,
-  allProcedures,
-  type AuthMatrixData,
-  type AccessLevel,
-} from './helpers/input-factories';
 
 // Mock scheduling service to avoid real HTTP calls
 vi.mock('@/server/services/scheduling-client', () => ({
@@ -101,7 +100,9 @@ describe('authorization boundary matrix', () => {
   }
 
   // Get roles that should be REJECTED for a given access level
-  function getUnauthorizedRoles(access: AccessLevel): Array<'admin' | 'manager' | 'client' | 'unauthenticated'> {
+  function getUnauthorizedRoles(
+    access: AccessLevel
+  ): Array<'admin' | 'manager' | 'client' | 'unauthenticated'> {
     switch (access) {
       case 'admin':
         return ['manager', 'client', 'unauthenticated'];
@@ -124,9 +125,7 @@ describe('authorization boundary matrix', () => {
   }
 
   // Filter to testable procedures (exclude subscriptions and public)
-  const testableProcedures = allProcedures.filter(
-    (p) => !p.skip && p.access !== 'public'
-  );
+  const testableProcedures = allProcedures.filter((p) => !p.skip && p.access !== 'public');
 
   // Generate test cases: [procedureKey, role, expectedError, access]
   const testCases: Array<[string, string, string, AccessLevel]> = [];
@@ -142,34 +141,29 @@ describe('authorization boundary matrix', () => {
     }
   }
 
-  it.each(testCases)(
-    '%s rejects %s with %s',
-    async (procedureKey, role, expectedError) => {
-      const [routerName, procedureName] = procedureKey.split('.');
-      const caller = getCallerForRole(role as 'admin' | 'manager' | 'client' | 'unauthenticated');
-      const input = getProcedureInput(routerName, procedureName, data);
+  it.each(testCases)('%s rejects %s with %s', async (procedureKey, role, expectedError) => {
+    const [routerName, procedureName] = procedureKey.split('.');
+    const caller = getCallerForRole(role as 'admin' | 'manager' | 'client' | 'unauthenticated');
+    const input = getProcedureInput(routerName, procedureName, data);
 
-      // Access the router and procedure dynamically
-      const routerObj = (caller as Record<string, unknown>)[routerName] as Record<string, (...args: unknown[]) => Promise<unknown>>;
-      const procedureFn = routerObj[procedureName];
+    // Access the router and procedure dynamically
+    const routerObj = (caller as Record<string, unknown>)[routerName] as Record<
+      string,
+      (...args: unknown[]) => Promise<unknown>
+    >;
+    const procedureFn = routerObj[procedureName];
 
-      await expect(
-        input !== undefined ? procedureFn(input) : procedureFn()
-      ).rejects.toThrow(expectedError);
-    }
-  );
+    await expect(input !== undefined ? procedureFn(input) : procedureFn()).rejects.toThrow(
+      expectedError
+    );
+  });
 
   // Summary test to verify we have the expected number of cases
   it('generates expected number of authorization test cases', () => {
-    const adminCount = allProcedures.filter(
-      (p) => p.access === 'admin' && !p.skip
-    ).length * 3;
-    const protectedCount = allProcedures.filter(
-      (p) => p.access === 'protected' && !p.skip
-    ).length * 1;
-    const clientCount = allProcedures.filter(
-      (p) => p.access === 'client' && !p.skip
-    ).length * 3;
+    const adminCount = allProcedures.filter((p) => p.access === 'admin' && !p.skip).length * 3;
+    const protectedCount =
+      allProcedures.filter((p) => p.access === 'protected' && !p.skip).length * 1;
+    const clientCount = allProcedures.filter((p) => p.access === 'client' && !p.skip).length * 3;
 
     expect(testCases.length).toBe(adminCount + protectedCount + clientCount);
     expect(testCases.length).toBeGreaterThanOrEqual(90);

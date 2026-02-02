@@ -1,6 +1,6 @@
+import bcrypt from 'bcryptjs';
 import { sql } from 'drizzle-orm';
 import type { TestDatabase } from './db';
-import bcrypt from 'bcryptjs';
 
 /**
  * Factory functions for creating test data.
@@ -34,9 +34,8 @@ export async function createUser(
 ) {
   const id = nextId();
   // Client users don't have passwords (magic link auth)
-  const passwordHash = overrides.role === 'client'
-    ? null
-    : await bcrypt.hash(overrides.password || 'password123', 10);
+  const passwordHash =
+    overrides.role === 'client' ? null : await bcrypt.hash(overrides.password || 'password123', 10);
 
   const result = await db.execute(sql`
     INSERT INTO users (email, password_hash, name, role, client_id, is_active)
@@ -459,7 +458,14 @@ export async function createEventStatusLog(
   eventId: number,
   changedBy: number,
   overrides: Partial<{
-    oldStatus: 'inquiry' | 'planning' | 'preparation' | 'in_progress' | 'completed' | 'follow_up' | null;
+    oldStatus:
+      | 'inquiry'
+      | 'planning'
+      | 'preparation'
+      | 'in_progress'
+      | 'completed'
+      | 'follow_up'
+      | null;
     newStatus: 'inquiry' | 'planning' | 'preparation' | 'in_progress' | 'completed' | 'follow_up';
     notes: string;
   }> = {}
@@ -584,17 +590,11 @@ export async function createFullTestData(db: TestDatabase) {
   );
 
   // Create communication with follow-up
-  const communication = await createCommunicationWithFollowUp(
-    db,
-    event.id,
-    client.id,
-    admin.id,
-    {
-      type: 'email',
-      subject: 'Initial Planning Discussion',
-      followUpDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
-    }
-  );
+  const communication = await createCommunicationWithFollowUp(db, event.id, client.id, admin.id, {
+    type: 'email',
+    subject: 'Initial Planning Discussion',
+    followUpDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
+  });
 
   return {
     admin,

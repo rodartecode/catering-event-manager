@@ -57,9 +57,7 @@ export function ConflictWarning({ conflicts, onDismiss }: ConflictWarningProps) 
                 <li key={index}>
                   <span className="font-medium">{conflict.resourceName}</span> is already scheduled
                   for <span className="font-medium">{conflict.conflictingEventName}</span>
-                  {conflict.conflictingTaskTitle && (
-                    <> ({conflict.conflictingTaskTitle})</>
-                  )}
+                  {conflict.conflictingTaskTitle && <> ({conflict.conflictingTaskTitle})</>}
                   <div className="ml-4 mt-1 text-xs text-yellow-600">
                     Existing: {formatTime(conflict.existingStartTime)} -{' '}
                     {formatTime(conflict.existingEndTime)}

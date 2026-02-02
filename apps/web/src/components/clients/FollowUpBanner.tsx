@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
+import { useState } from 'react';
 import { trpc } from '@/lib/trpc';
 
 export function FollowUpBanner() {
@@ -39,10 +39,7 @@ export function FollowUpBanner() {
             <p className="text-sm font-medium text-yellow-800">
               You have {data.count} follow-up{data.count !== 1 ? 's' : ''} due
               {overdueCount > 0 && (
-                <span className="text-red-600 font-semibold">
-                  {' '}
-                  ({overdueCount} overdue)
-                </span>
+                <span className="text-red-600 font-semibold"> ({overdueCount} overdue)</span>
               )}
             </p>
             <p className="text-sm text-yellow-700">

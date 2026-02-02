@@ -7,17 +7,14 @@ describe('CommunicationTypeBadge', () => {
     ['phone', 'Phone', 'bg-green-100', 'text-green-800'],
     ['meeting', 'Meeting', 'bg-purple-100', 'text-purple-800'],
     ['other', 'Other', 'bg-gray-100', 'text-gray-800'],
-  ] as const)(
-    'renders %s type with label "%s" and classes "%s %s"',
-    (type, expectedLabel, expectedBgClass, expectedTextClass) => {
-      render(<CommunicationTypeBadge type={type} />);
+  ] as const)('renders %s type with label "%s" and classes "%s %s"', (type, expectedLabel, expectedBgClass, expectedTextClass) => {
+    render(<CommunicationTypeBadge type={type} />);
 
-      const badge = screen.getByText(expectedLabel);
-      expect(badge).toBeInTheDocument();
-      expect(badge).toHaveClass(expectedBgClass);
-      expect(badge).toHaveClass(expectedTextClass);
-    }
-  );
+    const badge = screen.getByText(expectedLabel);
+    expect(badge).toBeInTheDocument();
+    expect(badge).toHaveClass(expectedBgClass);
+    expect(badge).toHaveClass(expectedTextClass);
+  });
 
   it('renders with icon for each type', () => {
     const { container } = render(<CommunicationTypeBadge type="email" />);

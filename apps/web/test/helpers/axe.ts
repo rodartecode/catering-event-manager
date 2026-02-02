@@ -1,7 +1,7 @@
+import type { AxeResults } from 'axe-core';
+import { expect } from 'vitest';
 import { axe, configureAxe } from 'vitest-axe';
 import * as matchers from 'vitest-axe/matchers';
-import { expect } from 'vitest';
-import type { AxeResults } from 'axe-core';
 
 // Extend Vitest's expect with axe matchers
 expect.extend(matchers);

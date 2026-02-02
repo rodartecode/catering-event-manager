@@ -1,10 +1,10 @@
 'use client';
 
-import { trpc } from '@/lib/trpc';
+import Link from 'next/link';
 import { useState } from 'react';
 import { ResourceCard } from '@/components/resources/ResourceCard';
+import { trpc } from '@/lib/trpc';
 import { useIsAdmin } from '@/lib/use-auth';
-import Link from 'next/link';
 
 type ResourceType = 'staff' | 'equipment' | 'materials' | 'all';
 type AvailabilityFilter = 'all' | 'available' | 'unavailable';

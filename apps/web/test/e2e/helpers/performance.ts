@@ -102,9 +102,7 @@ export async function measureCLS(page: Page): Promise<number> {
  * @param page - Playwright page instance
  * @returns Object with lcp (ms) and cls (score) values
  */
-export async function measureCoreWebVitals(
-  page: Page
-): Promise<{ lcp: number; cls: number }> {
+export async function measureCoreWebVitals(page: Page): Promise<{ lcp: number; cls: number }> {
   const [lcp, cls] = await Promise.all([measureLCP(page), measureCLS(page)]);
   return { lcp, cls };
 }

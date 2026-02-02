@@ -1,12 +1,12 @@
 import type { TestDatabase } from './db';
 import {
-  createUser,
   createClient,
-  createEvent,
-  createTask,
-  createResource,
   createCommunication,
+  createEvent,
+  createResource,
   createResourceSchedule,
+  createTask,
+  createUser,
 } from './factories';
 
 /**
@@ -271,7 +271,13 @@ export const allProcedures: ProcedureDefinition[] = [
   // Event router - protectedProcedure
   { router: 'event', procedure: 'list', access: 'protected', type: 'query' },
   { router: 'event', procedure: 'getById', access: 'protected', type: 'query' },
-  { router: 'event', procedure: 'onStatusChange', access: 'protected', type: 'subscription', skip: 'Subscriptions use different transport' },
+  {
+    router: 'event',
+    procedure: 'onStatusChange',
+    access: 'protected',
+    type: 'subscription',
+    skip: 'Subscriptions use different transport',
+  },
 
   // Task router - adminProcedure
   { router: 'task', procedure: 'create', access: 'admin', type: 'mutation' },
@@ -287,7 +293,13 @@ export const allProcedures: ProcedureDefinition[] = [
   { router: 'task', procedure: 'getAssignedResources', access: 'protected', type: 'query' },
   { router: 'task', procedure: 'getAssignableUsers', access: 'protected', type: 'query' },
   { router: 'task', procedure: 'getAvailableDependencies', access: 'protected', type: 'query' },
-  { router: 'task', procedure: 'onUpdate', access: 'protected', type: 'subscription', skip: 'Subscriptions use different transport' },
+  {
+    router: 'task',
+    procedure: 'onUpdate',
+    access: 'protected',
+    type: 'subscription',
+    skip: 'Subscriptions use different transport',
+  },
 
   // Resource router - adminProcedure
   { router: 'resource', procedure: 'create', access: 'admin', type: 'mutation' },

@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import type { z } from 'zod';
 
 /**
  * Formats Zod validation errors into a simple field-to-message mapping.

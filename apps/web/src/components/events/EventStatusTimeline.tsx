@@ -2,7 +2,14 @@ import { EventStatusBadge } from './EventStatusBadge';
 
 interface StatusHistoryItem {
   id: number;
-  oldStatus: 'inquiry' | 'planning' | 'preparation' | 'in_progress' | 'completed' | 'follow_up' | null;
+  oldStatus:
+    | 'inquiry'
+    | 'planning'
+    | 'preparation'
+    | 'in_progress'
+    | 'completed'
+    | 'follow_up'
+    | null;
   newStatus: 'inquiry' | 'planning' | 'preparation' | 'in_progress' | 'completed' | 'follow_up';
   changedAt: Date;
   changedBy: string | null;
@@ -35,9 +42,7 @@ export function EventStatusTimeline({ history }: EventStatusTimelineProps) {
         return (
           <div key={item.id} className="relative">
             {/* Timeline connector */}
-            {!isLast && (
-              <div className="absolute left-2 top-8 bottom-0 w-0.5 bg-gray-200"></div>
-            )}
+            {!isLast && <div className="absolute left-2 top-8 bottom-0 w-0.5 bg-gray-200"></div>}
 
             <div className="flex items-start">
               {/* Timeline dot */}
@@ -49,8 +54,18 @@ export function EventStatusTimeline({ history }: EventStatusTimelineProps) {
                     {item.oldStatus && (
                       <>
                         <EventStatusBadge status={item.oldStatus} />
-                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        <svg
+                          className="w-4 h-4 text-gray-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 5l7 7-7 7"
+                          />
                         </svg>
                       </>
                     )}

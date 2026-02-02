@@ -4,7 +4,7 @@
  * Common selectors and interaction helpers for page navigation and forms.
  */
 
-import { type Page, type Locator, expect } from '@playwright/test';
+import { expect, type Locator, type Page } from '@playwright/test';
 
 /**
  * Navigation selectors
@@ -70,7 +70,9 @@ export async function expectToast(
  * Dismiss any visible toast notifications
  */
 export async function dismissToast(page: Page): Promise<void> {
-  const closeButton = page.locator('[data-testid="toast-close"], .toast-close, [role="alert"] button');
+  const closeButton = page.locator(
+    '[data-testid="toast-close"], .toast-close, [role="alert"] button'
+  );
   if (await closeButton.isVisible({ timeout: 1000 }).catch(() => false)) {
     await closeButton.click();
   }
@@ -79,11 +81,7 @@ export async function dismissToast(page: Page): Promise<void> {
 /**
  * Fill a form field by label or name
  */
-export async function fillField(
-  page: Page,
-  fieldName: string,
-  value: string
-): Promise<void> {
+export async function fillField(page: Page, fieldName: string, value: string): Promise<void> {
   // Try multiple selectors
   const field = page
     .locator(`input[name="${fieldName}"]`)
@@ -98,14 +96,8 @@ export async function fillField(
 /**
  * Select an option from a dropdown
  */
-export async function selectOption(
-  page: Page,
-  fieldName: string,
-  value: string
-): Promise<void> {
-  const select = page
-    .locator(`select[name="${fieldName}"]`)
-    .or(page.getByLabel(fieldName));
+export async function selectOption(page: Page, fieldName: string, value: string): Promise<void> {
+  const select = page.locator(`select[name="${fieldName}"]`).or(page.getByLabel(fieldName));
 
   await select.selectOption(value);
 }
@@ -113,10 +105,7 @@ export async function selectOption(
 /**
  * Click a button by text or test id
  */
-export async function clickButton(
-  page: Page,
-  buttonText: string
-): Promise<void> {
+export async function clickButton(page: Page, buttonText: string): Promise<void> {
   const button = page
     .locator(`button:has-text("${buttonText}")`)
     .or(page.locator(`[data-testid="${buttonText.toLowerCase().replace(/\s+/g, '-')}"]`))
@@ -141,9 +130,9 @@ export async function clickRowAction(
   actionName: string
 ): Promise<void> {
   const row = getTableRow(page, rowContent);
-  const actionButton = row.locator(`button:has-text("${actionName}")`).or(
-    row.locator(`[data-testid="${actionName.toLowerCase()}"]`)
-  );
+  const actionButton = row
+    .locator(`button:has-text("${actionName}")`)
+    .or(row.locator(`[data-testid="${actionName.toLowerCase()}"]`));
 
   await actionButton.click();
 }
@@ -222,14 +211,8 @@ export async function getItemCount(page: Page, selector = 'tbody tr'): Promise<n
 /**
  * Date picker helper - set a date
  */
-export async function setDate(
-  page: Page,
-  fieldName: string,
-  date: Date
-): Promise<void> {
-  const dateInput = page
-    .locator(`input[name="${fieldName}"]`)
-    .or(page.getByLabel(fieldName));
+export async function setDate(page: Page, fieldName: string, date: Date): Promise<void> {
+  const dateInput = page.locator(`input[name="${fieldName}"]`).or(page.getByLabel(fieldName));
 
   // Format date as YYYY-MM-DD for input[type="date"]
   const formattedDate = date.toISOString().split('T')[0];

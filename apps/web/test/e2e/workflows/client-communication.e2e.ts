@@ -4,9 +4,9 @@
  * Tests client management, communication recording, and follow-ups.
  */
 
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 import { loginAsAdmin, TEST_ADMIN } from '../helpers/auth';
-import { cleanTestDatabase, seedTestUser, seedTestClient, seedTestEvent } from '../helpers/db';
+import { cleanTestDatabase, seedTestClient, seedTestEvent, seedTestUser } from '../helpers/db';
 
 test.describe('Client Communication', () => {
   test.beforeAll(async () => {
@@ -97,7 +97,9 @@ test.describe('Client Communication', () => {
       await page.click('button:has-text("Save Communication")');
 
       // Communication should appear in list
-      await expect(page.locator('text=Discussed event requirements')).toBeVisible({ timeout: 5000 });
+      await expect(page.locator('text=Discussed event requirements')).toBeVisible({
+        timeout: 5000,
+      });
     });
 
     test('record email communication', async ({ page }) => {

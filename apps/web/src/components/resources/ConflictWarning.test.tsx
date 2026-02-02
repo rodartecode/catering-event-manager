@@ -1,5 +1,5 @@
-import { render, screen } from '../../../test/helpers/render';
 import { userEvent } from '@testing-library/user-event';
+import { render, screen } from '../../../test/helpers/render';
 import { ConflictWarning } from './ConflictWarning';
 
 describe('ConflictWarning', () => {
@@ -55,7 +55,10 @@ describe('ConflictWarning', () => {
   });
 
   it('renders multiple conflicts with plural heading', () => {
-    const multipleConflicts = [mockConflict, { ...mockConflict, resourceId: 2, resourceName: 'Chef Mary' }];
+    const multipleConflicts = [
+      mockConflict,
+      { ...mockConflict, resourceId: 2, resourceName: 'Chef Mary' },
+    ];
     render(<ConflictWarning conflicts={multipleConflicts} />);
 
     // Should show plural heading

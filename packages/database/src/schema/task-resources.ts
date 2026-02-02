@@ -1,11 +1,6 @@
-import {
-  pgTable,
-  integer,
-  timestamp,
-  primaryKey,
-} from 'drizzle-orm/pg-core';
-import { tasks } from './tasks';
+import { integer, pgTable, primaryKey, timestamp } from 'drizzle-orm/pg-core';
 import { resources } from './resources';
+import { tasks } from './tasks';
 
 export const taskResources = pgTable(
   'task_resources',

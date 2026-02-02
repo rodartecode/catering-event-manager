@@ -90,8 +90,19 @@ export function PortalAccessSection({
           {/* Status Banner */}
           <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start gap-3">
             <div className="p-2 bg-green-100 rounded-full">
-              <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              <svg
+                className="w-5 h-5 text-green-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
               </svg>
             </div>
             <div className="flex-1">
@@ -145,7 +156,8 @@ export function PortalAccessSection({
           {showConfirmDisable ? (
             <div className="border border-red-200 bg-red-50 rounded-lg p-4">
               <p className="text-sm text-red-800 mb-3">
-                Are you sure you want to disable portal access? The client will no longer be able to view their events online.
+                Are you sure you want to disable portal access? The client will no longer be able to
+                view their events online.
               </p>
               <div className="flex gap-3">
                 <button
@@ -178,7 +190,8 @@ export function PortalAccessSection({
       ) : (
         <form onSubmit={handleEnable} className="space-y-4">
           <p className="text-gray-600 text-sm">
-            Enable portal access to allow this client to view their events, task progress, and communication history online.
+            Enable portal access to allow this client to view their events, task progress, and
+            communication history online.
           </p>
 
           <div>

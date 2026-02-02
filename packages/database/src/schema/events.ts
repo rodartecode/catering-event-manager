@@ -1,13 +1,13 @@
 import {
+  boolean,
+  index,
+  integer,
+  pgEnum,
   pgTable,
   serial,
-  integer,
-  varchar,
-  timestamp,
   text,
-  boolean,
-  pgEnum,
-  index,
+  timestamp,
+  varchar,
 } from 'drizzle-orm/pg-core';
 import { clients } from './clients';
 import { users } from './users';

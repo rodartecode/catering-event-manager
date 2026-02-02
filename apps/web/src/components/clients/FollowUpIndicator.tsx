@@ -11,13 +11,14 @@ export function FollowUpIndicator({ followUpDate, followUpCompleted }: FollowUpI
   if (followUpCompleted) {
     return (
       <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-        <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M5 13l4 4L19 7"
-          />
+        <svg
+          className="w-3 h-3 mr-1"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
         </svg>
         Completed
       </span>
@@ -34,7 +35,13 @@ export function FollowUpIndicator({ followUpDate, followUpCompleted }: FollowUpI
   if (diffDays > 0) {
     return (
       <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-        <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <svg
+          className="w-3 h-3 mr-1"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -50,7 +57,13 @@ export function FollowUpIndicator({ followUpDate, followUpCompleted }: FollowUpI
   if (diffDays === 0) {
     return (
       <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-900">
-        <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <svg
+          className="w-3 h-3 mr-1"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -70,7 +83,13 @@ export function FollowUpIndicator({ followUpDate, followUpCompleted }: FollowUpI
 
   return (
     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-      <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+      <svg
+        className="w-3 h-3 mr-1"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
         <path
           strokeLinecap="round"
           strokeLinejoin="round"

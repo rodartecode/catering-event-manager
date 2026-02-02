@@ -1,6 +1,6 @@
-import { pgTable, serial, integer, varchar, timestamp, index } from 'drizzle-orm/pg-core';
-import { users } from './users';
+import { index, integer, pgTable, serial, timestamp, varchar } from 'drizzle-orm/pg-core';
 import { clients } from './clients';
+import { users } from './users';
 
 // Audit log for client portal access
 export const portalAccessLog = pgTable(

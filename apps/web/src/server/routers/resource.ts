@@ -1,10 +1,10 @@
-import { z } from 'zod';
-import { router, protectedProcedure, adminProcedure } from '../trpc';
-import { resources, resourceSchedule } from '@catering-event-manager/database/schema';
-import { eq, and, sql, gt } from 'drizzle-orm';
+import { resourceSchedule, resources } from '@catering-event-manager/database/schema';
 import { TRPCError } from '@trpc/server';
+import { and, eq, gt, sql } from 'drizzle-orm';
+import { z } from 'zod';
 import { logger } from '@/lib/logger';
-import { schedulingClient, SchedulingClientError } from '../services/scheduling-client';
+import { SchedulingClientError, schedulingClient } from '../services/scheduling-client';
+import { adminProcedure, protectedProcedure, router } from '../trpc';
 
 // Resource type enum for validation
 const resourceTypeEnum = z.enum(['staff', 'equipment', 'materials']);
@@ -52,80 +52,76 @@ const updateResourceInput = z.object({
 
 export const resourceRouter = router({
   // FR-015: Create resource (administrators only)
-  create: adminProcedure
-    .input(createResourceInput)
-    .mutation(async ({ ctx, input }) => {
-      const { db } = ctx;
+  create: adminProcedure.input(createResourceInput).mutation(async ({ ctx, input }) => {
+    const { db } = ctx;
 
-      // Check for duplicate name
-      const [existing] = await db
-        .select({ id: resources.id })
-        .from(resources)
-        .where(eq(resources.name, input.name))
-        .limit(1);
+    // Check for duplicate name
+    const [existing] = await db
+      .select({ id: resources.id })
+      .from(resources)
+      .where(eq(resources.name, input.name))
+      .limit(1);
 
-      if (existing) {
-        throw new TRPCError({
-          code: 'CONFLICT',
-          message: 'A resource with this name already exists',
-        });
-      }
+    if (existing) {
+      throw new TRPCError({
+        code: 'CONFLICT',
+        message: 'A resource with this name already exists',
+      });
+    }
 
-      // Create resource
-      const [resource] = await db
-        .insert(resources)
-        .values({
-          name: input.name,
-          type: input.type,
-          hourlyRate: input.hourlyRate,
-          notes: input.notes,
-        })
-        .returning();
+    // Create resource
+    const [resource] = await db
+      .insert(resources)
+      .values({
+        name: input.name,
+        type: input.type,
+        hourlyRate: input.hourlyRate,
+        notes: input.notes,
+      })
+      .returning();
 
-      return resource;
-    }),
+    return resource;
+  }),
 
   // FR-015: List resources with filters
-  list: protectedProcedure
-    .input(listResourcesInput)
-    .query(async ({ ctx, input }) => {
-      const { db } = ctx;
-      const { type, isAvailable, limit, cursor } = input;
+  list: protectedProcedure.input(listResourcesInput).query(async ({ ctx, input }) => {
+    const { db } = ctx;
+    const { type, isAvailable, limit, cursor } = input;
 
-      // Build where conditions
-      const conditions = [];
+    // Build where conditions
+    const conditions = [];
 
-      if (type) {
-        conditions.push(eq(resources.type, type));
-      }
+    if (type) {
+      conditions.push(eq(resources.type, type));
+    }
 
-      if (isAvailable !== undefined) {
-        conditions.push(eq(resources.isAvailable, isAvailable));
-      }
+    if (isAvailable !== undefined) {
+      conditions.push(eq(resources.isAvailable, isAvailable));
+    }
 
-      if (cursor) {
-        conditions.push(sql`${resources.id} > ${cursor}`);
-      }
+    if (cursor) {
+      conditions.push(sql`${resources.id} > ${cursor}`);
+    }
 
-      // Query resources
-      const results = await db
-        .select()
-        .from(resources)
-        .where(conditions.length > 0 ? and(...conditions) : undefined)
-        .orderBy(resources.name)
-        .limit(limit + 1);
+    // Query resources
+    const results = await db
+      .select()
+      .from(resources)
+      .where(conditions.length > 0 ? and(...conditions) : undefined)
+      .orderBy(resources.name)
+      .limit(limit + 1);
 
-      let nextCursor: number | null = null;
-      if (results.length > limit) {
-        const nextItem = results.pop();
-        nextCursor = nextItem!.id;
-      }
+    let nextCursor: number | null = null;
+    if (results.length > limit) {
+      const nextItem = results.pop();
+      nextCursor = nextItem!.id;
+    }
 
-      return {
-        items: results,
-        nextCursor,
-      };
-    }),
+    return {
+      items: results,
+      nextCursor,
+    };
+  }),
 
   // FR-015: Get resource by ID
   getById: protectedProcedure
@@ -151,12 +147,7 @@ export const resourceRouter = router({
       const scheduleCount = await db
         .select({ count: sql<number>`count(*)` })
         .from(resourceSchedule)
-        .where(
-          and(
-            eq(resourceSchedule.resourceId, input.id),
-            gt(resourceSchedule.endTime, now)
-          )
-        );
+        .where(and(eq(resourceSchedule.resourceId, input.id), gt(resourceSchedule.endTime, now)));
 
       return {
         ...resource,
@@ -165,163 +156,161 @@ export const resourceRouter = router({
     }),
 
   // FR-018: Get resource schedule calling Go service
-  getSchedule: protectedProcedure
-    .input(getScheduleInput)
-    .query(async ({ input }) => {
-      try {
-        const result = await schedulingClient.getResourceAvailability({
-          resource_id: input.resourceId,
-          start_date: input.startDate,
-          end_date: input.endDate,
-        });
+  getSchedule: protectedProcedure.input(getScheduleInput).query(async ({ input }) => {
+    try {
+      const result = await schedulingClient.getResourceAvailability({
+        resource_id: input.resourceId,
+        start_date: input.startDate,
+        end_date: input.endDate,
+      });
 
-        // Transform snake_case to camelCase for frontend
-        return {
-          resourceId: result.resource_id,
-          entries: result.entries.map((entry) => ({
-            id: entry.id,
-            resourceId: entry.resource_id,
-            eventId: entry.event_id,
-            eventName: entry.event_name,
-            taskId: entry.task_id,
-            taskTitle: entry.task_title,
-            startTime: new Date(entry.start_time),
-            endTime: new Date(entry.end_time),
-            notes: entry.notes,
-            createdAt: new Date(entry.created_at),
-            updatedAt: new Date(entry.updated_at),
-          })),
-        };
-      } catch (error) {
-        logger.error('Get resource schedule failed', error instanceof Error ? error : new Error(String(error)), {
+      // Transform snake_case to camelCase for frontend
+      return {
+        resourceId: result.resource_id,
+        entries: result.entries.map((entry) => ({
+          id: entry.id,
+          resourceId: entry.resource_id,
+          eventId: entry.event_id,
+          eventName: entry.event_name,
+          taskId: entry.task_id,
+          taskTitle: entry.task_title,
+          startTime: new Date(entry.start_time),
+          endTime: new Date(entry.end_time),
+          notes: entry.notes,
+          createdAt: new Date(entry.created_at),
+          updatedAt: new Date(entry.updated_at),
+        })),
+      };
+    } catch (error) {
+      logger.error(
+        'Get resource schedule failed',
+        error instanceof Error ? error : new Error(String(error)),
+        {
           context: 'getSchedule',
           resourceId: input.resourceId,
           dateRange: { start: input.startDate.toISOString(), end: input.endDate.toISOString() },
           code: error instanceof SchedulingClientError ? error.code : undefined,
-        });
-
-        if (error instanceof SchedulingClientError) {
-          if (error.code === 'TIMEOUT' || error.code === 'CONNECTION_ERROR') {
-            throw new TRPCError({
-              code: 'INTERNAL_SERVER_ERROR',
-              message: 'Unable to reach scheduling service. Please try again.',
-            });
-          }
         }
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to get resource schedule',
-        });
+      );
+
+      if (error instanceof SchedulingClientError) {
+        if (error.code === 'TIMEOUT' || error.code === 'CONNECTION_ERROR') {
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: 'Unable to reach scheduling service. Please try again.',
+          });
+        }
       }
-    }),
+      throw new TRPCError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Failed to get resource schedule',
+      });
+    }
+  }),
 
   // FR-017, FR-019: Check for scheduling conflicts
-  checkConflicts: protectedProcedure
-    .input(checkConflictsInput)
-    .query(async ({ input }) => {
-      try {
-        const result = await schedulingClient.checkConflicts({
-          resource_ids: input.resourceIds,
-          start_time: input.startTime,
-          end_time: input.endTime,
-          exclude_schedule_id: input.excludeScheduleId,
-        });
+  checkConflicts: protectedProcedure.input(checkConflictsInput).query(async ({ input }) => {
+    try {
+      const result = await schedulingClient.checkConflicts({
+        resource_ids: input.resourceIds,
+        start_time: input.startTime,
+        end_time: input.endTime,
+        exclude_schedule_id: input.excludeScheduleId,
+      });
 
-        // Transform snake_case to camelCase for frontend
-        return {
-          hasConflicts: result.has_conflicts,
-          conflicts: result.conflicts.map((conflict) => ({
-            resourceId: conflict.resource_id,
-            resourceName: conflict.resource_name,
-            conflictingEventId: conflict.conflicting_event_id,
-            conflictingEventName: conflict.conflicting_event_name,
-            conflictingTaskId: conflict.conflicting_task_id,
-            conflictingTaskTitle: conflict.conflicting_task_title,
-            existingStartTime: new Date(conflict.existing_start_time),
-            existingEndTime: new Date(conflict.existing_end_time),
-            requestedStartTime: new Date(conflict.requested_start_time),
-            requestedEndTime: new Date(conflict.requested_end_time),
-            message: conflict.message,
-          })),
-        };
-      } catch (error) {
-        logger.error('Check conflicts failed', error instanceof Error ? error : new Error(String(error)), {
+      // Transform snake_case to camelCase for frontend
+      return {
+        hasConflicts: result.has_conflicts,
+        conflicts: result.conflicts.map((conflict) => ({
+          resourceId: conflict.resource_id,
+          resourceName: conflict.resource_name,
+          conflictingEventId: conflict.conflicting_event_id,
+          conflictingEventName: conflict.conflicting_event_name,
+          conflictingTaskId: conflict.conflicting_task_id,
+          conflictingTaskTitle: conflict.conflicting_task_title,
+          existingStartTime: new Date(conflict.existing_start_time),
+          existingEndTime: new Date(conflict.existing_end_time),
+          requestedStartTime: new Date(conflict.requested_start_time),
+          requestedEndTime: new Date(conflict.requested_end_time),
+          message: conflict.message,
+        })),
+      };
+    } catch (error) {
+      logger.error(
+        'Check conflicts failed',
+        error instanceof Error ? error : new Error(String(error)),
+        {
           context: 'checkConflicts',
           resourceIds: input.resourceIds.slice(0, 5),
           timeRange: { start: input.startTime.toISOString(), end: input.endTime.toISOString() },
           code: error instanceof SchedulingClientError ? error.code : undefined,
-        });
-
-        if (error instanceof SchedulingClientError) {
-          if (error.code === 'TIMEOUT' || error.code === 'CONNECTION_ERROR') {
-            // Return empty conflicts with warning when service unavailable
-            return {
-              hasConflicts: false,
-              conflicts: [],
-              warning: 'Unable to verify conflicts - scheduling service unavailable',
-            };
-          }
         }
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to check conflicts',
-        });
+      );
+
+      if (error instanceof SchedulingClientError) {
+        if (error.code === 'TIMEOUT' || error.code === 'CONNECTION_ERROR') {
+          // Return empty conflicts with warning when service unavailable
+          return {
+            hasConflicts: false,
+            conflicts: [],
+            warning: 'Unable to verify conflicts - scheduling service unavailable',
+          };
+        }
       }
-    }),
+      throw new TRPCError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Failed to check conflicts',
+      });
+    }
+  }),
 
   // FR-015: Update resource (administrators only)
-  update: adminProcedure
-    .input(updateResourceInput)
-    .mutation(async ({ ctx, input }) => {
-      const { db } = ctx;
-      const { id, ...updates } = input;
+  update: adminProcedure.input(updateResourceInput).mutation(async ({ ctx, input }) => {
+    const { db } = ctx;
+    const { id, ...updates } = input;
 
-      // Verify resource exists
-      const [existing] = await db
-        .select()
+    // Verify resource exists
+    const [existing] = await db.select().from(resources).where(eq(resources.id, id)).limit(1);
+
+    if (!existing) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Resource not found',
+      });
+    }
+
+    // Check for duplicate name if being updated
+    if (updates.name && updates.name !== existing.name) {
+      const [duplicate] = await db
+        .select({ id: resources.id })
         .from(resources)
-        .where(eq(resources.id, id))
+        .where(eq(resources.name, updates.name))
         .limit(1);
 
-      if (!existing) {
+      if (duplicate) {
         throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Resource not found',
+          code: 'CONFLICT',
+          message: 'A resource with this name already exists',
         });
       }
+    }
 
-      // Check for duplicate name if being updated
-      if (updates.name && updates.name !== existing.name) {
-        const [duplicate] = await db
-          .select({ id: resources.id })
-          .from(resources)
-          .where(eq(resources.name, updates.name))
-          .limit(1);
+    // Build update object
+    const updateData: Record<string, unknown> = { updatedAt: new Date() };
+    if (updates.name !== undefined) updateData.name = updates.name;
+    if (updates.type !== undefined) updateData.type = updates.type;
+    if (updates.hourlyRate !== undefined) updateData.hourlyRate = updates.hourlyRate;
+    if (updates.isAvailable !== undefined) updateData.isAvailable = updates.isAvailable;
+    if (updates.notes !== undefined) updateData.notes = updates.notes;
 
-        if (duplicate) {
-          throw new TRPCError({
-            code: 'CONFLICT',
-            message: 'A resource with this name already exists',
-          });
-        }
-      }
+    const [updated] = await db
+      .update(resources)
+      .set(updateData)
+      .where(eq(resources.id, id))
+      .returning();
 
-      // Build update object
-      const updateData: Record<string, unknown> = { updatedAt: new Date() };
-      if (updates.name !== undefined) updateData.name = updates.name;
-      if (updates.type !== undefined) updateData.type = updates.type;
-      if (updates.hourlyRate !== undefined) updateData.hourlyRate = updates.hourlyRate;
-      if (updates.isAvailable !== undefined) updateData.isAvailable = updates.isAvailable;
-      if (updates.notes !== undefined) updateData.notes = updates.notes;
-
-      const [updated] = await db
-        .update(resources)
-        .set(updateData)
-        .where(eq(resources.id, id))
-        .returning();
-
-      return updated;
-    }),
+    return updated;
+  }),
 
   // FR-015: Delete resource (administrators only)
   delete: adminProcedure
@@ -348,12 +337,7 @@ export const resourceRouter = router({
       const [activeAssignment] = await db
         .select({ id: resourceSchedule.id })
         .from(resourceSchedule)
-        .where(
-          and(
-            eq(resourceSchedule.resourceId, input.id),
-            gt(resourceSchedule.endTime, now)
-          )
-        )
+        .where(and(eq(resourceSchedule.resourceId, input.id), gt(resourceSchedule.endTime, now)))
         .limit(1);
 
       if (activeAssignment) {

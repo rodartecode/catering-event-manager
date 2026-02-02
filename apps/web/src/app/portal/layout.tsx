@@ -1,23 +1,45 @@
 'use client';
 
-import { SessionProvider, signOut, useSession } from 'next-auth/react';
-import { SessionGuard } from '@/components/auth/SessionGuard';
-import { SkipLink } from '@/components/a11y/SkipLink';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { SessionProvider, signOut, useSession } from 'next-auth/react';
+import { SkipLink } from '@/components/a11y/SkipLink';
+import { SessionGuard } from '@/components/auth/SessionGuard';
 
 function CalendarIcon() {
   return (
-    <svg className="h-8 w-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+    <svg
+      className="h-8 w-8 text-blue-600"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+      />
     </svg>
   );
 }
 
 function LogOutIcon() {
   return (
-    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+    <svg
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+      />
     </svg>
   );
 }
@@ -38,9 +60,7 @@ function PortalHeader() {
           {/* Logo / Brand */}
           <Link href="/portal" className="flex items-center gap-2">
             <CalendarIcon />
-            <span className="text-xl font-semibold text-gray-900">
-              Client Portal
-            </span>
+            <span className="text-xl font-semibold text-gray-900">Client Portal</span>
           </Link>
 
           {/* User Info & Logout */}
@@ -77,11 +97,7 @@ function PortalContent({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function PortalLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function PortalLayout({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider
       refetchInterval={240} // 4 minutes (in seconds)

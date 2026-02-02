@@ -4,11 +4,11 @@
  * Provides functions for logging in and managing auth state in tests.
  */
 
-import type { Page, BrowserContext } from '@playwright/test';
-import { seedTestUser, db } from './db';
-import { users } from '@catering-event-manager/database/schema';
-import { eq } from 'drizzle-orm';
 import path from 'node:path';
+import { users } from '@catering-event-manager/database/schema';
+import type { BrowserContext, Page } from '@playwright/test';
+import { eq } from 'drizzle-orm';
+import { db, seedTestUser } from './db';
 
 // Auth state storage paths
 const AUTH_DIR = path.join(process.cwd(), '.playwright', 'auth');
@@ -30,11 +30,7 @@ export const TEST_MANAGER = {
  * Login via the UI
  * Use this for auth workflow tests or initial auth state setup
  */
-export async function login(
-  page: Page,
-  email: string,
-  password: string
-): Promise<void> {
+export async function login(page: Page, email: string, password: string): Promise<void> {
   // Retry login up to 3 times — the Next.js dev server may still be compiling
   // routes on first request, causing the signIn() call or hydration to fail.
   for (let attempt = 1; attempt <= 3; attempt++) {
@@ -47,13 +43,15 @@ export async function login(
     // Wait for Next.js Turbopack compilation to finish.
     // The "Compiling" indicator means React hasn't hydrated the event handlers yet.
     // Poll until the compiling indicator is gone or shows "Compiled".
-    await page.waitForFunction(
-      () => {
-        const body = document.body.innerText;
-        return !body.includes('Compiling');
-      },
-      { timeout: 60000, polling: 1000 }
-    ).catch(() => {});
+    await page
+      .waitForFunction(
+        () => {
+          const body = document.body.innerText;
+          return !body.includes('Compiling');
+        },
+        { timeout: 60000, polling: 1000 }
+      )
+      .catch(() => {});
 
     // Wait for React hydration after compilation
     await page.waitForLoadState('networkidle');
@@ -176,9 +174,7 @@ export async function setupAuthState(context: BrowserContext): Promise<void> {
 export async function isAuthenticated(page: Page): Promise<boolean> {
   try {
     // Check for common authenticated UI elements
-    const sidebar = page.locator('[data-testid="sidebar"]').or(
-      page.locator('nav').first()
-    );
+    const sidebar = page.locator('[data-testid="sidebar"]').or(page.locator('nav').first());
     return await sidebar.isVisible({ timeout: 2000 });
   } catch {
     return false;

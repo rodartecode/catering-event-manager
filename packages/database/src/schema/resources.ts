@@ -1,20 +1,16 @@
 import {
-  pgTable,
-  serial,
-  varchar,
-  text,
-  timestamp,
   boolean,
-  pgEnum,
   index,
   numeric,
+  pgEnum,
+  pgTable,
+  serial,
+  text,
+  timestamp,
+  varchar,
 } from 'drizzle-orm/pg-core';
 
-export const resourceTypeEnum = pgEnum('resource_type', [
-  'staff',
-  'equipment',
-  'materials',
-]);
+export const resourceTypeEnum = pgEnum('resource_type', ['staff', 'equipment', 'materials']);
 
 export const resources = pgTable(
   'resources',

@@ -1,20 +1,12 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import {
-  setupTestDatabase,
   cleanDatabase,
-  teardownTestDatabase,
+  setupTestDatabase,
   type TestDatabase,
+  teardownTestDatabase,
 } from '../helpers/db';
-import {
-  createAdminCaller,
-  createManagerCaller,
-  testUsers,
-} from '../helpers/trpc';
-import {
-  createUser,
-  createClient,
-  createEvent,
-} from '../helpers/factories';
+import { createClient, createEvent, createUser } from '../helpers/factories';
+import { createAdminCaller, createManagerCaller, testUsers } from '../helpers/trpc';
 
 describe('Client Communication Workflow Scenarios', () => {
   let db: TestDatabase;
@@ -72,9 +64,7 @@ describe('Client Communication Workflow Scenarios', () => {
 
     // Step 3: Verify it's NOT due yet (future date)
     const notYetDue = await managerCaller.clients.getDueFollowUps();
-    const futureItem = notYetDue.followUps.find(
-      (f) => f.communication.id === communication.id
-    );
+    const futureItem = notYetDue.followUps.find((f) => f.communication.id === communication.id);
     expect(futureItem).toBeUndefined(); // Not due yet
 
     // Step 4: Reschedule to a past date (simulate time passing)
@@ -129,9 +119,7 @@ describe('Client Communication Workflow Scenarios', () => {
 
     const result = await managerCaller.clients.getDueFollowUps();
 
-    const item = result.followUps.find(
-      (f) => f.communication.id === communication.id
-    );
+    const item = result.followUps.find((f) => f.communication.id === communication.id);
     expect(item).toBeDefined();
     // Allow ±1 day tolerance for timezone/midnight edge cases
     expect(item?.daysOverdue).toBeGreaterThanOrEqual(19);

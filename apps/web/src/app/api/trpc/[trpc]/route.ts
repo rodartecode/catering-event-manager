@@ -1,13 +1,13 @@
 import { fetchRequestHandler } from '@trpc/server/adapters/fetch';
+import { logger } from '@/lib/logger';
+import {
+  addRateLimitHeaders,
+  createRateLimitResponse,
+  getClientIp,
+  rateLimitGeneral,
+} from '@/lib/rate-limit';
 import { appRouter } from '@/server/routers/_app';
 import { createTRPCContext } from '@/server/trpc';
-import {
-  rateLimitGeneral,
-  getClientIp,
-  createRateLimitResponse,
-  addRateLimitHeaders,
-} from '@/lib/rate-limit';
-import { logger } from '@/lib/logger';
 
 /**
  * Validate request origin for CSRF protection (SEC-004)

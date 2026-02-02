@@ -91,7 +91,10 @@ export function EventCompletionChart({
   };
 
   return (
-    <div data-testid="event-completion-chart" className="bg-white rounded-lg border border-gray-200 p-6">
+    <div
+      data-testid="event-completion-chart"
+      className="bg-white rounded-lg border border-gray-200 p-6"
+    >
       <div className="flex items-center justify-between mb-4">
         <div>
           <h3 className="text-lg font-semibold text-gray-900">Events by Status</h3>

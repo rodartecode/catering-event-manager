@@ -1,13 +1,13 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
+import { users, verificationTokens } from '@catering-event-manager/database';
+import { and, eq } from 'drizzle-orm';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import {
-  setupTestDatabase,
-  teardownTestDatabase,
   cleanDatabase,
+  setupTestDatabase,
   type TestDatabase,
+  teardownTestDatabase,
 } from '../../test/helpers/db';
 import { createClient, createUser } from '../../test/helpers/factories';
-import { verificationTokens, users } from '@catering-event-manager/database';
-import { eq, and } from 'drizzle-orm';
 
 // Direct database access for testing auth functions
 // These tests verify the token creation and verification logic at the database level

@@ -69,9 +69,7 @@
         "users_email_unique": {
           "name": "users_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},
@@ -329,12 +327,8 @@
           "name": "events_client_id_clients_id_fk",
           "tableFrom": "events",
           "tableTo": "clients",
-          "columnsFrom": [
-            "client_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["client_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -342,12 +336,8 @@
           "name": "events_archived_by_users_id_fk",
           "tableFrom": "events",
           "tableTo": "users",
-          "columnsFrom": [
-            "archived_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["archived_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -355,12 +345,8 @@
           "name": "events_created_by_users_id_fk",
           "tableFrom": "events",
           "tableTo": "users",
-          "columnsFrom": [
-            "created_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["created_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -458,12 +444,8 @@
           "name": "event_status_log_event_id_events_id_fk",
           "tableFrom": "event_status_log",
           "tableTo": "events",
-          "columnsFrom": [
-            "event_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["event_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -471,12 +453,8 @@
           "name": "event_status_log_changed_by_users_id_fk",
           "tableFrom": "event_status_log",
           "tableTo": "users",
-          "columnsFrom": [
-            "changed_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["changed_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -492,59 +470,32 @@
     "public.user_role": {
       "name": "user_role",
       "schema": "public",
-      "values": [
-        "administrator",
-        "manager"
-      ]
+      "values": ["administrator", "manager"]
     },
     "public.event_status": {
       "name": "event_status",
       "schema": "public",
-      "values": [
-        "inquiry",
-        "planning",
-        "preparation",
-        "in_progress",
-        "completed",
-        "follow_up"
-      ]
+      "values": ["inquiry", "planning", "preparation", "in_progress", "completed", "follow_up"]
     },
     "public.task_category": {
       "name": "task_category",
       "schema": "public",
-      "values": [
-        "pre_event",
-        "during_event",
-        "post_event"
-      ]
+      "values": ["pre_event", "during_event", "post_event"]
     },
     "public.task_status": {
       "name": "task_status",
       "schema": "public",
-      "values": [
-        "pending",
-        "in_progress",
-        "completed"
-      ]
+      "values": ["pending", "in_progress", "completed"]
     },
     "public.resource_type": {
       "name": "resource_type",
       "schema": "public",
-      "values": [
-        "staff",
-        "equipment",
-        "materials"
-      ]
+      "values": ["staff", "equipment", "materials"]
     },
     "public.communication_type": {
       "name": "communication_type",
       "schema": "public",
-      "values": [
-        "email",
-        "phone",
-        "meeting",
-        "other"
-      ]
+      "values": ["email", "phone", "meeting", "other"]
     }
   },
   "schemas": {},

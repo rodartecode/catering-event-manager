@@ -1,11 +1,11 @@
 'use client';
 
-import { signIn } from 'next-auth/react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useState, useEffect } from 'react';
-import { z } from 'zod';
 import Link from 'next/link';
-import { getInputA11yProps, getErrorProps } from '@/lib/form-a11y';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { signIn } from 'next-auth/react';
+import { useEffect, useState } from 'react';
+import { z } from 'zod';
+import { getErrorProps, getInputA11yProps } from '@/lib/form-a11y';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -84,12 +84,8 @@ export function LoginForm() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div>
-          <h1 className="text-center text-3xl font-bold text-gray-900">
-            Catering Event Manager
-          </h1>
-          <h2 className="mt-6 text-center text-xl text-gray-600">
-            Sign in to your account
-          </h2>
+          <h1 className="text-center text-3xl font-bold text-gray-900">Catering Event Manager</h1>
+          <h2 className="mt-6 text-center text-xl text-gray-600">Sign in to your account</h2>
         </div>
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-6">
