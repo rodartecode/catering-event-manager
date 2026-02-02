@@ -21,7 +21,10 @@ export function AnalyticsCard({
   className = '',
 }: AnalyticsCardProps) {
   return (
-    <div data-testid="analytics-card" className={`bg-white rounded-lg border border-gray-200 p-6 ${className}`}>
+    <div
+      data-testid="analytics-card"
+      className={`bg-white rounded-lg border border-gray-200 p-6 ${className}`}
+    >
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <p className="text-sm font-medium text-gray-500">{title}</p>

@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
+import { act, renderHook } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useFormDirty } from './use-form-dirty';
 
 describe('useFormDirty', () => {
@@ -103,10 +103,7 @@ describe('useFormDirty', () => {
         })
       );
 
-      expect(addEventListenerSpy).toHaveBeenCalledWith(
-        'beforeunload',
-        expect.any(Function)
-      );
+      expect(addEventListenerSpy).toHaveBeenCalledWith('beforeunload', expect.any(Function));
     });
 
     it('does not add beforeunload listener when clean', () => {
@@ -117,10 +114,7 @@ describe('useFormDirty', () => {
         })
       );
 
-      expect(addEventListenerSpy).not.toHaveBeenCalledWith(
-        'beforeunload',
-        expect.any(Function)
-      );
+      expect(addEventListenerSpy).not.toHaveBeenCalledWith('beforeunload', expect.any(Function));
     });
 
     it('removes beforeunload listener on cleanup', () => {
@@ -133,10 +127,7 @@ describe('useFormDirty', () => {
 
       unmount();
 
-      expect(removeEventListenerSpy).toHaveBeenCalledWith(
-        'beforeunload',
-        expect.any(Function)
-      );
+      expect(removeEventListenerSpy).toHaveBeenCalledWith('beforeunload', expect.any(Function));
     });
 
     it('removes beforeunload listener when form becomes clean', () => {
@@ -158,10 +149,7 @@ describe('useFormDirty', () => {
       rerender({ currentValues: { name: 'Test' } });
 
       // Listener should be removed
-      expect(removeEventListenerSpy).toHaveBeenCalledWith(
-        'beforeunload',
-        expect.any(Function)
-      );
+      expect(removeEventListenerSpy).toHaveBeenCalledWith('beforeunload', expect.any(Function));
     });
   });
 

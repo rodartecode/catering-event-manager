@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom/vitest';
 import { cleanup } from '@testing-library/react';
-import { afterEach, beforeAll, afterAll, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, vi } from 'vitest';
 
 // Mock the database client to prevent eager connection during module load
 // Tests use their own Testcontainer database via the test helpers

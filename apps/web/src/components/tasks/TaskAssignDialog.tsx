@@ -1,9 +1,9 @@
 'use client';
 
-import { trpc } from '@/lib/trpc';
-import { useState, useRef } from 'react';
+import { useRef, useState } from 'react';
 import toast from 'react-hot-toast';
-import { useFocusTrap, useDialogId } from '@/hooks/use-focus-trap';
+import { useDialogId, useFocusTrap } from '@/hooks/use-focus-trap';
+import { trpc } from '@/lib/trpc';
 
 interface TaskAssignDialogProps {
   taskId: number;
@@ -64,13 +64,21 @@ export function TaskAssignDialog({ taskId, onClose, onSuccess }: TaskAssignDialo
         className="bg-white rounded-lg p-6 max-w-md w-full mx-4"
       >
         <div className="flex justify-between items-center mb-6">
-          <h3 id={titleId} className="text-xl font-semibold">Assign Task</h3>
+          <h3 id={titleId} className="text-xl font-semibold">
+            Assign Task
+          </h3>
           <button
             onClick={onClose}
             aria-label="Close dialog"
             className="text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -93,12 +101,17 @@ export function TaskAssignDialog({ taskId, onClose, onSuccess }: TaskAssignDialo
         )}
 
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Select Team Member
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Select Team Member</label>
           {usersLoading ? (
-            <div className="flex justify-center py-4" aria-busy="true" aria-label="Loading team members">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600" aria-hidden="true"></div>
+            <div
+              className="flex justify-center py-4"
+              aria-busy="true"
+              aria-label="Loading team members"
+            >
+              <div
+                className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"
+                aria-hidden="true"
+              ></div>
             </div>
           ) : (
             <div className="space-y-2 max-h-60 overflow-y-auto">
@@ -126,7 +139,12 @@ export function TaskAssignDialog({ taskId, onClose, onSuccess }: TaskAssignDialo
                 >
                   <p className="font-medium text-gray-900">{user.name}</p>
                   <p className="text-sm text-gray-500">
-                    {user.email} · {user.role === 'administrator' ? 'Admin' : user.role === 'manager' ? 'Manager' : 'Client'}
+                    {user.email} ·{' '}
+                    {user.role === 'administrator'
+                      ? 'Admin'
+                      : user.role === 'manager'
+                        ? 'Manager'
+                        : 'Client'}
                   </p>
                 </button>
               ))}

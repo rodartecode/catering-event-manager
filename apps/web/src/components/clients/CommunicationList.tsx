@@ -1,9 +1,9 @@
 'use client';
 
+import { useState } from 'react';
+import { trpc } from '@/lib/trpc';
 import { CommunicationTypeBadge } from './CommunicationTypeBadge';
 import { FollowUpIndicator } from './FollowUpIndicator';
-import { trpc } from '@/lib/trpc';
-import { useState } from 'react';
 
 interface Communication {
   communication: {
@@ -129,7 +129,9 @@ export function CommunicationList({ communications, onComplete }: CommunicationL
             {item.communication.followUpDate && !item.communication.followUpCompleted && (
               <div className="mt-3 pt-3 border-t border-gray-100">
                 <button
-                  onClick={() => completeFollowUp.mutate({ communicationId: item.communication.id })}
+                  onClick={() =>
+                    completeFollowUp.mutate({ communicationId: item.communication.id })
+                  }
                   disabled={completeFollowUp.isPending}
                   className="text-sm px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
                 >

@@ -1,8 +1,8 @@
-import { PostgreSqlContainer, StartedPostgreSqlContainer } from '@testcontainers/postgresql';
+import * as schema from '@catering-event-manager/database';
+import { PostgreSqlContainer, type StartedPostgreSqlContainer } from '@testcontainers/postgresql';
+import { sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import * as schema from '@catering-event-manager/database';
-import { sql } from 'drizzle-orm';
 
 export type TestDatabase = ReturnType<typeof drizzle<typeof schema>>;
 
@@ -251,7 +251,9 @@ async function runMigrations(db: TestDatabase): Promise<void> {
  */
 export async function cleanDatabase(db: TestDatabase): Promise<void> {
   // Truncate tables in order (respecting foreign key constraints)
-  await db.execute(sql`TRUNCATE verification_tokens, communications, resource_schedule, task_resources, tasks, event_status_log, events, resources, users, clients RESTART IDENTITY CASCADE`);
+  await db.execute(
+    sql`TRUNCATE verification_tokens, communications, resource_schedule, task_resources, tasks, event_status_log, events, resources, users, clients RESTART IDENTITY CASCADE`
+  );
 }
 
 /**

@@ -45,7 +45,7 @@ export function getRedisClient(): Redis | null {
       token,
       retry: {
         retries: 3,
-        backoff: (retryCount) => Math.min(100 * Math.pow(2, retryCount), 1000),
+        backoff: (retryCount) => Math.min(100 * 2 ** retryCount, 1000),
       },
     });
     return redis;

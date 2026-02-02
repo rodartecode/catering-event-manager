@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server';
 import { db } from '@catering-event-manager/database/client';
-import { communications, clients, events } from '@catering-event-manager/database/schema';
-import { eq, and, lte } from 'drizzle-orm';
+import { clients, communications, events } from '@catering-event-manager/database/schema';
+import { and, eq, lte } from 'drizzle-orm';
+import { NextResponse } from 'next/server';
 import { logger } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
@@ -26,10 +26,7 @@ export async function GET() {
       .innerJoin(clients, eq(communications.clientId, clients.id))
       .innerJoin(events, eq(communications.eventId, events.id))
       .where(
-        and(
-          lte(communications.followUpDate, today),
-          eq(communications.followUpCompleted, false)
-        )
+        and(lte(communications.followUpDate, today), eq(communications.followUpCompleted, false))
       )
       .orderBy(communications.followUpDate);
 
@@ -81,9 +78,13 @@ export async function GET() {
       followUps: summary,
     });
   } catch (error) {
-    logger.error('Follow-up cron failed', error instanceof Error ? error : new Error(String(error)), {
-      context: 'follow-ups-cron',
-    });
+    logger.error(
+      'Follow-up cron failed',
+      error instanceof Error ? error : new Error(String(error)),
+      {
+        context: 'follow-ups-cron',
+      }
+    );
     return NextResponse.json(
       {
         success: false,

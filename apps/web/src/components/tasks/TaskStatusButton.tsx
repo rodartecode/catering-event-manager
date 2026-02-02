@@ -1,7 +1,7 @@
 'use client';
 
-import { trpc } from '@/lib/trpc';
 import { useState } from 'react';
+import { trpc } from '@/lib/trpc';
 
 interface TaskStatusButtonProps {
   taskId: number;
@@ -63,9 +63,7 @@ export function TaskStatusButton({ taskId, currentStatus, onStatusChange }: Task
       >
         {updateStatusMutation.isPending ? 'Updating...' : transition.label}
       </button>
-      {error && (
-        <p className="text-xs text-red-600 mt-1 max-w-[200px]">{error}</p>
-      )}
+      {error && <p className="text-xs text-red-600 mt-1 max-w-[200px]">{error}</p>}
     </div>
   );
 }

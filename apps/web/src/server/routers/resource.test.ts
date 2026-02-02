@@ -1,21 +1,17 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-  setupTestDatabase,
   cleanDatabase,
-  teardownTestDatabase,
+  setupTestDatabase,
   type TestDatabase,
+  teardownTestDatabase,
 } from '../../../test/helpers/db';
+import { createResource, createUser, resetFactoryCounter } from '../../../test/helpers/factories';
 import {
   createAdminCaller,
   createManagerCaller,
   createUnauthenticatedCaller,
   testUsers,
 } from '../../../test/helpers/trpc';
-import {
-  createUser,
-  createResource,
-  resetFactoryCounter,
-} from '../../../test/helpers/factories';
 
 // Mock the scheduling client for Go service integration
 vi.mock('../services/scheduling-client', () => ({
@@ -31,7 +27,11 @@ vi.mock('../services/scheduling-client', () => ({
     healthCheck: vi.fn().mockResolvedValue(true),
   },
   SchedulingClientError: class SchedulingClientError extends Error {
-    constructor(message: string, public statusCode?: number, public code?: string) {
+    constructor(
+      message: string,
+      public statusCode?: number,
+      public code?: string
+    ) {
       super(message);
       this.name = 'SchedulingClientError';
     }
@@ -485,7 +485,11 @@ describe('resource router', () => {
       const caller = createManagerCaller(db);
       await createResource(db, { name: 'Staff Available', type: 'staff', isAvailable: true });
       await createResource(db, { name: 'Staff Unavailable', type: 'staff', isAvailable: false });
-      await createResource(db, { name: 'Equipment Available', type: 'equipment', isAvailable: true });
+      await createResource(db, {
+        name: 'Equipment Available',
+        type: 'equipment',
+        isAvailable: true,
+      });
 
       const result = await caller.resource.list({ type: 'staff', isAvailable: true });
 

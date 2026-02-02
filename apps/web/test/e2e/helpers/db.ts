@@ -5,14 +5,15 @@
  * Uses the same database as development - ensure DATABASE_URL points to test database.
  */
 
+import * as schema from '@catering-event-manager/database/schema';
+import bcrypt from 'bcryptjs';
+import { sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import { sql } from 'drizzle-orm';
-import bcrypt from 'bcryptjs';
-import * as schema from '@catering-event-manager/database/schema';
 
 // Create a separate connection for E2E tests
-const connectionString = process.env.DATABASE_URL || 'postgresql://admin:changeme@localhost:5432/catering_events';
+const connectionString =
+  process.env.DATABASE_URL || 'postgresql://admin:changeme@localhost:5432/catering_events';
 const client = postgres(connectionString, { max: 5 });
 const db = drizzle(client, { schema });
 
@@ -63,12 +64,14 @@ export async function seedTestUser(
 /**
  * Seed a test client
  */
-export async function seedTestClient(data?: Partial<{
-  companyName: string;
-  contactName: string;
-  email: string;
-  phone: string;
-}>): Promise<{ id: number; companyName: string }> {
+export async function seedTestClient(
+  data?: Partial<{
+    companyName: string;
+    contactName: string;
+    email: string;
+    phone: string;
+  }>
+): Promise<{ id: number; companyName: string }> {
   const [client] = await db
     .insert(schema.clients)
     .values({
@@ -111,11 +114,13 @@ export async function seedTestEvent(data: {
 /**
  * Seed a test resource
  */
-export async function seedTestResource(data?: Partial<{
-  name: string;
-  type: 'staff' | 'equipment' | 'materials';
-  isAvailable: boolean;
-}>): Promise<{ id: number; name: string; type: string }> {
+export async function seedTestResource(
+  data?: Partial<{
+    name: string;
+    type: 'staff' | 'equipment' | 'materials';
+    isAvailable: boolean;
+  }>
+): Promise<{ id: number; name: string; type: string }> {
   const [resource] = await db
     .insert(schema.resources)
     .values({
@@ -139,7 +144,8 @@ export async function seedTestTask(data: {
   dueDate?: Date;
   assignedTo?: number;
 }): Promise<{ id: number; title: string; status: string }> {
-  const isOverdue = data.dueDate && data.dueDate < new Date() && (data.status || 'pending') !== 'completed';
+  const isOverdue =
+    data.dueDate && data.dueDate < new Date() && (data.status || 'pending') !== 'completed';
   const [task] = await db
     .insert(schema.tasks)
     .values({
@@ -188,12 +194,14 @@ export async function seedTestData(): Promise<{
 /**
  * Seed a test client with portal access enabled
  */
-export async function seedPortalClient(data?: Partial<{
-  companyName: string;
-  contactName: string;
-  email: string;
-  phone: string;
-}>): Promise<{ id: number; companyName: string; contactName: string; email: string }> {
+export async function seedPortalClient(
+  data?: Partial<{
+    companyName: string;
+    contactName: string;
+    email: string;
+    phone: string;
+  }>
+): Promise<{ id: number; companyName: string; contactName: string; email: string }> {
   const [client] = await db
     .insert(schema.clients)
     .values({
@@ -206,7 +214,12 @@ export async function seedPortalClient(data?: Partial<{
     })
     .returning();
 
-  return { id: client.id, companyName: client.companyName, contactName: client.contactName, email: client.email };
+  return {
+    id: client.id,
+    companyName: client.companyName,
+    contactName: client.contactName,
+    email: client.email,
+  };
 }
 
 /**
@@ -235,16 +248,12 @@ export async function seedPortalUser(
 /**
  * Create a magic link token for portal login
  */
-export async function createMagicLinkToken(
-  email: string,
-  expiresInMinutes = 15
-): Promise<string> {
+export async function createMagicLinkToken(email: string, expiresInMinutes = 15): Promise<string> {
   const token = Math.random().toString(36).substring(2) + Date.now().toString(36);
   const expires = new Date(Date.now() + expiresInMinutes * 60 * 1000);
 
   // Delete existing tokens
-  await db.delete(schema.verificationTokens)
-    .where(sql`identifier = ${email}`);
+  await db.delete(schema.verificationTokens).where(sql`identifier = ${email}`);
 
   // Insert new token
   await db.insert(schema.verificationTokens).values({

@@ -136,7 +136,11 @@ export const schedulingClient = {
         throw error;
       }
       if (error instanceof Error && error.name === 'AbortError') {
-        const timeoutError = new SchedulingClientError('Scheduling service timeout', undefined, 'TIMEOUT');
+        const timeoutError = new SchedulingClientError(
+          'Scheduling service timeout',
+          undefined,
+          'TIMEOUT'
+        );
         logger.error('Scheduling service timeout', timeoutError, {
           context: 'checkConflicts',
           endpoint: url,
@@ -161,7 +165,9 @@ export const schedulingClient = {
   /**
    * Get resource availability/schedule for a date range
    */
-  async getResourceAvailability(input: GetAvailabilityInput): Promise<ResourceAvailabilityResponse> {
+  async getResourceAvailability(
+    input: GetAvailabilityInput
+  ): Promise<ResourceAvailabilityResponse> {
     const params = new URLSearchParams({
       resource_id: input.resource_id.toString(),
       start_date: input.start_date.toISOString(),
@@ -197,7 +203,11 @@ export const schedulingClient = {
         throw error;
       }
       if (error instanceof Error && error.name === 'AbortError') {
-        const timeoutError = new SchedulingClientError('Scheduling service timeout', undefined, 'TIMEOUT');
+        const timeoutError = new SchedulingClientError(
+          'Scheduling service timeout',
+          undefined,
+          'TIMEOUT'
+        );
         logger.error('Scheduling service timeout', timeoutError, {
           context: 'getResourceAvailability',
           endpoint: url,

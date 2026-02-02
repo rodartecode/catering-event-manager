@@ -1,13 +1,13 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import {
-  rateLimitGeneralSync,
+  addRateLimitHeaders,
+  createRateLimitResponse,
+  getClientIp,
+  getRateLimitStoreSize,
   rateLimitAuthSync,
+  rateLimitGeneralSync,
   rateLimitMagicLinkSync,
   resetRateLimits,
-  getRateLimitStoreSize,
-  getClientIp,
-  createRateLimitResponse,
-  addRateLimitHeaders,
 } from './rate-limit';
 
 describe('Rate Limiting', () => {

@@ -22,10 +22,7 @@ describe('FollowUpIndicator', () => {
 
   it('renders completed state correctly', () => {
     render(
-      <FollowUpIndicator
-        followUpDate={new Date('2026-01-10T10:00:00Z')}
-        followUpCompleted={true}
-      />
+      <FollowUpIndicator followUpDate={new Date('2026-01-10T10:00:00Z')} followUpCompleted={true} />
     );
 
     expect(screen.getByText('Completed')).toBeInTheDocument();
@@ -115,10 +112,7 @@ describe('FollowUpIndicator', () => {
   it('completed state overrides date calculation', () => {
     // Even if overdue, completed should show completed state
     render(
-      <FollowUpIndicator
-        followUpDate={new Date('2026-01-10T10:00:00Z')}
-        followUpCompleted={true}
-      />
+      <FollowUpIndicator followUpDate={new Date('2026-01-10T10:00:00Z')} followUpCompleted={true} />
     );
 
     expect(screen.getByText('Completed')).toBeInTheDocument();

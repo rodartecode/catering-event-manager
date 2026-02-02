@@ -1,16 +1,12 @@
 'use client';
 
 import { SessionProvider } from 'next-auth/react';
-import { Sidebar } from '@/components/dashboard/Sidebar';
-import { MobileNav } from '@/components/dashboard/MobileNav';
-import { SessionGuard } from '@/components/auth/SessionGuard';
 import { SkipLink } from '@/components/a11y/SkipLink';
+import { SessionGuard } from '@/components/auth/SessionGuard';
+import { MobileNav } from '@/components/dashboard/MobileNav';
+import { Sidebar } from '@/components/dashboard/Sidebar';
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider
       refetchInterval={240} // 4 minutes (in seconds)
@@ -28,7 +24,9 @@ export default function DashboardLayout({
           <MobileNav />
 
           {/* Main Content */}
-          <main id="main-content" className="flex-1 lg:ml-64">{children}</main>
+          <main id="main-content" className="flex-1 lg:ml-64">
+            {children}
+          </main>
         </div>
       </SessionGuard>
     </SessionProvider>

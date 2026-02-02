@@ -142,7 +142,15 @@ describe('ResourceCard', () => {
     expect(link).toHaveClass('block', 'group');
 
     const card = link.firstChild;
-    expect(card).toHaveClass('bg-white', 'rounded-lg', 'shadow', 'hover:shadow-lg', 'transition-shadow', 'p-6', 'h-full');
+    expect(card).toHaveClass(
+      'bg-white',
+      'rounded-lg',
+      'shadow',
+      'hover:shadow-lg',
+      'transition-shadow',
+      'p-6',
+      'h-full'
+    );
 
     const title = screen.getByText('Chef John');
     expect(title).toHaveClass('group-hover:text-blue-600', 'transition');

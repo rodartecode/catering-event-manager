@@ -1,11 +1,11 @@
 'use client';
 
-import { trpc } from '@/lib/trpc';
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { ResourceTypeBadge } from '@/components/resources/ResourceTypeBadge';
-import { ResourceScheduleCalendar } from '@/components/resources/ResourceScheduleCalendar';
 import { EditResourceForm } from '@/components/resources/EditResourceForm';
+import { ResourceScheduleCalendar } from '@/components/resources/ResourceScheduleCalendar';
+import { ResourceTypeBadge } from '@/components/resources/ResourceTypeBadge';
+import { trpc } from '@/lib/trpc';
 
 export default function ResourceDetailPage() {
   const params = useParams();
@@ -46,7 +46,9 @@ export default function ResourceDetailPage() {
   });
 
   const handleDelete = () => {
-    if (window.confirm('Are you sure you want to delete this resource? This action cannot be undone.')) {
+    if (
+      window.confirm('Are you sure you want to delete this resource? This action cannot be undone.')
+    ) {
       deleteMutation.mutate({ id: resourceId });
     }
   };
@@ -66,7 +68,9 @@ export default function ResourceDetailPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="bg-white rounded-lg shadow p-12 text-center">
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Resource Not Found</h2>
-          <p className="text-gray-500 mb-4">The resource you&apos;re looking for doesn&apos;t exist.</p>
+          <p className="text-gray-500 mb-4">
+            The resource you&apos;re looking for doesn&apos;t exist.
+          </p>
           <button
             onClick={() => router.push('/resources')}
             className="text-blue-600 hover:text-blue-700"

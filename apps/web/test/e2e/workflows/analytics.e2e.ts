@@ -4,9 +4,15 @@
  * Tests analytics dashboard loading and data visualization.
  */
 
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 import { loginAsAdmin, TEST_ADMIN } from '../helpers/auth';
-import { cleanTestDatabase, seedTestUser, seedTestClient, seedTestEvent, seedTestResource } from '../helpers/db';
+import {
+  cleanTestDatabase,
+  seedTestClient,
+  seedTestEvent,
+  seedTestResource,
+  seedTestUser,
+} from '../helpers/db';
 
 test.describe('Analytics Dashboard', () => {
   test.beforeAll(async () => {
@@ -56,7 +62,9 @@ test.describe('Analytics Dashboard', () => {
     await page.goto('/analytics');
 
     // Chart container should be visible
-    await expect(page.locator('[data-testid="event-completion-chart"]')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('[data-testid="event-completion-chart"]')).toBeVisible({
+      timeout: 10000,
+    });
   });
 
   test('resource utilization chart displays data', async ({ page }) => {
@@ -64,7 +72,9 @@ test.describe('Analytics Dashboard', () => {
     await page.goto('/analytics');
 
     // Resource utilization chart should be visible
-    await expect(page.locator('[data-testid="resource-utilization"]')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('[data-testid="resource-utilization"]')).toBeVisible({
+      timeout: 10000,
+    });
   });
 
   test('task performance chart displays data', async ({ page }) => {

@@ -9,16 +9,13 @@ describe('EventStatusBadge', () => {
     ['in_progress', 'In Progress', 'bg-orange-100'],
     ['completed', 'Completed', 'bg-green-100'],
     ['follow_up', 'Follow Up', 'bg-gray-100'],
-  ] as const)(
-    'renders %s status with label "%s" and class "%s"',
-    (status, expectedLabel, expectedClass) => {
-      render(<EventStatusBadge status={status} />);
+  ] as const)('renders %s status with label "%s" and class "%s"', (status, expectedLabel, expectedClass) => {
+    render(<EventStatusBadge status={status} />);
 
-      const badge = screen.getByText(expectedLabel);
-      expect(badge).toBeInTheDocument();
-      expect(badge).toHaveClass(expectedClass);
-    }
-  );
+    const badge = screen.getByText(expectedLabel);
+    expect(badge).toBeInTheDocument();
+    expect(badge).toHaveClass(expectedClass);
+  });
 
   it('renders with correct base styling', () => {
     render(<EventStatusBadge status="inquiry" />);

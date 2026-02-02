@@ -1,19 +1,12 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import {
-  setupTestDatabase,
   cleanDatabase,
-  teardownTestDatabase,
+  setupTestDatabase,
   type TestDatabase,
+  teardownTestDatabase,
 } from '../helpers/db';
-import {
-  createAdminCaller,
-  testUsers,
-} from '../helpers/trpc';
-import {
-  createUser,
-  createClient,
-  createEvent,
-} from '../helpers/factories';
+import { createClient, createEvent, createUser } from '../helpers/factories';
+import { createAdminCaller, testUsers } from '../helpers/trpc';
 
 describe('Task Dependency Chain Scenarios', () => {
   let db: TestDatabase;

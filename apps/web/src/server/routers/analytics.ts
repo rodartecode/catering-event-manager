@@ -1,6 +1,6 @@
 import {
-  events,
   eventStatusEnum,
+  events,
   resourceSchedule,
   resources,
   taskCategoryEnum,
@@ -206,9 +206,7 @@ export const analyticsRouter = router({
     // Get tasks in date range
     const dateConditions = and(gte(tasks.createdAt, dateFrom), lte(tasks.createdAt, dateTo));
     const whereConditions =
-      category === 'all'
-        ? dateConditions
-        : and(dateConditions, eq(tasks.category, category));
+      category === 'all' ? dateConditions : and(dateConditions, eq(tasks.category, category));
 
     const allTasks: TaskRow[] = await db
       .select({

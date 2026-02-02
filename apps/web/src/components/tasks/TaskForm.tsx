@@ -1,10 +1,10 @@
 'use client';
 
-import { trpc } from '@/lib/trpc';
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
-import { useFocusTrap, useDialogId } from '@/hooks/use-focus-trap';
+import { useDialogId, useFocusTrap } from '@/hooks/use-focus-trap';
 import { useFormDirty } from '@/hooks/use-form-dirty';
+import { trpc } from '@/lib/trpc';
 
 interface TaskFormProps {
   eventId: number;
@@ -39,10 +39,7 @@ export function TaskForm({ eventId, taskId, onClose, onSuccess }: TaskFormProps)
   const isEditing = taskId !== undefined;
 
   // Fetch task data if editing
-  const { data: taskData } = trpc.task.getById.useQuery(
-    { id: taskId! },
-    { enabled: isEditing }
-  );
+  const { data: taskData } = trpc.task.getById.useQuery({ id: taskId! }, { enabled: isEditing });
 
   // Fetch available dependencies
   const { data: availableDeps } = trpc.task.getAvailableDependencies.useQuery({
@@ -56,25 +53,22 @@ export function TaskForm({ eventId, taskId, onClose, onSuccess }: TaskFormProps)
       setTitle(taskData.title);
       setDescription(taskData.description || '');
       setCategory(taskData.category);
-      setDueDate(
-        taskData.dueDate
-          ? new Date(taskData.dueDate).toISOString().slice(0, 16)
-          : ''
-      );
+      setDueDate(taskData.dueDate ? new Date(taskData.dueDate).toISOString().slice(0, 16) : '');
       setDependsOnTaskId(taskData.dependsOnTaskId);
     }
   }, [taskData]);
 
   // Compute initial values from taskData for dirty tracking
-  const initialValues = useMemo(() => ({
-    title: taskData?.title ?? '',
-    description: taskData?.description ?? '',
-    category: taskData?.category ?? 'pre_event' as TaskCategory,
-    dueDate: taskData?.dueDate
-      ? new Date(taskData.dueDate).toISOString().slice(0, 16)
-      : '',
-    dependsOnTaskId: taskData?.dependsOnTaskId ?? null,
-  }), [taskData]);
+  const initialValues = useMemo(
+    () => ({
+      title: taskData?.title ?? '',
+      description: taskData?.description ?? '',
+      category: taskData?.category ?? ('pre_event' as TaskCategory),
+      dueDate: taskData?.dueDate ? new Date(taskData.dueDate).toISOString().slice(0, 16) : '',
+      dependsOnTaskId: taskData?.dependsOnTaskId ?? null,
+    }),
+    [taskData]
+  );
 
   // Track unsaved changes
   const { markClean } = useFormDirty({
@@ -149,7 +143,8 @@ export function TaskForm({ eventId, taskId, onClose, onSuccess }: TaskFormProps)
     }
   };
 
-  const isPending = createMutation.isPending || updateMutation.isPending || deleteMutation.isPending;
+  const isPending =
+    createMutation.isPending || updateMutation.isPending || deleteMutation.isPending;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -169,7 +164,13 @@ export function TaskForm({ eventId, taskId, onClose, onSuccess }: TaskFormProps)
             aria-label="Close dialog"
             className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -182,9 +183,7 @@ export function TaskForm({ eventId, taskId, onClose, onSuccess }: TaskFormProps)
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Title *
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
             <input
               id="title"
               name="title"
@@ -198,9 +197,7 @@ export function TaskForm({ eventId, taskId, onClose, onSuccess }: TaskFormProps)
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Description
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
             <textarea
               id="description"
               name="description"
@@ -213,9 +210,7 @@ export function TaskForm({ eventId, taskId, onClose, onSuccess }: TaskFormProps)
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Category *
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
             <select
               id="category"
               name="category"
@@ -231,9 +226,7 @@ export function TaskForm({ eventId, taskId, onClose, onSuccess }: TaskFormProps)
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Due Date
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
             <input
               id="dueDate"
               name="dueDate"
@@ -245,9 +238,7 @@ export function TaskForm({ eventId, taskId, onClose, onSuccess }: TaskFormProps)
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Depends On
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Depends On</label>
             <select
               id="dependsOnTaskId"
               name="dependsOnTaskId"

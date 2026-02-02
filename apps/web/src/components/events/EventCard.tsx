@@ -15,9 +15,7 @@ interface EventCardProps {
 
 export function EventCard({ event }: EventCardProps) {
   const taskProgress =
-    event.taskCount > 0
-      ? Math.round((event.completedTaskCount / event.taskCount) * 100)
-      : 0;
+    event.taskCount > 0 ? Math.round((event.completedTaskCount / event.taskCount) * 100) : 0;
 
   const formattedDate = new Date(event.eventDate).toLocaleDateString('en-US', {
     year: 'numeric',

@@ -1,8 +1,8 @@
 'use client';
 
-import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState, useEffect, Suspense } from 'react';
+import { signIn } from 'next-auth/react';
+import { Suspense, useEffect, useState } from 'react';
 import { z } from 'zod';
 import { trpc } from '@/lib/trpc';
 
@@ -82,13 +82,25 @@ function PortalLoginForm() {
       <div className="min-h-[60vh] flex items-center justify-center">
         <div className="max-w-md w-full bg-white rounded-lg shadow p-8 text-center">
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            <svg
+              className="w-8 h-8 text-green-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+              />
             </svg>
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Check your email</h2>
           <p className="text-gray-600 mb-6">
-            We&apos;ve sent a login link to <strong>{email}</strong>. Click the link in the email to sign in to your portal.
+            We&apos;ve sent a login link to <strong>{email}</strong>. Click the link in the email to
+            sign in to your portal.
           </p>
           <p className="text-sm text-gray-500">
             Didn&apos;t receive the email? Check your spam folder or{' '}
@@ -110,9 +122,7 @@ function PortalLoginForm() {
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Client Portal</h1>
-          <p className="mt-2 text-gray-600">
-            Enter your email to receive a secure login link
-          </p>
+          <p className="mt-2 text-gray-600">Enter your email to receive a secure login link</p>
         </div>
 
         <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6 space-y-4">
@@ -147,7 +157,8 @@ function PortalLoginForm() {
         </form>
 
         <p className="mt-6 text-center text-sm text-gray-500">
-          Only clients with portal access enabled can sign in. Contact us if you need help accessing your account.
+          Only clients with portal access enabled can sign in. Contact us if you need help accessing
+          your account.
         </p>
       </div>
     </div>

@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import {
   AnalyticsCard,
   AnalyticsPageSkeleton,
@@ -14,7 +15,6 @@ import {
   exportTaskPerformanceReport,
 } from '@/lib/export-utils';
 import { trpc } from '@/lib/trpc';
-import { useState } from 'react';
 
 export default function AnalyticsPage() {
   // Default to last 30 days

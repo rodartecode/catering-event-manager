@@ -1,7 +1,7 @@
 import type { NextRequest } from 'next/server';
-import { handlers } from '@/server/auth';
-import { rateLimitAuth, getClientIp } from '@/lib/rate-limit';
 import { logger } from '@/lib/logger';
+import { getClientIp, rateLimitAuth } from '@/lib/rate-limit';
+import { handlers } from '@/server/auth';
 
 // GET requests don't need rate limiting (CSRF tokens, callbacks, etc.)
 export const { GET } = handlers;

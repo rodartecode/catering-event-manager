@@ -1,12 +1,5 @@
-import {
-  pgTable,
-  serial,
-  integer,
-  timestamp,
-  text,
-  index,
-} from 'drizzle-orm/pg-core';
-import { events, eventStatusEnum } from './events';
+import { index, integer, pgTable, serial, text, timestamp } from 'drizzle-orm/pg-core';
+import { eventStatusEnum, events } from './events';
 import { users } from './users';
 
 export const eventStatusLog = pgTable(

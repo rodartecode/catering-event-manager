@@ -1,28 +1,28 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
+import { sql } from 'drizzle-orm';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import {
-  setupTestDatabase,
   cleanDatabase,
-  teardownTestDatabase,
+  setupTestDatabase,
   type TestDatabase,
+  teardownTestDatabase,
 } from '../../../test/helpers/db';
 import {
-  createAdminCaller,
-  createManagerCaller,
-  createUnauthenticatedCaller,
-  createClientCaller,
-  testUsers,
-} from '../../../test/helpers/trpc';
-import {
-  createUser,
   createClient,
-  createEvent,
-  createTask,
-  createCommunication,
   createClientWithPortal,
+  createCommunication,
+  createEvent,
   createPortalTestSetup,
+  createTask,
+  createUser,
   resetFactoryCounter,
 } from '../../../test/helpers/factories';
-import { sql } from 'drizzle-orm';
+import {
+  createAdminCaller,
+  createClientCaller,
+  createManagerCaller,
+  createUnauthenticatedCaller,
+  testUsers,
+} from '../../../test/helpers/trpc';
 
 // Note: Auth and email mocks are configured globally in test/setup.ts
 
@@ -112,9 +112,7 @@ describe('portal router', () => {
     it('rejects invalid email format', async () => {
       const caller = createUnauthenticatedCaller(db);
 
-      await expect(
-        caller.portal.requestMagicLink({ email: 'invalid-email' })
-      ).rejects.toThrow();
+      await expect(caller.portal.requestMagicLink({ email: 'invalid-email' })).rejects.toThrow();
     });
   });
 
@@ -333,9 +331,9 @@ describe('portal router', () => {
       const { client } = await createClientWithPortal(db);
       const caller = createClientCaller(db, client.id, String(portalUser.id));
 
-      await expect(
-        caller.portal.getEvent({ eventId: otherEvent.id })
-      ).rejects.toThrow('Event not found');
+      await expect(caller.portal.getEvent({ eventId: otherEvent.id })).rejects.toThrow(
+        'Event not found'
+      );
     });
 
     it('returns 404 for non-existent event', async () => {
@@ -343,9 +341,7 @@ describe('portal router', () => {
 
       const caller = createClientCaller(db, client.id, String(portalUser.id));
 
-      await expect(
-        caller.portal.getEvent({ eventId: 99999 })
-      ).rejects.toThrow('Event not found');
+      await expect(caller.portal.getEvent({ eventId: 99999 })).rejects.toThrow('Event not found');
     });
 
     it('returns 404 for archived event', async () => {
@@ -361,9 +357,9 @@ describe('portal router', () => {
 
       const caller = createClientCaller(db, client.id, String(portalUser.id));
 
-      await expect(
-        caller.portal.getEvent({ eventId: event.id })
-      ).rejects.toThrow('Event not found');
+      await expect(caller.portal.getEvent({ eventId: event.id })).rejects.toThrow(
+        'Event not found'
+      );
     });
   });
 
@@ -413,9 +409,9 @@ describe('portal router', () => {
 
       const caller = createClientCaller(db, client.id, String(portalUser.id));
 
-      await expect(
-        caller.portal.getEventTimeline({ eventId: otherEvent.id })
-      ).rejects.toThrow('Event not found');
+      await expect(caller.portal.getEventTimeline({ eventId: otherEvent.id })).rejects.toThrow(
+        'Event not found'
+      );
     });
   });
 
@@ -495,9 +491,9 @@ describe('portal router', () => {
 
       const caller = createClientCaller(db, client.id, String(portalUser.id));
 
-      await expect(
-        caller.portal.getEventTasks({ eventId: otherEvent.id })
-      ).rejects.toThrow('Event not found');
+      await expect(caller.portal.getEventTasks({ eventId: otherEvent.id })).rejects.toThrow(
+        'Event not found'
+      );
     });
   });
 
@@ -614,17 +610,17 @@ describe('portal router', () => {
       const caller = createClientCaller(db, client.id, String(portalUser.id));
 
       // Try to access by direct ID
-      await expect(
-        caller.portal.getEvent({ eventId: otherEvent.id })
-      ).rejects.toThrow('Event not found');
+      await expect(caller.portal.getEvent({ eventId: otherEvent.id })).rejects.toThrow(
+        'Event not found'
+      );
 
-      await expect(
-        caller.portal.getEventTasks({ eventId: otherEvent.id })
-      ).rejects.toThrow('Event not found');
+      await expect(caller.portal.getEventTasks({ eventId: otherEvent.id })).rejects.toThrow(
+        'Event not found'
+      );
 
-      await expect(
-        caller.portal.getEventTimeline({ eventId: otherEvent.id })
-      ).rejects.toThrow('Event not found');
+      await expect(caller.portal.getEventTimeline({ eventId: otherEvent.id })).rejects.toThrow(
+        'Event not found'
+      );
 
       await expect(
         caller.portal.getEventCommunications({ eventId: otherEvent.id })

@@ -1,11 +1,11 @@
 import { router } from '../trpc';
-import { eventRouter } from './event';
-import { taskRouter } from './task';
-import { resourceRouter } from './resource';
 import { analyticsRouter } from './analytics';
 import { clientsRouter } from './clients';
-import { userRouter } from './user';
+import { eventRouter } from './event';
 import { portalRouter } from './portal';
+import { resourceRouter } from './resource';
+import { taskRouter } from './task';
+import { userRouter } from './user';
 
 export const appRouter = router({
   event: eventRouter,

@@ -4,28 +4,25 @@
  * Requires Go 1.24+ installed on the system.
  */
 
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import {
-  setupTestDatabase,
   cleanDatabase,
-  teardownTestDatabase,
   getTestDatabaseUrl,
+  setupTestDatabase,
   type TestDatabase,
+  teardownTestDatabase,
 } from '../helpers/db';
 import {
-  createAdminCaller,
-  testUsers,
-} from '../helpers/trpc';
-import {
-  createUser,
   createClient,
   createEvent,
-  createTask,
   createResource,
   createResourceSchedule,
+  createTask,
+  createUser,
   resetFactoryCounter,
 } from '../helpers/factories';
-import { buildGoService, startGoService, stopGoService, getServiceUrl } from './setup';
+import { createAdminCaller, testUsers } from '../helpers/trpc';
+import { buildGoService, getServiceUrl, startGoService, stopGoService } from './setup';
 
 describe('Cross-Service Integration', () => {
   let db: TestDatabase;

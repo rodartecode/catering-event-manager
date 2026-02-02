@@ -1,22 +1,18 @@
 import {
+  boolean,
+  index,
+  integer,
+  pgEnum,
   pgTable,
   serial,
-  integer,
-  varchar,
   text,
   timestamp,
-  boolean,
-  pgEnum,
-  index,
+  varchar,
 } from 'drizzle-orm/pg-core';
 import { events } from './events';
 import { users } from './users';
 
-export const taskStatusEnum = pgEnum('task_status', [
-  'pending',
-  'in_progress',
-  'completed',
-]);
+export const taskStatusEnum = pgEnum('task_status', ['pending', 'in_progress', 'completed']);
 
 export const taskCategoryEnum = pgEnum('task_category', [
   'pre_event',

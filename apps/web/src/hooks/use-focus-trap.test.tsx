@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, cleanup } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { useRef, useState } from 'react';
-import { useFocusTrap, useDialogId } from './use-focus-trap';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { useDialogId, useFocusTrap } from './use-focus-trap';
 
 // Test component that uses the focus trap hook
 function TestDialog({
@@ -21,13 +21,7 @@ function TestDialog({
   if (!isOpen) return null;
 
   return (
-    <div
-      ref={dialogRef}
-      role="dialog"
-      aria-modal="true"
-      data-testid="dialog"
-      tabIndex={-1}
-    >
+    <div ref={dialogRef} role="dialog" aria-modal="true" data-testid="dialog" tabIndex={-1}>
       <h2>Test Dialog</h2>
       <button data-testid="first-button">First Button</button>
       <input data-testid="input" type="text" />
@@ -37,13 +31,7 @@ function TestDialog({
 }
 
 // Test component with no focusable elements
-function EmptyDialog({
-  isOpen,
-  onClose,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-}) {
+function EmptyDialog({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const dialogRef = useRef<HTMLDivElement>(null);
   useFocusTrap(dialogRef, { isOpen, onClose });
 

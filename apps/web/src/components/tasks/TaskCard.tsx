@@ -1,9 +1,9 @@
 'use client';
 
-import { TaskStatusBadge } from './TaskStatusBadge';
-import { TaskCategoryBadge } from './TaskCategoryBadge';
-import { TaskStatusButton } from './TaskStatusButton';
 import { OverdueIndicator } from './OverdueIndicator';
+import { TaskCategoryBadge } from './TaskCategoryBadge';
+import { TaskStatusBadge } from './TaskStatusBadge';
+import { TaskStatusButton } from './TaskStatusButton';
 
 interface TaskCardProps {
   task: {
@@ -29,7 +29,14 @@ interface TaskCardProps {
   isAdmin?: boolean;
 }
 
-export function TaskCard({ task, onEdit, onAssign, onResources, showActions = true, isAdmin = false }: TaskCardProps) {
+export function TaskCard({
+  task,
+  onEdit,
+  onAssign,
+  onResources,
+  showActions = true,
+  isAdmin = false,
+}: TaskCardProps) {
   const formattedDueDate = task.dueDate
     ? new Date(task.dueDate).toLocaleDateString('en-US', {
         month: 'short',
@@ -39,7 +46,10 @@ export function TaskCard({ task, onEdit, onAssign, onResources, showActions = tr
     : null;
 
   return (
-    <div data-testid="task-card" className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition">
+    <div
+      data-testid="task-card"
+      className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition"
+    >
       <div className="flex justify-between items-start mb-2">
         <div className="flex-1">
           <h4 className="font-medium text-gray-900">{task.title}</h4>

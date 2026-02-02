@@ -4,15 +4,15 @@
  * Tests resource creation, assignment, and conflict detection.
  */
 
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 import { loginAsAdmin, TEST_ADMIN } from '../helpers/auth';
 import {
   cleanTestDatabase,
-  seedTestUser,
   seedTestClient,
   seedTestEvent,
   seedTestResource,
   seedTestTask,
+  seedTestUser,
 } from '../helpers/db';
 
 test.describe('Resource Scheduling', () => {
@@ -122,7 +122,9 @@ test.describe('Resource Scheduling', () => {
       await expect(page.locator('h2:has-text("Tasks")')).toBeVisible();
 
       // Find the seeded task card
-      const taskCard = page.locator('[data-testid="task-card"]:has-text("Resource Assignment Task")');
+      const taskCard = page.locator(
+        '[data-testid="task-card"]:has-text("Resource Assignment Task")'
+      );
       await expect(taskCard).toBeVisible();
 
       // Click "Resources" button on the task card
@@ -138,7 +140,9 @@ test.describe('Resource Scheduling', () => {
       await page.locator('button:has-text("Assign Resources")').click();
 
       // Dialog should close
-      await expect(page.locator('h2:has-text("Assign Resources")')).not.toBeVisible({ timeout: 10000 });
+      await expect(page.locator('h2:has-text("Assign Resources")')).not.toBeVisible({
+        timeout: 10000,
+      });
     });
   });
 

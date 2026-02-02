@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, Suspense } from 'react';
-import { trpc } from '@/lib/trpc';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { Suspense, useState } from 'react';
 import { ClientCard } from '@/components/clients/ClientCard';
 import { ClientListSkeleton } from '@/components/clients/ClientListSkeleton';
 import { FollowUpBanner } from '@/components/clients/FollowUpBanner';
+import { trpc } from '@/lib/trpc';
 import { useIsAdmin } from '@/lib/use-auth';
-import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
 
 function ClientsPageContent() {
   const { isAdmin } = useIsAdmin();
@@ -26,9 +26,7 @@ function ClientsPageContent() {
       client.email.toLowerCase().includes(searchLower);
 
     if (showFollowUps && dueFollowUps) {
-      const hasFollowUp = dueFollowUps.followUps.some(
-        (f) => f.client.id === client.id
-      );
+      const hasFollowUp = dueFollowUps.followUps.some((f) => f.client.id === client.id);
       return matchesSearch && hasFollowUp;
     }
 

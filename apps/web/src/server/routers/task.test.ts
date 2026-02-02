@@ -1,25 +1,25 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-  setupTestDatabase,
   cleanDatabase,
-  teardownTestDatabase,
+  setupTestDatabase,
   type TestDatabase,
+  teardownTestDatabase,
 } from '../../../test/helpers/db';
+import {
+  createArchivedEvent,
+  createClient,
+  createEvent,
+  createResource,
+  createTask,
+  createUser,
+  resetFactoryCounter,
+} from '../../../test/helpers/factories';
 import {
   createAdminCaller,
   createManagerCaller,
   createUnauthenticatedCaller,
   testUsers,
 } from '../../../test/helpers/trpc';
-import {
-  createClient,
-  createUser,
-  createEvent,
-  createTask,
-  createResource,
-  createArchivedEvent,
-  resetFactoryCounter,
-} from '../../../test/helpers/factories';
 
 // Mock the scheduling client for resource assignment tests
 vi.mock('../services/scheduling-client', () => ({
@@ -35,7 +35,11 @@ vi.mock('../services/scheduling-client', () => ({
     healthCheck: vi.fn().mockResolvedValue(true),
   },
   SchedulingClientError: class SchedulingClientError extends Error {
-    constructor(message: string, public statusCode?: number, public code?: string) {
+    constructor(
+      message: string,
+      public statusCode?: number,
+      public code?: string
+    ) {
       super(message);
       this.name = 'SchedulingClientError';
     }
@@ -218,9 +222,9 @@ describe('task router', () => {
       const event = await createEvent(db, client.id, 1);
       const task = await createTask(db, event.id);
 
-      await expect(
-        caller.task.assign({ taskId: task.id, userId: 9999 })
-      ).rejects.toThrow('User not found');
+      await expect(caller.task.assign({ taskId: task.id, userId: 9999 })).rejects.toThrow(
+        'User not found'
+      );
     });
 
     it('rejects manager users (admin only)', async () => {
@@ -229,9 +233,7 @@ describe('task router', () => {
       const event = await createEvent(db, client.id, 1);
       const task = await createTask(db, event.id);
 
-      await expect(
-        caller.task.assign({ taskId: task.id, userId: 2 })
-      ).rejects.toThrow('FORBIDDEN');
+      await expect(caller.task.assign({ taskId: task.id, userId: 2 })).rejects.toThrow('FORBIDDEN');
     });
   });
 
@@ -472,9 +474,9 @@ describe('task router', () => {
       const event = await createEvent(db, client.id, 1);
       const task = await createTask(db, event.id);
 
-      await expect(
-        caller.task.update({ id: task.id, title: 'New Title' })
-      ).rejects.toThrow('FORBIDDEN');
+      await expect(caller.task.update({ id: task.id, title: 'New Title' })).rejects.toThrow(
+        'FORBIDDEN'
+      );
     });
   });
 
@@ -763,9 +765,7 @@ describe('task router', () => {
       const archived = await createArchivedEvent(db, client.id, 1);
       const task = await createTask(db, archived.id);
 
-      await expect(
-        caller.task.update({ id: task.id, title: 'New Title' })
-      ).rejects.toThrow();
+      await expect(caller.task.update({ id: task.id, title: 'New Title' })).rejects.toThrow();
     });
   });
 

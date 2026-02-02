@@ -1,18 +1,18 @@
-import { z } from 'zod';
-import { router, clientProcedure, publicProcedure } from '../trpc';
+import type { db as DbType } from '@catering-event-manager/database/client';
 import {
-  events,
   clients,
-  tasks,
   communications,
   eventStatusLog,
+  events,
+  tasks,
   users,
 } from '@catering-event-manager/database/schema';
-import { eq, and, desc, asc } from 'drizzle-orm';
 import { TRPCError } from '@trpc/server';
-import type { db as DbType } from '@catering-event-manager/database/client';
-import { createMagicLinkToken } from '../auth';
+import { and, asc, desc, eq } from 'drizzle-orm';
+import { z } from 'zod';
 import { sendMagicLinkEmail } from '@/lib/email';
+import { createMagicLinkToken } from '../auth';
+import { clientProcedure, publicProcedure, router } from '../trpc';
 
 type Db = typeof DbType;
 

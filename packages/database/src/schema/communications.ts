@@ -1,16 +1,16 @@
 import {
-  pgTable,
-  pgEnum,
-  serial,
-  integer,
-  varchar,
-  text,
-  timestamp,
   boolean,
   index,
+  integer,
+  pgEnum,
+  pgTable,
+  serial,
+  text,
+  timestamp,
+  varchar,
 } from 'drizzle-orm/pg-core';
-import { events } from './events';
 import { clients } from './clients';
+import { events } from './events';
 import { users } from './users';
 
 export const communicationTypeEnum = pgEnum('communication_type', [

@@ -4,11 +4,11 @@
  * Runs once before all E2E tests to set up the test environment.
  */
 
-import { chromium, type FullConfig } from '@playwright/test';
-import { cleanTestDatabase, seedTestData } from './helpers/db';
-import { setupAuthState, ADMIN_AUTH_FILE } from './helpers/auth';
 import fs from 'node:fs';
 import path from 'node:path';
+import { chromium, type FullConfig } from '@playwright/test';
+import { ADMIN_AUTH_FILE, setupAuthState } from './helpers/auth';
+import { cleanTestDatabase, seedTestData } from './helpers/db';
 
 async function globalSetup(_config: FullConfig): Promise<void> {
   console.log('🧪 Starting E2E test setup...');

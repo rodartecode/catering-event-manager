@@ -1,20 +1,12 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import {
-  setupTestDatabase,
   cleanDatabase,
-  teardownTestDatabase,
+  setupTestDatabase,
   type TestDatabase,
+  teardownTestDatabase,
 } from '../helpers/db';
-import {
-  createAdminCaller,
-  testUsers,
-} from '../helpers/trpc';
-import {
-  createUser,
-  createClient,
-  createEvent,
-  createArchivedEvent,
-} from '../helpers/factories';
+import { createArchivedEvent, createClient, createEvent, createUser } from '../helpers/factories';
+import { createAdminCaller, testUsers } from '../helpers/trpc';
 
 describe('Event Lifecycle Scenarios', () => {
   let db: TestDatabase;
@@ -139,9 +131,9 @@ describe('Event Lifecycle Scenarios', () => {
     for (const status of nonCompletedStatuses) {
       const event = await createEvent(db, client.id, 1, { status });
 
-      await expect(
-        caller.event.archive({ id: event.id })
-      ).rejects.toThrow('Only completed events can be archived');
+      await expect(caller.event.archive({ id: event.id })).rejects.toThrow(
+        'Only completed events can be archived'
+      );
     }
   });
 

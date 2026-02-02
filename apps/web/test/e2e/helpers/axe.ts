@@ -41,7 +41,10 @@ export async function checkA11y(page: Page, options?: { exclude?: string[] }) {
       return `${violation.id}: ${violation.description}\n${nodes}`;
     });
 
-    expect(violations, `Accessibility violations found:\n${violationMessages.join('\n\n')}`).toHaveLength(0);
+    expect(
+      violations,
+      `Accessibility violations found:\n${violationMessages.join('\n\n')}`
+    ).toHaveLength(0);
   }
 }
 

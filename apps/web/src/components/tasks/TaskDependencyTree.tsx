@@ -22,9 +22,7 @@ export function TaskDependencyTree({
   const hasAnyDependency = dependency || dependentTasks.length > 0;
 
   if (!hasAnyDependency) {
-    return (
-      <p className="text-sm text-gray-500">This task has no dependencies.</p>
-    );
+    return <p className="text-sm text-gray-500">This task has no dependencies.</p>;
   }
 
   return (

@@ -1,8 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor, act } from '../../../test/helpers/render';
 import userEvent from '@testing-library/user-event';
-import { PortalAccessSection } from './PortalAccessSection';
 import type { ReactNode } from 'react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, render, screen, waitFor } from '../../../test/helpers/render';
+import { PortalAccessSection } from './PortalAccessSection';
 
 // Track mutation callbacks
 let enableMutationOptions: {
@@ -121,9 +121,7 @@ describe('PortalAccessSection', () => {
     it('shows description about portal access', () => {
       render(<PortalAccessSection {...defaultProps} />);
 
-      expect(
-        screen.getByText(/enable portal access to allow this client/i)
-      ).toBeInTheDocument();
+      expect(screen.getByText(/enable portal access to allow this client/i)).toBeInTheDocument();
     });
   });
 
@@ -240,9 +238,7 @@ describe('PortalAccessSection', () => {
       render(<PortalAccessSection {...enabledProps} />);
 
       expect(screen.getByText('Portal Access Enabled')).toBeInTheDocument();
-      expect(
-        screen.getByText(/this client can access the portal/i)
-      ).toBeInTheDocument();
+      expect(screen.getByText(/this client can access the portal/i)).toBeInTheDocument();
     });
 
     it('shows enabled date', () => {
@@ -288,9 +284,7 @@ describe('PortalAccessSection', () => {
     it('shows disable button', () => {
       render(<PortalAccessSection {...enabledProps} />);
 
-      expect(
-        screen.getByRole('button', { name: /disable portal access/i })
-      ).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /disable portal access/i })).toBeInTheDocument();
     });
 
     it('does not show enable form', () => {
@@ -381,11 +375,7 @@ describe('PortalAccessSection', () => {
       };
 
       render(
-        <PortalAccessSection
-          {...defaultProps}
-          portalEnabled={true}
-          portalEnabledAt={new Date()}
-        />
+        <PortalAccessSection {...defaultProps} portalEnabled={true} portalEnabledAt={new Date()} />
       );
 
       // Simulate error callback wrapped in act
@@ -417,13 +407,7 @@ describe('PortalAccessSection', () => {
         isActive: true,
       };
 
-      render(
-        <PortalAccessSection
-          {...defaultProps}
-          portalEnabled={true}
-          onUpdate={onUpdate}
-        />
-      );
+      render(<PortalAccessSection {...defaultProps} portalEnabled={true} onUpdate={onUpdate} />);
 
       // Simulate success callback
       disableMutationOptions.onSuccess?.();
@@ -462,11 +446,7 @@ describe('PortalAccessSection', () => {
       };
 
       render(
-        <PortalAccessSection
-          {...defaultProps}
-          portalEnabled={true}
-          portalEnabledAt={new Date()}
-        />
+        <PortalAccessSection {...defaultProps} portalEnabled={true} portalEnabledAt={new Date()} />
       );
 
       // The checkmark icon should be hidden from screen readers

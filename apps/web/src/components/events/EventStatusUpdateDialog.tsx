@@ -1,11 +1,17 @@
 'use client';
 
-import { trpc } from '@/lib/trpc';
-import { useState, useRef } from 'react';
+import { useRef, useState } from 'react';
 import toast from 'react-hot-toast';
-import { useFocusTrap, useDialogId } from '@/hooks/use-focus-trap';
+import { useDialogId, useFocusTrap } from '@/hooks/use-focus-trap';
+import { trpc } from '@/lib/trpc';
 
-type EventStatus = 'inquiry' | 'planning' | 'preparation' | 'in_progress' | 'completed' | 'follow_up';
+type EventStatus =
+  | 'inquiry'
+  | 'planning'
+  | 'preparation'
+  | 'in_progress'
+  | 'completed'
+  | 'follow_up';
 
 interface EventStatusUpdateDialogProps {
   eventId: number;
@@ -97,13 +103,21 @@ export function EventStatusUpdateDialog({
         className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto"
       >
         <div className="flex justify-between items-start mb-6">
-          <h3 id={titleId} className="text-2xl font-semibold">Update Event Status</h3>
+          <h3 id={titleId} className="text-2xl font-semibold">
+            Update Event Status
+          </h3>
           <button
             onClick={onClose}
             aria-label="Close dialog"
             className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -117,9 +131,7 @@ export function EventStatusUpdateDialog({
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Status Selection */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
-              New Status
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-3">New Status</label>
             <div className="space-y-3">
               {statusOptions.map((option) => (
                 <label

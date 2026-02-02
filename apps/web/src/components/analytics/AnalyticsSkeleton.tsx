@@ -2,7 +2,10 @@
 
 export function CardSkeleton() {
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6 animate-pulse" aria-hidden="true">
+    <div
+      className="bg-white rounded-lg border border-gray-200 p-6 animate-pulse"
+      aria-hidden="true"
+    >
       <div className="h-4 bg-gray-200 rounded w-24 mb-3" />
       <div className="h-8 bg-gray-200 rounded w-20 mb-2" />
       <div className="h-3 bg-gray-200 rounded w-32" />
@@ -39,7 +42,10 @@ export function AnalyticsPageSkeleton() {
       </div>
 
       {/* Date picker skeleton */}
-      <div className="bg-white rounded-lg border border-gray-200 p-4 animate-pulse" aria-hidden="true">
+      <div
+        className="bg-white rounded-lg border border-gray-200 p-4 animate-pulse"
+        aria-hidden="true"
+      >
         <div className="flex gap-2">
           <div className="h-8 bg-gray-200 rounded w-24" />
           <div className="h-8 bg-gray-200 rounded w-24" />

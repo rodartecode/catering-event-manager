@@ -12,7 +12,11 @@ interface LogEntry {
 }
 
 class Logger {
-  private formatEntry(level: LogLevel, message: string, context?: Record<string, unknown>): LogEntry {
+  private formatEntry(
+    level: LogLevel,
+    message: string,
+    context?: Record<string, unknown>
+  ): LogEntry {
     return {
       timestamp: new Date().toISOString(),
       level,

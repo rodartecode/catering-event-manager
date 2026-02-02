@@ -5,10 +5,10 @@
  * (Core Web Vitals) for the events list page (authenticated).
  */
 
-import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { measureLCP, measureCLS } from '../helpers/performance';
+import { expect, test } from '@playwright/test';
 import { loginAsAdmin } from '../helpers/auth';
+import { measureCLS, measureLCP } from '../helpers/performance';
 
 test.describe('Events Page Quality Gates', () => {
   test.beforeEach(async ({ page }) => {

@@ -80,12 +80,7 @@ export function ResourceCard({ resource }: ResourceCardProps) {
         {resource.upcomingAssignments !== undefined && resource.upcomingAssignments > 0 && (
           <div className="pt-3 border-t border-gray-100">
             <div className="flex items-center text-sm text-gray-500">
-              <svg
-                className="w-4 h-4 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -93,7 +88,10 @@ export function ResourceCard({ resource }: ResourceCardProps) {
                   d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                 />
               </svg>
-              <span>{resource.upcomingAssignments} upcoming assignment{resource.upcomingAssignments !== 1 ? 's' : ''}</span>
+              <span>
+                {resource.upcomingAssignments} upcoming assignment
+                {resource.upcomingAssignments !== 1 ? 's' : ''}
+              </span>
             </div>
           </div>
         )}

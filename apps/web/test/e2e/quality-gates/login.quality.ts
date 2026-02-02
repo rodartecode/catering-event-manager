@@ -5,9 +5,9 @@
  * (Core Web Vitals) for the public login page.
  */
 
-import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { measureLCP, measureCLS } from '../helpers/performance';
+import { expect, test } from '@playwright/test';
+import { measureCLS, measureLCP } from '../helpers/performance';
 
 test.describe('Login Page Quality Gates', () => {
   test.beforeEach(async ({ page }) => {

@@ -1,12 +1,12 @@
 'use client';
 
-import { trpc } from '@/lib/trpc';
 import { useState } from 'react';
+import { ResourceAssignmentDialog } from '@/components/resources/ResourceAssignmentDialog';
+import { trpc } from '@/lib/trpc';
+import { TaskAssignDialog } from './TaskAssignDialog';
 import { TaskCard } from './TaskCard';
 import { TaskForm } from './TaskForm';
-import { TaskAssignDialog } from './TaskAssignDialog';
 import { TaskListSkeleton } from './TaskListSkeleton';
-import { ResourceAssignmentDialog } from '@/components/resources/ResourceAssignmentDialog';
 
 interface TaskListProps {
   eventId: number;

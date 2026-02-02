@@ -1,12 +1,12 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import {
-  setupTestDatabase,
   cleanDatabase,
-  teardownTestDatabase,
+  setupTestDatabase,
   type TestDatabase,
+  teardownTestDatabase,
 } from '../../../test/helpers/db';
-import { createUnauthenticatedCaller } from '../../../test/helpers/trpc';
 import { createUser, resetFactoryCounter } from '../../../test/helpers/factories';
+import { createUnauthenticatedCaller } from '../../../test/helpers/trpc';
 
 describe('user router', () => {
   let db: TestDatabase;

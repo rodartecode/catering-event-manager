@@ -1,23 +1,23 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import {
-  setupTestDatabase,
   cleanDatabase,
-  teardownTestDatabase,
+  setupTestDatabase,
   type TestDatabase,
+  teardownTestDatabase,
 } from '../../../test/helpers/db';
+import {
+  createClient,
+  createCommunication,
+  createEvent,
+  createUser,
+  resetFactoryCounter,
+} from '../../../test/helpers/factories';
 import {
   createAdminCaller,
   createManagerCaller,
   createUnauthenticatedCaller,
   testUsers,
 } from '../../../test/helpers/trpc';
-import {
-  createUser,
-  createClient,
-  createEvent,
-  createCommunication,
-  resetFactoryCounter,
-} from '../../../test/helpers/factories';
 
 describe('clients router', () => {
   let db: TestDatabase;
@@ -745,9 +745,9 @@ describe('clients router', () => {
       const caller = createManagerCaller(db);
       const client = await createClient(db);
 
-      await expect(
-        caller.clients.disablePortalAccess({ clientId: client.id })
-      ).rejects.toThrow('FORBIDDEN');
+      await expect(caller.clients.disablePortalAccess({ clientId: client.id })).rejects.toThrow(
+        'FORBIDDEN'
+      );
     });
   });
 

@@ -1,11 +1,11 @@
 'use client';
 
-import { trpc, type RouterOutput } from '@/lib/trpc';
 import { useState } from 'react';
-import { z } from 'zod';
 import toast from 'react-hot-toast';
-import { getInputA11yProps, getErrorProps } from '@/lib/form-a11y';
+import { z } from 'zod';
 import { useFormDirty } from '@/hooks/use-form-dirty';
+import { getErrorProps, getInputA11yProps } from '@/lib/form-a11y';
+import { type RouterOutput, trpc } from '@/lib/trpc';
 
 // Form validation schema
 const eventFormSchema = z.object({
@@ -107,7 +107,10 @@ export function EventForm({ onSuccess, onCancel }: EventFormProps) {
       {/* Client Selection */}
       <div>
         <label htmlFor="clientId" className="block text-sm font-medium text-gray-700 mb-2">
-          Client <span className="text-red-500" aria-hidden="true">*</span>
+          Client{' '}
+          <span className="text-red-500" aria-hidden="true">
+            *
+          </span>
           <span className="sr-only">(required)</span>
         </label>
         <select
@@ -144,7 +147,10 @@ export function EventForm({ onSuccess, onCancel }: EventFormProps) {
       {/* Event Name */}
       <div>
         <label htmlFor="eventName" className="block text-sm font-medium text-gray-700 mb-2">
-          Event Name <span className="text-red-500" aria-hidden="true">*</span>
+          Event Name{' '}
+          <span className="text-red-500" aria-hidden="true">
+            *
+          </span>
           <span className="sr-only">(required)</span>
         </label>
         <input
@@ -170,7 +176,10 @@ export function EventForm({ onSuccess, onCancel }: EventFormProps) {
       {/* Event Date */}
       <div>
         <label htmlFor="eventDate" className="block text-sm font-medium text-gray-700 mb-2">
-          Event Date <span className="text-red-500" aria-hidden="true">*</span>
+          Event Date{' '}
+          <span className="text-red-500" aria-hidden="true">
+            *
+          </span>
           <span className="sr-only">(required)</span>
         </label>
         <input
@@ -179,12 +188,10 @@ export function EventForm({ onSuccess, onCancel }: EventFormProps) {
           required
           aria-required="true"
           {...getInputA11yProps('eventDate', !!errors.eventDate)}
-          value={
-            formData.eventDate
-              ? new Date(formData.eventDate).toISOString().split('T')[0]
-              : ''
+          value={formData.eventDate ? new Date(formData.eventDate).toISOString().split('T')[0] : ''}
+          onChange={(e) =>
+            updateField('eventDate', e.target.value ? new Date(e.target.value) : undefined)
           }
-          onChange={(e) => updateField('eventDate', e.target.value ? new Date(e.target.value) : undefined)}
           className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
             errors.eventDate ? 'border-red-500' : 'border-gray-300'
           }`}

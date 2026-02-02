@@ -1,12 +1,12 @@
 import {
+  boolean,
+  index,
+  integer,
+  pgEnum,
   pgTable,
   serial,
-  varchar,
   timestamp,
-  pgEnum,
-  boolean,
-  integer,
-  index,
+  varchar,
 } from 'drizzle-orm/pg-core';
 import { clients } from './clients';
 

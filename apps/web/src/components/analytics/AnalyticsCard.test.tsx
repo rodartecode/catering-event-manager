@@ -27,11 +27,7 @@ describe('AnalyticsCard', () => {
 
   it('renders description when provided', () => {
     render(
-      <AnalyticsCard
-        title="Total Events"
-        value={42}
-        description="Events completed this month"
-      />
+      <AnalyticsCard title="Total Events" value={42} description="Events completed this month" />
     );
 
     expect(screen.getByText('Events completed this month')).toBeInTheDocument();
@@ -47,11 +43,7 @@ describe('AnalyticsCard', () => {
 
   it('renders positive trend correctly', () => {
     render(
-      <AnalyticsCard
-        title="Total Events"
-        value={42}
-        trend={{ value: 12.5, isPositive: true }}
-      />
+      <AnalyticsCard title="Total Events" value={42} trend={{ value: 12.5, isPositive: true }} />
     );
 
     expect(screen.getByText('+12.5%')).toBeInTheDocument();
@@ -66,11 +58,7 @@ describe('AnalyticsCard', () => {
 
   it('renders negative trend correctly', () => {
     render(
-      <AnalyticsCard
-        title="Total Events"
-        value={42}
-        trend={{ value: -8.3, isPositive: false }}
-      />
+      <AnalyticsCard title="Total Events" value={42} trend={{ value: -8.3, isPositive: false }} />
     );
 
     expect(screen.getByText('-8.3%')).toBeInTheDocument();
@@ -90,13 +78,7 @@ describe('AnalyticsCard', () => {
   });
 
   it('renders icon when provided', () => {
-    render(
-      <AnalyticsCard
-        title="Total Events"
-        value={42}
-        icon={mockIcon}
-      />
-    );
+    render(<AnalyticsCard title="Total Events" value={42} icon={mockIcon} />);
 
     expect(screen.getByTestId('mock-icon')).toBeInTheDocument();
 
@@ -112,13 +94,7 @@ describe('AnalyticsCard', () => {
   });
 
   it('applies custom className', () => {
-    render(
-      <AnalyticsCard
-        title="Total Events"
-        value={42}
-        className="custom-class"
-      />
-    );
+    render(<AnalyticsCard title="Total Events" value={42} className="custom-class" />);
 
     const card = screen.getByText('Total Events').closest('.bg-white');
     expect(card).toHaveClass('custom-class');
