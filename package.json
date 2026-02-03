@@ -12,7 +12,7 @@
     "drizzle-orm": "^0.45.1"
   },
   "lint-staged": {
-    "*.{ts,tsx,js,jsx,json,md}": [
+    "*.{ts,tsx,js,jsx,json}": [
       "biome check --write"
     ],
     "*.go": [
