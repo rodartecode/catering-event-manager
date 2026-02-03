@@ -2,7 +2,7 @@
 
 **Production-ready event lifecycle management system** for catering companies - from initial inquiry to post-event follow-up.
 
-**Last updated**: February 1, 2026 (Quality gates, cross-service integration, distributed context)
+**Last updated**: February 2, 2026 (Production database seeded with demo data, CI pipeline automation)
 
 ## Architecture
 
@@ -510,14 +510,16 @@ DATABASE_URL="your-production-db-url" pnpm db:seed
 pg_dump $DATABASE_URL > backup-$(date +%Y%m%d).sql
 ```
 
-**Sample data includes:**
+**Demo Data & Login Credentials:**
 
-- Admin user (`admin@example.com` / `password123`)
-- 3 sample clients with contact information
-- 5 events across different lifecycle stages
-- 10 tasks with assignments and dependencies
-- 5 resources (staff, equipment, materials)
-- Sample communications and follow-ups
+Production database includes complete demo data for testing:
+
+- **Admin Account**: `admin@example.com` / `password123` (full access)
+- **Manager Account**: `manager@example.com` / `password123` (limited access)
+- **Client Portal**: `jane.smith@acme.test` (magic link authentication)
+- **Sample Data**: 3 clients, 5 events, 10 tasks, 5 resources, communication history
+
+**Live Demo**: [catering-event-manager.vercel.app](https://catering-event-manager.vercel.app)
 
 ### Performance Optimization
 
@@ -595,7 +597,23 @@ Before production deployment:
 - [ ] Review CSP for any required external resources
 - [ ] Test security headers at [securityheaders.com](https://securityheaders.com/)
 
-## Recent Updates (January 25, 2026)
+## Recent Updates (February 2, 2026)
+
+### Production Database Seeded (February 2)
+
+✅ **Live Demo Environment Ready**
+- Production database populated with comprehensive demo data
+- Demo accounts ready for testing (admin@example.com, manager@example.com)
+- Complete event lifecycle examples with tasks, resources, and communications
+- All user roles functional with realistic data scenarios
+
+### CI/CD Pipeline Enhancements (February 2)
+- Automated database migration deployment to production
+- Fixed pnpm setup for deploy-production GitHub Actions job
+- Resolved LF line ending issues affecting code formatting
+- Production defect fixes: DEF-004 (authentication), DEF-005 (task dependencies), DEF-006 (resource conflicts)
+
+### Major Package Upgrades Completed (January 25, 2026)
 
 ### Major Package Upgrades Completed
 
