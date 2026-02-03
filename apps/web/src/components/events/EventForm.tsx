@@ -24,6 +24,7 @@ const eventFormSchema = z.object({
     .optional()
     .or(z.literal(undefined)),
   notes: z.string().optional(),
+  templateId: z.number().positive().optional(),
 });
 
 type EventFormData = z.infer<typeof eventFormSchema>;
@@ -52,6 +53,9 @@ export function EventForm({ onSuccess, onCancel }: EventFormProps) {
   // Fetch clients for selection
   const { data: clientsList, isLoading: clientsLoading } = trpc.clients.list.useQuery();
 
+  // Fetch templates for selection
+  const { data: templatesList, isLoading: templatesLoading } = trpc.template.list.useQuery();
+
   const createEventMutation = trpc.event.create.useMutation({
     onSuccess: (data) => {
       markClean();
@@ -74,6 +78,7 @@ export function EventForm({ onSuccess, onCancel }: EventFormProps) {
         estimatedAttendees: formData.estimatedAttendees
           ? Number(formData.estimatedAttendees)
           : undefined,
+        templateId: formData.templateId ? Number(formData.templateId) : undefined,
       });
 
       createEventMutation.mutate(validatedData);
@@ -142,6 +147,41 @@ export function EventForm({ onSuccess, onCancel }: EventFormProps) {
             No clients available. You&apos;ll need to create a client first.
           </p>
         )}
+      </div>
+
+      {/* Task Template Selection */}
+      <div>
+        <label htmlFor="templateId" className="block text-sm font-medium text-gray-700 mb-2">
+          Task Template
+          <span className="text-gray-400 text-xs ml-2">(optional)</span>
+        </label>
+        <select
+          id="templateId"
+          {...getInputA11yProps('templateId', !!errors.templateId)}
+          value={formData.templateId || ''}
+          onChange={(e) =>
+            updateField('templateId', e.target.value ? Number(e.target.value) : undefined)
+          }
+          className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+            errors.templateId ? 'border-red-500' : 'border-gray-300'
+          }`}
+          disabled={templatesLoading}
+        >
+          <option value="">None - start with no tasks</option>
+          {templatesList?.map((template) => (
+            <option key={template.id} value={template.id}>
+              {template.name} ({template.itemCount} tasks)
+            </option>
+          ))}
+        </select>
+        {errors.templateId && (
+          <p {...getErrorProps('templateId')} className="mt-1 text-sm text-red-600">
+            {errors.templateId}
+          </p>
+        )}
+        <p className="mt-1 text-xs text-gray-500">
+          Select a template to auto-generate tasks with due dates based on the event date.
+        </p>
       </div>
 
       {/* Event Name */}

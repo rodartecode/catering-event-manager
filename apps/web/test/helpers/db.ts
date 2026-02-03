@@ -117,6 +117,40 @@ async function runMigrations(db: TestDatabase): Promise<void> {
     )
   `);
 
+  // Task templates for auto-generating tasks
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS task_templates (
+      id SERIAL PRIMARY KEY,
+      name VARCHAR(100) NOT NULL,
+      description TEXT,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+      updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+    )
+  `);
+
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS task_template_items (
+      id SERIAL PRIMARY KEY,
+      template_id INTEGER NOT NULL REFERENCES task_templates(id) ON DELETE CASCADE,
+      title VARCHAR(255) NOT NULL,
+      description TEXT,
+      category task_category NOT NULL,
+      days_offset INTEGER NOT NULL,
+      depends_on_index INTEGER,
+      sort_order INTEGER NOT NULL,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+      updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+    )
+  `);
+
+  await db.execute(sql`
+    CREATE INDEX IF NOT EXISTS idx_task_template_items_template_id ON task_template_items(template_id)
+  `);
+
+  await db.execute(sql`
+    CREATE INDEX IF NOT EXISTS idx_task_template_items_sort_order ON task_template_items(template_id, sort_order)
+  `);
+
   await db.execute(sql`
     CREATE TABLE IF NOT EXISTS users (
       id SERIAL PRIMARY KEY,
@@ -145,6 +179,7 @@ async function runMigrations(db: TestDatabase): Promise<void> {
       archived_at TIMESTAMP WITH TIME ZONE,
       archived_by INTEGER REFERENCES users(id),
       created_by INTEGER NOT NULL REFERENCES users(id),
+      template_id INTEGER REFERENCES task_templates(id) ON DELETE SET NULL,
       created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
     )
@@ -252,7 +287,7 @@ async function runMigrations(db: TestDatabase): Promise<void> {
 export async function cleanDatabase(db: TestDatabase): Promise<void> {
   // Truncate tables in order (respecting foreign key constraints)
   await db.execute(
-    sql`TRUNCATE verification_tokens, communications, resource_schedule, task_resources, tasks, event_status_log, events, resources, users, clients RESTART IDENTITY CASCADE`
+    sql`TRUNCATE verification_tokens, communications, resource_schedule, task_resources, tasks, event_status_log, events, resources, users, clients, task_template_items, task_templates RESTART IDENTITY CASCADE`
   );
 }
 

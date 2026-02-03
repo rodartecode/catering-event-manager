@@ -1,3 +1,5 @@
+import { tasks, taskTemplateItems, taskTemplates } from '@catering-event-manager/database/schema';
+import { eq } from 'drizzle-orm';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import {
   cleanDatabase,
@@ -590,6 +592,253 @@ describe('event router', () => {
 
       expect(result.eventName).toBe('Archived Accessible');
       expect(result.isArchived).toBe(true);
+    });
+  });
+
+  describe('event.create with templates', () => {
+    // Helper to create a test template
+    async function createTestTemplate(
+      name: string,
+      items: Array<{
+        title: string;
+        category: 'pre_event' | 'during_event' | 'post_event';
+        daysOffset: number;
+        dependsOnIndex: number | null;
+        sortOrder: number;
+      }>
+    ): Promise<{ id: number }> {
+      const [template] = await db
+        .insert(taskTemplates)
+        .values({
+          name,
+          description: `Test template: ${name}`,
+        })
+        .returning();
+
+      if (items.length > 0) {
+        await db.insert(taskTemplateItems).values(
+          items.map((item) => ({
+            templateId: template.id,
+            title: item.title,
+            description: `Description for ${item.title}`,
+            category: item.category,
+            daysOffset: item.daysOffset,
+            dependsOnIndex: item.dependsOnIndex,
+            sortOrder: item.sortOrder,
+          }))
+        );
+      }
+
+      return template;
+    }
+
+    it('creates event with template and generates tasks', async () => {
+      const caller = createAdminCaller(db);
+      const client = await createClient(db);
+
+      const template = await createTestTemplate('Standard Event', [
+        {
+          title: 'Task 1',
+          category: 'pre_event',
+          daysOffset: -7,
+          dependsOnIndex: null,
+          sortOrder: 1,
+        },
+        { title: 'Task 2', category: 'pre_event', daysOffset: -3, dependsOnIndex: 1, sortOrder: 2 },
+        {
+          title: 'Task 3',
+          category: 'during_event',
+          daysOffset: 0,
+          dependsOnIndex: 2,
+          sortOrder: 3,
+        },
+      ]);
+
+      const eventDate = new Date('2026-06-15');
+      const result = await caller.event.create({
+        clientId: client.id,
+        eventName: 'Event with Template',
+        eventDate,
+        templateId: template.id,
+      });
+
+      expect(result.templateId).toBe(template.id);
+
+      // Verify tasks were created
+      const createdTasks = await db.select().from(tasks).where(eq(tasks.eventId, result.id));
+
+      expect(createdTasks).toHaveLength(3);
+    });
+
+    it('calculates task due dates from event date and offset', async () => {
+      const caller = createAdminCaller(db);
+      const client = await createClient(db);
+
+      const template = await createTestTemplate('Test Template', [
+        {
+          title: 'Pre-event task',
+          category: 'pre_event',
+          daysOffset: -7,
+          dependsOnIndex: null,
+          sortOrder: 1,
+        },
+        {
+          title: 'Day-of task',
+          category: 'during_event',
+          daysOffset: 0,
+          dependsOnIndex: null,
+          sortOrder: 2,
+        },
+        {
+          title: 'Post-event task',
+          category: 'post_event',
+          daysOffset: 3,
+          dependsOnIndex: null,
+          sortOrder: 3,
+        },
+      ]);
+
+      const eventDate = new Date('2026-06-15');
+      const result = await caller.event.create({
+        clientId: client.id,
+        eventName: 'Due Date Test',
+        eventDate,
+        templateId: template.id,
+      });
+
+      const createdTasks = await db
+        .select()
+        .from(tasks)
+        .where(eq(tasks.eventId, result.id))
+        .orderBy(tasks.dueDate);
+
+      // Pre-event: June 8 (7 days before)
+      expect(createdTasks[0].title).toBe('Pre-event task');
+      expect(createdTasks[0].dueDate?.toISOString().split('T')[0]).toBe('2026-06-08');
+
+      // Day-of: June 15
+      expect(createdTasks[1].title).toBe('Day-of task');
+      expect(createdTasks[1].dueDate?.toISOString().split('T')[0]).toBe('2026-06-15');
+
+      // Post-event: June 18 (3 days after)
+      expect(createdTasks[2].title).toBe('Post-event task');
+      expect(createdTasks[2].dueDate?.toISOString().split('T')[0]).toBe('2026-06-18');
+    });
+
+    it('preserves task dependencies during generation', async () => {
+      const caller = createAdminCaller(db);
+      const client = await createClient(db);
+
+      const template = await createTestTemplate('Dependency Test', [
+        {
+          title: 'First',
+          category: 'pre_event',
+          daysOffset: -10,
+          dependsOnIndex: null,
+          sortOrder: 1,
+        },
+        { title: 'Second', category: 'pre_event', daysOffset: -5, dependsOnIndex: 1, sortOrder: 2 },
+        {
+          title: 'Third',
+          category: 'during_event',
+          daysOffset: 0,
+          dependsOnIndex: 2,
+          sortOrder: 3,
+        },
+      ]);
+
+      const result = await caller.event.create({
+        clientId: client.id,
+        eventName: 'Dependency Event',
+        eventDate: new Date('2026-06-15'),
+        templateId: template.id,
+      });
+
+      const createdTasks = await db
+        .select()
+        .from(tasks)
+        .where(eq(tasks.eventId, result.id))
+        .orderBy(tasks.id);
+
+      // First task has no dependency
+      expect(createdTasks[0].title).toBe('First');
+      expect(createdTasks[0].dependsOnTaskId).toBeNull();
+
+      // Second task depends on First
+      expect(createdTasks[1].title).toBe('Second');
+      expect(createdTasks[1].dependsOnTaskId).toBe(createdTasks[0].id);
+
+      // Third task depends on Second
+      expect(createdTasks[2].title).toBe('Third');
+      expect(createdTasks[2].dependsOnTaskId).toBe(createdTasks[1].id);
+    });
+
+    it('creates event without tasks when no templateId provided', async () => {
+      const caller = createAdminCaller(db);
+      const client = await createClient(db);
+
+      const result = await caller.event.create({
+        clientId: client.id,
+        eventName: 'No Template Event',
+        eventDate: new Date('2026-06-15'),
+      });
+
+      expect(result.templateId).toBeNull();
+
+      const createdTasks = await db.select().from(tasks).where(eq(tasks.eventId, result.id));
+      expect(createdTasks).toHaveLength(0);
+    });
+
+    it('throws NOT_FOUND for invalid templateId', async () => {
+      const caller = createAdminCaller(db);
+      const client = await createClient(db);
+
+      await expect(
+        caller.event.create({
+          clientId: client.id,
+          eventName: 'Invalid Template Event',
+          eventDate: new Date('2026-06-15'),
+          templateId: 99999,
+        })
+      ).rejects.toMatchObject({
+        code: 'NOT_FOUND',
+        message: 'Template not found',
+      });
+    });
+
+    it('sets all generated tasks to pending status', async () => {
+      const caller = createAdminCaller(db);
+      const client = await createClient(db);
+
+      const template = await createTestTemplate('Status Test', [
+        {
+          title: 'Task A',
+          category: 'pre_event',
+          daysOffset: -5,
+          dependsOnIndex: null,
+          sortOrder: 1,
+        },
+        {
+          title: 'Task B',
+          category: 'during_event',
+          daysOffset: 0,
+          dependsOnIndex: null,
+          sortOrder: 2,
+        },
+      ]);
+
+      const result = await caller.event.create({
+        clientId: client.id,
+        eventName: 'Status Test Event',
+        eventDate: new Date('2026-06-15'),
+        templateId: template.id,
+      });
+
+      const createdTasks = await db.select().from(tasks).where(eq(tasks.eventId, result.id));
+
+      for (const task of createdTasks) {
+        expect(task.status).toBe('pending');
+      }
     });
   });
 });

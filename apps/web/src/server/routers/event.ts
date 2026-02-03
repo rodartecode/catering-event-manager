@@ -1,6 +1,15 @@
-import { clients, eventStatusLog, events, users } from '@catering-event-manager/database/schema';
+import {
+  clients,
+  eventStatusLog,
+  events,
+  tasks,
+  taskTemplateItems,
+  taskTemplates,
+  users,
+} from '@catering-event-manager/database/schema';
 import { TRPCError } from '@trpc/server';
-import { and, desc, eq, gte, lte, sql } from 'drizzle-orm';
+import { addDays } from 'date-fns';
+import { and, asc, desc, eq, gte, lte, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { adminProcedure, protectedProcedure, router } from '../trpc';
 
@@ -22,6 +31,7 @@ const createEventInput = z.object({
   location: z.string().max(500).optional(),
   estimatedAttendees: z.number().positive().optional(),
   notes: z.string().optional(),
+  templateId: z.number().positive().optional(),
 });
 
 // Event list input schema
@@ -68,7 +78,23 @@ export const eventRouter = router({
       });
     }
 
-    // Create event
+    // If templateId provided, verify template exists
+    if (input.templateId) {
+      const [template] = await db
+        .select()
+        .from(taskTemplates)
+        .where(eq(taskTemplates.id, input.templateId))
+        .limit(1);
+
+      if (!template) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Template not found',
+        });
+      }
+    }
+
+    // Create event with optional templateId
     const [event] = await db
       .insert(events)
       .values({
@@ -80,6 +106,7 @@ export const eventRouter = router({
         notes: input.notes,
         status: 'inquiry',
         createdBy: parseInt(session.user.id, 10),
+        templateId: input.templateId ?? null,
       })
       .returning();
 
@@ -91,6 +118,40 @@ export const eventRouter = router({
       changedBy: parseInt(session.user.id, 10),
       notes: 'Event created',
     });
+
+    // Generate tasks from template if provided
+    if (input.templateId) {
+      const templateItems = await db
+        .select()
+        .from(taskTemplateItems)
+        .where(eq(taskTemplateItems.templateId, input.templateId))
+        .orderBy(asc(taskTemplateItems.sortOrder));
+
+      // Map sortOrder -> created task ID for dependency resolution
+      const taskIdMap = new Map<number, number>();
+
+      for (const item of templateItems) {
+        const dueDate = addDays(input.eventDate, item.daysOffset);
+        const dependsOnTaskId = item.dependsOnIndex
+          ? (taskIdMap.get(item.dependsOnIndex) ?? null)
+          : null;
+
+        const [createdTask] = await db
+          .insert(tasks)
+          .values({
+            eventId: event.id,
+            title: item.title,
+            description: item.description,
+            category: item.category,
+            dueDate,
+            dependsOnTaskId,
+            status: 'pending',
+          })
+          .returning({ id: tasks.id });
+
+        taskIdMap.set(item.sortOrder, createdTask.id);
+      }
+    }
 
     return event;
   }),

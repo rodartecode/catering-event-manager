@@ -22,6 +22,13 @@
       "when": 1770056393452,
       "tag": "0002_strong_vindicator",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1770152515726,
+      "tag": "0003_last_nitro",
+      "breakpoints": true
     }
   ]
 }
