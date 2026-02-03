@@ -1,25 +1,21 @@
 # CLAUDE.md - Shared Configuration Package
 
-Shared configuration files for the catering event manager monorepo.
+Shared configuration files for tooling across the monorepo.
 
-## Package Overview
-
-This package contains shared configuration for tooling across the monorepo:
+## Package Structure
 
 ```
 packages/config/
-├── typescript-config/     # Shared TypeScript compiler options
-│   ├── base.json         # Base config (ES2022, strict mode)
+├── typescript-config/     # Shared TypeScript options
+│   ├── base.json         # Base config (ES2022, strict)
 │   └── package.json
-├── eslint-config/        # (placeholder - ESLint configs live in apps)
-└── tailwind-config/      # (placeholder - Tailwind configs live in apps)
+├── eslint-config/        # (placeholder - ESLint in apps)
+└── tailwind-config/      # (placeholder - Tailwind in apps)
 ```
 
 ## TypeScript Configuration
 
-### Base Configuration (`typescript-config/base.json`)
-
-Shared compiler options used across all TypeScript packages:
+### Base Config (`typescript-config/base.json`)
 
 ```json
 {
@@ -34,113 +30,100 @@ Shared compiler options used across all TypeScript packages:
 }
 ```
 
-### Usage in Apps/Packages
-
-Extend the base configuration in each package's `tsconfig.json`:
+### Usage in Packages
 
 ```json
 {
   "extends": "@catering-event-manager/typescript-config/base.json",
   "compilerOptions": {
     // Package-specific overrides
-  },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"]
+  }
 }
 ```
 
-### Key Compiler Options
+### Key Options
 
 | Option | Value | Purpose |
 |--------|-------|---------|
-| `target` | ES2022 | Modern JavaScript features |
-| `moduleResolution` | bundler | Optimized for bundlers (Next.js, Vite) |
-| `strict` | true | Full type safety enforcement |
-| `isolatedModules` | true | Required for transpilers (SWC, esbuild) |
-| `noEmit` | true | Types only, no JS output (bundler handles) |
+| `target` | ES2022 | Modern JavaScript |
+| `moduleResolution` | bundler | For Next.js, Vite |
+| `strict` | true | Full type safety |
+| `isolatedModules` | true | For SWC, esbuild |
 
 ## ESLint Configuration
 
-ESLint v9 flat config is defined per-app rather than shared, due to framework-specific needs.
+ESLint v9 flat config per-app (framework-specific):
 
 **Location**: `apps/web/eslint.config.mjs`
 
 **Key rules**:
-- TypeScript-ESLint recommended rules
+- TypeScript-ESLint recommended
 - Next.js plugin with Core Web Vitals
-- `no-console: warn` - Use `@/lib/logger` instead
-- Unused vars allowed with `_` prefix
-
-```bash
-# Run ESLint
-pnpm lint
-```
+- `no-console: warn` (use `@/lib/logger`)
+- Unused vars with `_` prefix allowed
 
 ## Biome Configuration
 
-Root-level Biome config (`biome.json`) handles formatting across the monorepo.
+Root-level `biome.json` for formatting:
 
-**Formatting rules**:
 - 2 spaces indentation
 - Single quotes (JS), double quotes (JSX)
 - 100 character line width
-- Trailing commas (ES5 style)
+- Trailing commas (ES5)
 - Always use semicolons
 
 ```bash
-# Format code
-pnpm format
-
-# Check formatting
-pnpm format:check
+pnpm format        # Format code
+pnpm format:check  # Check formatting
 ```
 
-## Tailwind CSS Configuration
+## Tailwind CSS
 
-Tailwind v4 config is defined per-app due to content path requirements.
+Tailwind v4 config per-app (content paths specific):
 
 **Location**: `apps/web/tailwind.config.ts`
 
-**Custom theme extensions**:
-- CSS variable-based colors (`--background`, `--foreground`)
-- Extends default Tailwind palette
+## Adding Shared Configurations
 
-## Adding New Configurations
+### Shared ESLint (future)
 
-### Adding a Shared ESLint Config
+```javascript
+// packages/config/eslint-config/index.mjs
+export const sharedRules = {
+  // Shared rules
+};
+```
 
-If shared rules are needed in the future:
+### Shared Tailwind Preset (future)
 
-1. Create `packages/config/eslint-config/index.mjs`
-2. Export shared rule configurations
-3. Import and spread in app-level configs
-
-### Adding a Shared Tailwind Preset
-
-If shared design tokens are needed:
-
-1. Create `packages/config/tailwind-config/preset.ts`
-2. Export a Tailwind preset with shared theme values
-3. Use `presets: [require('@catering-event-manager/tailwind-config')]`
+```typescript
+// packages/config/tailwind-config/preset.ts
+export default {
+  theme: {
+    colors: {
+      // Shared design tokens
+    }
+  }
+};
+```
 
 ## Troubleshooting
 
-### TypeScript Path Resolution
-
-If imports from `@catering-event-manager/*` aren't resolving:
+### Path Resolution Issues
 
 ```bash
-# Ensure packages are linked
-pnpm install
-
-# Check TypeScript sees the paths
+pnpm install  # Ensure packages linked
 cd apps/web && pnpm type-check
 ```
 
 ### ESLint/Biome Conflicts
 
-Biome and ESLint handle different concerns:
 - **Biome**: Formatting only
 - **ESLint**: Code quality rules
 
-If conflicts occur, check both configs for overlapping rules.
+Check both configs for overlapping rules.
+
+## Related Documentation
+
+- **Project Root**: `../../CLAUDE.md`
+- **Next.js App**: `../../apps/web/CLAUDE.md`

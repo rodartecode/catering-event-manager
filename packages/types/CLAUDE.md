@@ -1,20 +1,12 @@
 # CLAUDE.md - Types Package
 
-**Placeholder for shared TypeScript types** across the catering event manager monorepo.
+Shared TypeScript types and Zod validation schemas across the monorepo.
 
 ## Current Status
 
-This package is **minimal** - contains only placeholder files. All Zod validation schemas are currently defined inline within tRPC routers (`apps/web/src/server/routers/`).
-
-```
-packages/types/
-└── src/
-    └── index.ts    # Empty placeholder export
-```
+**Minimal package** - Validation schemas currently co-located with tRPC routers in `apps/web/src/server/routers/`.
 
 ## Why Schemas Live in Routers
-
-Currently, validation schemas are co-located with tRPC procedures:
 
 ```typescript
 // apps/web/src/server/routers/event.ts
@@ -22,47 +14,71 @@ const createEventInput = z.object({
   clientId: z.number().positive(),
   eventName: z.string().trim().min(1).max(255),
   eventDate: z.coerce.date(),
-  // ...
-});
-
-export const eventRouter = router({
-  create: adminProcedure
-    .input(createEventInput)
-    .mutation(/* ... */),
 });
 ```
 
-**Benefits of current approach**:
-- Schemas are close to their usage
-- Easy to see what each procedure accepts
+**Benefits**:
+- Schemas close to usage
+- Easy to see procedure inputs
 - No import indirection
 
-## Future Consideration: Schema Extraction
+## When to Extract to This Package
 
-If schemas become duplicated or need to be shared across multiple services, consider extracting common patterns here:
+Extract schemas here when:
+- Same validation appears in **3+ places**
+- Client-side forms need to share validation with tRPC
+- Go service needs compatible type definitions
 
-**Potential candidates for extraction**:
+**Candidates for extraction**:
 - `paginationInput` - Reused in list procedures
 - `dateRangeInput` - Reused in analytics/reporting
 - Enum schemas matching database `pgEnum` definitions
 
-**When to extract**:
-- When the same validation logic appears in 3+ places
-- When client-side forms need to share validation with tRPC
-- When Go service needs compatible type definitions
+## Shared Type Patterns
+
+### Inferred Types from Zod
+```typescript
+// Define schema
+export const eventStatusSchema = z.enum([
+  'inquiry', 'planning', 'preparation',
+  'in_progress', 'completed', 'follow_up'
+]);
+
+// Infer TypeScript type
+export type EventStatus = z.infer<typeof eventStatusSchema>;
+```
+
+### Pagination Schema
+```typescript
+export const paginationSchema = z.object({
+  limit: z.number().min(1).max(100).default(20),
+  offset: z.number().min(0).default(0),
+  cursor: z.string().optional(),
+});
+```
+
+### Date Range Schema
+```typescript
+export const dateRangeSchema = z.object({
+  startDate: z.coerce.date(),
+  endDate: z.coerce.date(),
+}).refine(
+  data => data.endDate > data.startDate,
+  { message: 'End date must be after start date' }
+);
+```
 
 ## Commands
 
 ```bash
-# Build types package (currently no-op)
-cd packages/types && pnpm build
+cd packages/types
 
-# Type check
-cd packages/types && pnpm type-check
+pnpm build       # Build types package
+pnpm type-check  # TypeScript checking
 ```
 
 ## Related Files
 
-- **tRPC routers**: `apps/web/src/server/routers/` - Where schemas currently live
-- **Database schema**: `packages/database/src/schema/` - Drizzle ORM types
-- **Config package**: `packages/config/` - Shared configuration (not types)
+- **tRPC Routers**: `apps/web/src/server/routers/` (where schemas currently live)
+- **Database Schema**: `packages/database/src/schema/` (Drizzle ORM types)
+- **Config Package**: `packages/config/` (shared configuration)
