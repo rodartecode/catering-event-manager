@@ -5,6 +5,7 @@ import { eventRouter } from './event';
 import { portalRouter } from './portal';
 import { resourceRouter } from './resource';
 import { taskRouter } from './task';
+import { templateRouter } from './template';
 import { userRouter } from './user';
 
 export const appRouter = router({
@@ -15,6 +16,7 @@ export const appRouter = router({
   clients: clientsRouter,
   user: userRouter,
   portal: portalRouter,
+  template: templateRouter,
 });
 
 export type AppRouter = typeof appRouter;

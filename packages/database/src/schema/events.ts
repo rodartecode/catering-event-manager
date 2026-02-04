@@ -10,6 +10,7 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core';
 import { clients } from './clients';
+import { taskTemplates } from './task-templates';
 import { users } from './users';
 
 export const eventStatusEnum = pgEnum('event_status', [
@@ -40,6 +41,7 @@ export const events = pgTable(
     createdBy: integer('created_by')
       .references(() => users.id)
       .notNull(),
+    templateId: integer('template_id').references(() => taskTemplates.id, { onDelete: 'set null' }),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
   },

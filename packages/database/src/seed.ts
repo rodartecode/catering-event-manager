@@ -8,7 +8,17 @@
 import bcrypt from 'bcryptjs';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import { clients, communications, events, resources, tasks, users } from './schema';
+import {
+  clients,
+  communications,
+  events,
+  resources,
+  tasks,
+  taskTemplateItems,
+  taskTemplates,
+  users,
+} from './schema';
+import { allTemplates } from './seed-templates';
 
 const connectionString = process.env.DATABASE_URL;
 
@@ -33,7 +43,29 @@ async function seed() {
 
   try {
     // =====================
-    // 1. SEED CLIENTS
+    // 1. SEED TASK TEMPLATES
+    // =====================
+    console.log('📋 Creating task templates...');
+
+    let totalTemplateItems = 0;
+    for (const templateData of allTemplates) {
+      const [insertedTemplate] = await db
+        .insert(taskTemplates)
+        .values(templateData.template)
+        .returning();
+
+      const itemsWithTemplateId = templateData.items.map((item) => ({
+        ...item,
+        templateId: insertedTemplate.id,
+      }));
+
+      await db.insert(taskTemplateItems).values(itemsWithTemplateId);
+      totalTemplateItems += templateData.items.length;
+    }
+    console.log(`   ✓ Created ${allTemplates.length} templates with ${totalTemplateItems} items`);
+
+    // =====================
+    // 2. SEED CLIENTS
     // =====================
     console.log('📋 Creating clients...');
 
@@ -73,7 +105,7 @@ async function seed() {
     console.log(`   ✓ Created ${insertedClients.length} clients`);
 
     // =====================
-    // 2. SEED USERS
+    // 3. SEED USERS
     // =====================
     console.log('👤 Creating users...');
 
@@ -122,7 +154,7 @@ async function seed() {
     console.log(`   ✓ Created ${insertedUsers.length} users`);
 
     // =====================
-    // 3. SEED EVENTS
+    // 4. SEED EVENTS
     // =====================
     console.log('🎉 Creating events...');
 
@@ -187,7 +219,7 @@ async function seed() {
     console.log(`   ✓ Created ${insertedEvents.length} events`);
 
     // =====================
-    // 4. SEED RESOURCES
+    // 5. SEED RESOURCES
     // =====================
     console.log('🛠️ Creating resources...');
 
@@ -233,7 +265,7 @@ async function seed() {
     console.log(`   ✓ Created ${insertedResources.length} resources`);
 
     // =====================
-    // 5. SEED TASKS
+    // 6. SEED TASKS
     // =====================
     console.log('✅ Creating tasks...');
 
@@ -341,7 +373,7 @@ async function seed() {
     console.log(`   ✓ Created ${insertedTasks.length} tasks`);
 
     // =====================
-    // 6. SEED COMMUNICATIONS
+    // 7. SEED COMMUNICATIONS
     // =====================
     console.log('💬 Creating communications...');
 
@@ -411,6 +443,7 @@ async function seed() {
     // =====================
     console.log('\n✨ Seed completed successfully!\n');
     console.log('Summary:');
+    console.log(`   - ${allTemplates.length} task templates (${totalTemplateItems} items)`);
     console.log(`   - ${insertedClients.length} clients`);
     console.log(`   - ${insertedUsers.length} users (admin@example.com / password123)`);
     console.log(`   - ${insertedEvents.length} events`);
