@@ -45,9 +45,9 @@
 
 ## 8. Verification
 
-- [ ] 8.1 Push CI workflow changes to a feature branch and verify: `security-audit` job runs, `publish-images` job is skipped (non-main branch), staging jobs are skipped (non-staging branch), all existing jobs still pass
-- [ ] 8.2 Merge to main and verify: `publish-images` job runs and pushes both images to GHCR with correct tags, production deployment continues to work, `security-audit` job reports results
+- [x] 8.1 Push CI workflow changes to a feature branch and verify: `security-audit` job runs, `publish-images` job is skipped (non-main branch), staging jobs are skipped (non-staging branch), all existing jobs still pass
+- [x] 8.2 Merge to main and verify: `publish-images` job runs and pushes both images to GHCR with correct tags, production deployment continues to work, `security-audit` job reports results
 - [ ] 8.3 Create `staging` branch from `main`, push, and verify: staging migration runs against staging database, staging web deploys to Vercel staging project, staging Go deploys to Fly.io staging app, all staging health checks pass
-- [ ] 8.4 Verify Dependabot creates initial scan results visible in GitHub Security tab
+- [x] 8.4 Verify Dependabot creates initial scan results visible in GitHub Security tab
 
 > **Note**: Tasks 8.1–8.4 are post-push verification tasks that require GitHub CI execution and cannot be validated locally.
