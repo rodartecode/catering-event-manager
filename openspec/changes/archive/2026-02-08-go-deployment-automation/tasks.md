@@ -21,6 +21,6 @@
 
 ## 4. Verification
 
-- [ ] 4.1 Push change to main and verify CI deploys Go service
-- [ ] 4.2 Verify health check passes after deployment
-- [ ] 4.3 Confirm Go and Vercel deployments run in parallel
+- [x] 4.1 Push change to main and verify CI deploys Go service
+- [x] 4.2 Verify health check passes after deployment
+- [x] 4.3 Confirm Go and Vercel deployments run in parallel
