@@ -61,6 +61,19 @@ ENABLE_QUERY_LOGGING=true   # Log SQL queries (dev only)
 | `/apps/web/.env.local` | Next.js overrides |
 | `/apps/scheduling-service/.env` | Go service config |
 
+## GitHub Actions Secrets
+
+| Secret | Purpose |
+|--------|---------|
+| `VERCEL_TOKEN` | Vercel deployment token (shared across environments) |
+| `VERCEL_ORG_ID` | Vercel organization ID |
+| `VERCEL_PROJECT_ID` | Production Vercel project ID |
+| `SUPABASE_DIRECT_URL` | Production Supabase direct connection string |
+| `FLY_API_TOKEN` | Production Fly.io API token |
+| `STAGING_SUPABASE_DIRECT_URL` | Staging Supabase direct connection string |
+| `STAGING_VERCEL_PROJECT_ID` | Staging Vercel project ID |
+| `STAGING_FLY_API_TOKEN` | Staging Fly.io API token |
+
 ## Security
 
 **Never commit** `.env`, `.env.local`, or any file containing secrets.
