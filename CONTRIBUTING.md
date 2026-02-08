@@ -157,6 +157,42 @@ chore(deps): update drizzle-orm to v0.45
 - No breaking changes without discussion
 - TypeScript types are complete (no `any`)
 
+## Staging Branch Workflow
+
+The project uses a `staging` branch for pre-production validation. Changes flow: feature branch → `staging` → `main` (production).
+
+### Deploying to Staging
+
+```bash
+# Option 1: Merge a feature branch into staging
+git checkout staging
+git merge feature/your-feature
+git push origin staging
+# CI deploys to staging Vercel + staging Fly.io + staging Supabase
+
+# Option 2: Reset staging to match a specific branch
+git checkout staging
+git reset --hard feature/your-feature
+git push origin staging --force-with-lease
+```
+
+### Validating Staging
+
+After pushing to `staging`, verify:
+- CI pipeline passes (lint, tests, build, staging deploy)
+- Web app is accessible at the staging Vercel URL
+- Scheduler health check passes: `curl https://catering-scheduler-staging.fly.dev/api/v1/health`
+- Key user flows work as expected
+
+### Promoting Staging to Production
+
+```bash
+git checkout main
+git merge staging
+git push origin main
+# CI deploys to production Vercel + production Fly.io + runs production migrations
+```
+
 ## Code Review Guidelines
 
 ### For Authors

@@ -21,6 +21,12 @@ RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o /scheduler ./cmd/sched
 # Stage 2: Runner
 FROM alpine:latest AS runner
 
+ARG GIT_SHA=unknown
+ARG BUILD_DATE=unknown
+LABEL org.opencontainers.image.source="https://github.com/jrodarte/catering-event-manager"
+LABEL org.opencontainers.image.revision=$GIT_SHA
+LABEL org.opencontainers.image.created=$BUILD_DATE
+
 # Install runtime dependencies
 RUN apk add --no-cache ca-certificates tzdata
 

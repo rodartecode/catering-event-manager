@@ -218,6 +218,74 @@ psql "postgresql://postgres:[PASSWORD]@db.[PROJECT].supabase.co:5432/postgres" -
 
 ---
 
+## Staging Environment
+
+**Staging deployment** mirrors production topology with separate instances:
+
+| Service | Platform | App/Project Name |
+|---------|----------|------------------|
+| Web App | Vercel | Staging Vercel project (separate from production) |
+| Scheduler | Fly.io | `catering-scheduler-staging` |
+| Database | Supabase | Separate staging Supabase project |
+
+### Setting Up Staging
+
+#### 1. Create Supabase Staging Project
+
+1. Go to [Supabase Dashboard](https://supabase.com/dashboard)
+2. Create a new project (e.g., `catering-event-manager-staging`)
+3. Note the **Direct Connection String** (under Settings → Database → Connection String → URI)
+
+#### 2. Create Fly.io Staging App
+
+```bash
+cd apps/scheduling-service
+fly apps create catering-scheduler-staging
+fly secrets set DATABASE_URL="<staging-supabase-connection-string>" --app catering-scheduler-staging
+fly secrets set LOG_LEVEL=info --app catering-scheduler-staging
+fly secrets set CORS_ALLOWED_ORIGINS="https://catering-staging.vercel.app" --app catering-scheduler-staging
+```
+
+#### 3. Create Vercel Staging Project
+
+1. In Vercel Dashboard, create a new project linked to the repository
+2. Set the **Production Branch** to `staging`
+3. Configure environment variables matching production but pointing to staging services
+
+#### 4. Configure GitHub Secrets
+
+Add these secrets to the repository (Settings → Secrets and variables → Actions):
+
+| Secret | Value |
+|--------|-------|
+| `STAGING_SUPABASE_DIRECT_URL` | Direct connection string from Supabase staging project |
+| `STAGING_VERCEL_PROJECT_ID` | Project ID from Vercel staging project |
+| `STAGING_FLY_API_TOKEN` | Fly.io API token with deploy permissions for staging app |
+
+### Staging CI Pipeline
+
+Pushing to the `staging` branch triggers:
+
+```
+lint, unit-tests, go-tests (parallel)
+    └─→ build
+        ├─→ migrate-staging (staging database)
+        │   ├─→ deploy-staging-web (Vercel)
+        │   └─→ deploy-staging-go (Fly.io)
+        └─→ security-audit (advisory)
+```
+
+### Promoting Staging to Production
+
+```bash
+# After validating staging, merge to main
+git checkout main
+git merge staging
+git push origin main
+```
+
+---
+
 ## Deployment Architecture
 
 ### Production Infrastructure

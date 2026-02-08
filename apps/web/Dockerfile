@@ -44,6 +44,12 @@ RUN pnpm --filter @catering-event-manager/web build
 FROM node:20-alpine AS runner
 WORKDIR /app
 
+ARG GIT_SHA=unknown
+ARG BUILD_DATE=unknown
+LABEL org.opencontainers.image.source="https://github.com/jrodarte/catering-event-manager"
+LABEL org.opencontainers.image.revision=$GIT_SHA
+LABEL org.opencontainers.image.created=$BUILD_DATE
+
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
