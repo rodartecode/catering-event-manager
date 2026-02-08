@@ -12,8 +12,6 @@ COPY apps/web/package.json ./apps/web/
 COPY packages/database/package.json ./packages/database/
 COPY packages/types/package.json ./packages/types/
 COPY packages/config/typescript-config/package.json ./packages/config/typescript-config/
-COPY packages/config/eslint-config/package.json ./packages/config/eslint-config/
-COPY packages/config/tailwind-config/package.json ./packages/config/tailwind-config/
 
 # Install dependencies
 RUN pnpm install --frozen-lockfile
