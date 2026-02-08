@@ -160,6 +160,58 @@ docker-compose up -d postgres
 cd packages/database && pnpm db:push
 ```
 
+## CI/CD Deployment Issues
+
+### Go Service (Fly.io) Deployment Failures
+
+```bash
+# Check CI logs in GitHub Actions → deploy-go-production job
+
+# Common causes:
+# 1. Missing FLY_API_TOKEN secret
+#    → Add token in GitHub repo Settings → Secrets and variables → Actions
+
+# 2. Fly.io build failure
+#    → Check Dockerfile in apps/scheduling-service/
+#    → Test locally: cd apps/scheduling-service && fly deploy --local-only
+
+# 3. Health check failure after deploy
+#    → Check app logs: fly logs --app catering-scheduler-dev
+#    → Verify DATABASE_URL secret is set: fly secrets list
+#    → Check health endpoint: curl https://catering-scheduler-dev.fly.dev/api/v1/health
+
+# 4. Migration job failed (blocks deployment)
+#    → Check migrate job logs in GitHub Actions
+#    → Verify SUPABASE_DIRECT_URL secret is correct
+```
+
+### Rollback Go Service Deployment
+
+```bash
+# List recent releases
+fly releases list -a catering-scheduler-dev
+
+# Rollback to a previous image
+fly deploy --image <previous-image> -a catering-scheduler-dev
+
+# Or revert the git commit and push to main (triggers fresh deploy)
+git revert HEAD && git push origin main
+```
+
+### Vercel and Fly.io Version Mismatch
+
+If one deployment succeeds but the other fails, the services may be on different versions.
+
+```bash
+# Check current Fly.io deployment
+fly status --app catering-scheduler-dev
+
+# Check current Vercel deployment
+# Vercel Dashboard → Deployments
+
+# Fix: Re-run the failed CI job in GitHub Actions, or deploy manually
+```
+
 ## Session Reference
 
 For accumulated debugging patterns and solutions, see `docs/learnings.md`.

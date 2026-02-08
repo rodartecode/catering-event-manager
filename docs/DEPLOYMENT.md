@@ -62,12 +62,15 @@ git push origin feature-branch
 gh pr create --title "Feature" --body "Description"
 ```
 
-**Go Scheduler (Fly.io)**:
+**Go Scheduler (Fly.io)**: Automatic via CI pipeline on push to `main`
 
 ```bash
-cd apps/scheduling-service
+# Automatic deployment: Push to main branch (after build + migrations)
+git push origin main
+# CI runs: build → migrate → deploy-go-production (parallel with Vercel deploy)
 
-# Deploy current code
+# Manual deployment (if needed):
+cd apps/scheduling-service
 fly deploy
 
 # Check deployment status
@@ -88,7 +91,20 @@ fly ssh console
 
 # Scale the service
 fly scale count 2  # Run 2 instances
+
+# Rollback to previous release
+fly releases list -a catering-scheduler-dev
+fly deploy --image <previous-image>  # Or revert the git commit and push
 ```
+
+**CI Pipeline Dependency Graph**:
+```
+build ─────┬─→ migrate ─┬─→ deploy-go-production (Fly.io)
+           │            └─→ deploy-production (Vercel)
+           └─→ deploy-preview (PRs only)
+```
+
+**Required GitHub Secret**: `FLY_API_TOKEN` — Fly.io API token with deploy permissions for the `catering-scheduler-dev` app.
 
 **Database (Supabase)**:
 
