@@ -18,9 +18,7 @@ export function exportToCSV(data: Record<string, ExportableValue>[], filename: s
   // Build CSV content
   const csvContent = [
     // Header row
-    headers
-      .map(escapeCSVValue)
-      .join(','),
+    headers.map(escapeCSVValue).join(','),
     // Data rows
     ...data.map((row) => headers.map((header) => escapeCSVValue(row[header])).join(',')),
   ].join('\n');
