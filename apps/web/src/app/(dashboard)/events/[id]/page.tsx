@@ -2,6 +2,7 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { CloneEventDialog } from '@/components/events/CloneEventDialog';
 import { EventStatusBadge } from '@/components/events/EventStatusBadge';
 import { EventStatusTimeline } from '@/components/events/EventStatusTimeline';
 import { EventStatusUpdateDialog } from '@/components/events/EventStatusUpdateDialog';
@@ -16,6 +17,7 @@ export default function EventDetailPage() {
   const eventId = Number(params.id);
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
   const [isArchiveDialogOpen, setIsArchiveDialogOpen] = useState(false);
+  const [isCloneDialogOpen, setIsCloneDialogOpen] = useState(false);
 
   const {
     data: event,
@@ -90,6 +92,14 @@ export default function EventDetailPage() {
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
               >
                 Update Status
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setIsCloneDialogOpen(true)}
+                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+              >
+                Clone Event
               </button>
 
               {canArchive && (
@@ -226,6 +236,11 @@ export default function EventDetailPage() {
           currentStatus={event.status}
           onClose={() => setIsStatusDialogOpen(false)}
         />
+      )}
+
+      {/* Clone Event Dialog */}
+      {isCloneDialogOpen && (
+        <CloneEventDialog sourceEvent={event} onClose={() => setIsCloneDialogOpen(false)} />
       )}
 
       {/* Archive Confirmation Dialog */}

@@ -8,7 +8,7 @@ import {
   users,
 } from '@catering-event-manager/database/schema';
 import { TRPCError } from '@trpc/server';
-import { addDays } from 'date-fns';
+import { addDays, differenceInMilliseconds } from 'date-fns';
 import { and, asc, desc, eq, gte, lte, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { adminProcedure, protectedProcedure, router } from '../trpc';
@@ -60,6 +60,17 @@ const updateEventInput = z.object({
 const updateStatusInput = z.object({
   id: z.number().positive(),
   newStatus: eventStatusEnum,
+  notes: z.string().optional(),
+});
+
+// Event clone input schema
+const cloneEventInput = z.object({
+  sourceEventId: z.number().positive(),
+  eventDate: z.coerce.date(),
+  clientId: z.number().positive().optional(),
+  eventName: z.string().trim().min(1).max(255).optional(),
+  location: z.string().max(500).optional(),
+  estimatedAttendees: z.number().positive().optional(),
   notes: z.string().optional(),
 });
 
@@ -233,6 +244,7 @@ export const eventRouter = router({
           notes: events.notes,
           isArchived: events.isArchived,
           archivedAt: events.archivedAt,
+          clonedFromEventId: events.clonedFromEventId,
           createdAt: events.createdAt,
           updatedAt: events.updatedAt,
           client: {
@@ -358,6 +370,123 @@ export const eventRouter = router({
       .returning();
 
     return updatedEvent;
+  }),
+
+  // Clone event with tasks
+  clone: adminProcedure.input(cloneEventInput).mutation(async ({ ctx, input }) => {
+    const { db, session } = ctx;
+
+    // Verify source event exists
+    const [sourceEvent] = await db
+      .select()
+      .from(events)
+      .where(eq(events.id, input.sourceEventId))
+      .limit(1);
+
+    if (!sourceEvent) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Source event not found',
+      });
+    }
+
+    // If clientId override provided, verify client exists
+    const clientId = input.clientId ?? sourceEvent.clientId;
+    if (input.clientId) {
+      const [client] = await db
+        .select()
+        .from(clients)
+        .where(eq(clients.id, input.clientId))
+        .limit(1);
+
+      if (!client) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Client not found',
+        });
+      }
+    }
+
+    // Clone within a transaction
+    return await db.transaction(async (tx) => {
+      // Create new event with overrides
+      const [newEvent] = await tx
+        .insert(events)
+        .values({
+          clientId,
+          eventName: input.eventName ?? sourceEvent.eventName,
+          eventDate: input.eventDate,
+          location: input.location ?? sourceEvent.location,
+          estimatedAttendees: input.estimatedAttendees ?? sourceEvent.estimatedAttendees,
+          notes: input.notes ?? sourceEvent.notes,
+          status: 'inquiry',
+          createdBy: parseInt(session.user.id, 10),
+          templateId: sourceEvent.templateId,
+          clonedFromEventId: sourceEvent.id,
+        })
+        .returning();
+
+      // Log initial status
+      await tx.insert(eventStatusLog).values({
+        eventId: newEvent.id,
+        oldStatus: null,
+        newStatus: 'inquiry',
+        changedBy: parseInt(session.user.id, 10),
+        notes: `Cloned from event #${sourceEvent.id}`,
+      });
+
+      // Get source tasks ordered by ID for consistent remapping
+      const sourceTasks = await tx
+        .select()
+        .from(tasks)
+        .where(eq(tasks.eventId, sourceEvent.id))
+        .orderBy(asc(tasks.id));
+
+      // Build old task ID → new task ID map for dependency remapping
+      const taskIdMap = new Map<number, number>();
+      const sourceTaskIds = new Set(sourceTasks.map((t) => t.id));
+
+      for (const sourceTask of sourceTasks) {
+        // Recalculate due date relative to new event date
+        let newDueDate: Date | null = null;
+        if (sourceTask.dueDate) {
+          const offsetMs = differenceInMilliseconds(sourceTask.dueDate, sourceEvent.eventDate);
+          newDueDate = new Date(input.eventDate.getTime() + offsetMs);
+        }
+
+        const [newTask] = await tx
+          .insert(tasks)
+          .values({
+            eventId: newEvent.id,
+            title: sourceTask.title,
+            description: sourceTask.description,
+            category: sourceTask.category,
+            status: 'pending',
+            assignedTo: null,
+            dueDate: newDueDate,
+            dependsOnTaskId: null, // Will be remapped in second pass
+            isOverdue: false,
+          })
+          .returning({ id: tasks.id });
+
+        taskIdMap.set(sourceTask.id, newTask.id);
+      }
+
+      // Second pass: remap dependencies
+      for (const sourceTask of sourceTasks) {
+        if (sourceTask.dependsOnTaskId && sourceTaskIds.has(sourceTask.dependsOnTaskId)) {
+          const newTaskId = taskIdMap.get(sourceTask.id)!;
+          const newDependsOnId = taskIdMap.get(sourceTask.dependsOnTaskId)!;
+
+          await tx
+            .update(tasks)
+            .set({ dependsOnTaskId: newDependsOnId })
+            .where(eq(tasks.id, newTaskId));
+        }
+      }
+
+      return newEvent;
+    });
   }),
 
   // FR-007: Archive event

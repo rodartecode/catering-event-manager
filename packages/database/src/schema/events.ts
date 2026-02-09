@@ -42,6 +42,7 @@ export const events = pgTable(
       .references(() => users.id)
       .notNull(),
     templateId: integer('template_id').references(() => taskTemplates.id, { onDelete: 'set null' }),
+    clonedFromEventId: integer('cloned_from_event_id'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
   },

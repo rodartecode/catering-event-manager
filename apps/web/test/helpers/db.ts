@@ -180,6 +180,7 @@ async function runMigrations(db: TestDatabase): Promise<void> {
       archived_by INTEGER REFERENCES users(id),
       created_by INTEGER NOT NULL REFERENCES users(id),
       template_id INTEGER REFERENCES task_templates(id) ON DELETE SET NULL,
+      cloned_from_event_id INTEGER,
       created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
     )

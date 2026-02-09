@@ -1,5 +1,10 @@
-import { tasks, taskTemplateItems, taskTemplates } from '@catering-event-manager/database/schema';
-import { eq } from 'drizzle-orm';
+import {
+  events,
+  tasks,
+  taskTemplateItems,
+  taskTemplates,
+} from '@catering-event-manager/database/schema';
+import { asc, eq } from 'drizzle-orm';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import {
   cleanDatabase,
@@ -592,6 +597,295 @@ describe('event router', () => {
 
       expect(result.eventName).toBe('Archived Accessible');
       expect(result.isArchived).toBe(true);
+    });
+  });
+
+  describe('event.clone', () => {
+    it('clones an event with default settings', async () => {
+      const caller = createAdminCaller(db);
+      const client = await createClient(db);
+      const source = await caller.event.create({
+        clientId: client.id,
+        eventName: 'Source Event',
+        eventDate: new Date('2026-06-15'),
+        location: 'Grand Ballroom',
+        estimatedAttendees: 200,
+        notes: 'Original notes',
+      });
+
+      const cloned = await caller.event.clone({
+        sourceEventId: source.id,
+        eventDate: new Date('2026-09-20'),
+      });
+
+      expect(cloned.eventName).toBe('Source Event');
+      expect(cloned.location).toBe('Grand Ballroom');
+      expect(cloned.estimatedAttendees).toBe(200);
+      expect(cloned.notes).toBe('Original notes');
+      expect(cloned.status).toBe('inquiry');
+      expect(cloned.clonedFromEventId).toBe(source.id);
+      expect(cloned.clientId).toBe(client.id);
+      expect(cloned.id).not.toBe(source.id);
+    });
+
+    it('clones with field overrides', async () => {
+      const caller = createAdminCaller(db);
+      const client1 = await createClient(db, { companyName: 'Client A' });
+      const client2 = await createClient(db, { companyName: 'Client B' });
+      const source = await caller.event.create({
+        clientId: client1.id,
+        eventName: 'Original',
+        eventDate: new Date('2026-06-15'),
+        location: 'Old Venue',
+        estimatedAttendees: 100,
+        notes: 'Old notes',
+      });
+
+      const cloned = await caller.event.clone({
+        sourceEventId: source.id,
+        eventDate: new Date('2026-10-01'),
+        clientId: client2.id,
+        eventName: 'Overridden Name',
+        location: 'New Venue',
+        estimatedAttendees: 300,
+        notes: 'New notes',
+      });
+
+      expect(cloned.clientId).toBe(client2.id);
+      expect(cloned.eventName).toBe('Overridden Name');
+      expect(cloned.location).toBe('New Venue');
+      expect(cloned.estimatedAttendees).toBe(300);
+      expect(cloned.notes).toBe('New notes');
+    });
+
+    it('copies tasks with recalculated due dates', async () => {
+      const caller = createAdminCaller(db);
+      const client = await createClient(db);
+      const source = await caller.event.create({
+        clientId: client.id,
+        eventName: 'Task Source',
+        eventDate: new Date('2026-06-15'),
+      });
+
+      // Manually insert tasks with known due dates
+      await db.insert(tasks).values([
+        {
+          eventId: source.id,
+          title: 'Pre-event setup',
+          category: 'pre_event',
+          dueDate: new Date('2026-06-08'), // 7 days before
+          status: 'completed',
+          assignedTo: 1,
+          isOverdue: true,
+          completedAt: new Date('2026-06-07'),
+        },
+        {
+          eventId: source.id,
+          title: 'Day-of execution',
+          category: 'during_event',
+          dueDate: new Date('2026-06-15'), // same day
+          status: 'in_progress',
+        },
+      ]);
+
+      const cloned = await caller.event.clone({
+        sourceEventId: source.id,
+        eventDate: new Date('2026-09-20'), // 97 days later
+      });
+
+      const clonedTasks = await db
+        .select()
+        .from(tasks)
+        .where(eq(tasks.eventId, cloned.id))
+        .orderBy(asc(tasks.dueDate));
+
+      expect(clonedTasks).toHaveLength(2);
+      // Pre-event: Sept 13 (7 days before Sept 20)
+      expect(clonedTasks[0].dueDate?.toISOString().split('T')[0]).toBe('2026-09-13');
+      // Day-of: Sept 20
+      expect(clonedTasks[1].dueDate?.toISOString().split('T')[0]).toBe('2026-09-20');
+    });
+
+    it('preserves task dependency chain', async () => {
+      const caller = createAdminCaller(db);
+      const client = await createClient(db);
+      const source = await caller.event.create({
+        clientId: client.id,
+        eventName: 'Dependency Source',
+        eventDate: new Date('2026-06-15'),
+      });
+
+      // Create chain: A → B → C
+      const [taskA] = await db
+        .insert(tasks)
+        .values({
+          eventId: source.id,
+          title: 'Task A',
+          category: 'pre_event',
+          dueDate: new Date('2026-06-10'),
+        })
+        .returning({ id: tasks.id });
+
+      const [taskB] = await db
+        .insert(tasks)
+        .values({
+          eventId: source.id,
+          title: 'Task B',
+          category: 'pre_event',
+          dueDate: new Date('2026-06-12'),
+          dependsOnTaskId: taskA.id,
+        })
+        .returning({ id: tasks.id });
+
+      await db.insert(tasks).values({
+        eventId: source.id,
+        title: 'Task C',
+        category: 'during_event',
+        dueDate: new Date('2026-06-15'),
+        dependsOnTaskId: taskB.id,
+      });
+
+      const cloned = await caller.event.clone({
+        sourceEventId: source.id,
+        eventDate: new Date('2026-09-20'),
+      });
+
+      const clonedTasks = await db
+        .select()
+        .from(tasks)
+        .where(eq(tasks.eventId, cloned.id))
+        .orderBy(asc(tasks.id));
+
+      expect(clonedTasks).toHaveLength(3);
+      // A has no dependency
+      expect(clonedTasks[0].dependsOnTaskId).toBeNull();
+      // B depends on cloned A
+      expect(clonedTasks[1].dependsOnTaskId).toBe(clonedTasks[0].id);
+      // C depends on cloned B
+      expect(clonedTasks[2].dependsOnTaskId).toBe(clonedTasks[1].id);
+    });
+
+    it('handles tasks with null due dates', async () => {
+      const caller = createAdminCaller(db);
+      const client = await createClient(db);
+      const source = await caller.event.create({
+        clientId: client.id,
+        eventName: 'Null Date Source',
+        eventDate: new Date('2026-06-15'),
+      });
+
+      await db.insert(tasks).values({
+        eventId: source.id,
+        title: 'No due date task',
+        category: 'post_event',
+      });
+
+      const cloned = await caller.event.clone({
+        sourceEventId: source.id,
+        eventDate: new Date('2026-09-20'),
+      });
+
+      const clonedTasks = await db.select().from(tasks).where(eq(tasks.eventId, cloned.id));
+      expect(clonedTasks).toHaveLength(1);
+      expect(clonedTasks[0].dueDate).toBeNull();
+      expect(clonedTasks[0].title).toBe('No due date task');
+    });
+
+    it('resets task status, assignment, overdue, and completedAt', async () => {
+      const caller = createAdminCaller(db);
+      const client = await createClient(db);
+      const source = await caller.event.create({
+        clientId: client.id,
+        eventName: 'Reset Source',
+        eventDate: new Date('2026-06-15'),
+      });
+
+      await db.insert(tasks).values({
+        eventId: source.id,
+        title: 'Completed task',
+        category: 'pre_event',
+        status: 'completed',
+        assignedTo: 1,
+        isOverdue: true,
+        completedAt: new Date('2026-06-10'),
+        dueDate: new Date('2026-06-12'),
+      });
+
+      const cloned = await caller.event.clone({
+        sourceEventId: source.id,
+        eventDate: new Date('2026-09-20'),
+      });
+
+      const clonedTasks = await db.select().from(tasks).where(eq(tasks.eventId, cloned.id));
+      expect(clonedTasks).toHaveLength(1);
+      expect(clonedTasks[0].status).toBe('pending');
+      expect(clonedTasks[0].assignedTo).toBeNull();
+      expect(clonedTasks[0].isOverdue).toBe(false);
+      expect(clonedTasks[0].completedAt).toBeNull();
+    });
+
+    it('clones from completed and archived events', async () => {
+      const caller = createAdminCaller(db);
+      const client = await createClient(db);
+      const archived = await createArchivedEvent(db, client.id, 1);
+
+      const cloned = await caller.event.clone({
+        sourceEventId: archived.id,
+        eventDate: new Date('2026-09-20'),
+      });
+
+      expect(cloned.status).toBe('inquiry');
+      expect(cloned.isArchived).toBe(false);
+      expect(cloned.clonedFromEventId).toBe(archived.id);
+    });
+
+    it('returns NOT_FOUND for non-existent source event', async () => {
+      const caller = createAdminCaller(db);
+
+      await expect(
+        caller.event.clone({ sourceEventId: 9999, eventDate: new Date('2026-09-20') })
+      ).rejects.toThrow('Source event not found');
+    });
+
+    it('rejects non-administrator users', async () => {
+      const caller = createAdminCaller(db);
+      const client = await createClient(db);
+      const source = await caller.event.create({
+        clientId: client.id,
+        eventName: 'Auth Test',
+        eventDate: new Date('2026-06-15'),
+      });
+
+      const managerCaller = createManagerCaller(db);
+      await expect(
+        managerCaller.event.clone({ sourceEventId: source.id, eventDate: new Date('2026-09-20') })
+      ).rejects.toThrow('FORBIDDEN');
+    });
+
+    it('rolls back on failure (no partial records)', async () => {
+      const caller = createAdminCaller(db);
+      const client = await createClient(db);
+      const source = await caller.event.create({
+        clientId: client.id,
+        eventName: 'Rollback Test',
+        eventDate: new Date('2026-06-15'),
+      });
+
+      // Count events before clone attempt with invalid client override
+      const eventsBefore = await db.select().from(events).where(eq(events.isArchived, false));
+      const countBefore = eventsBefore.length;
+
+      await expect(
+        caller.event.clone({
+          sourceEventId: source.id,
+          eventDate: new Date('2026-09-20'),
+          clientId: 99999, // Non-existent client
+        })
+      ).rejects.toThrow();
+
+      // No new events should have been created
+      const eventsAfter = await db.select().from(events).where(eq(events.isArchived, false));
+      expect(eventsAfter.length).toBe(countBefore);
     });
   });
 
