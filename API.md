@@ -1,6 +1,6 @@
 # API Documentation
 
-**Last updated**: 2026-02-01
+**Last updated**: 2026-02-09
 **Version**: 1.0
 **Base URL**: `http://localhost:3000/api/trpc` (dev) | `https://catering-dev.vercel.app/api/trpc` (prod)
 
@@ -25,8 +25,9 @@ The API uses Next-Auth v5 session-based authentication with three roles:
 | `clients` | Client & communication management | 10 procedures | admin/protected | ✅ 100% Complete |
 | `user` | User management | 3 procedures | protected | ✅ 100% Complete |
 | `portal` | Client portal (read-only access) | 7 procedures | client | ✅ 100% Complete |
+| `template` | Task template auto-generation | varies | admin | ✅ 100% Complete |
 
-**Total**: 44 procedures across 7 routers | **Test Coverage**: 646 tests passing | **Production Status**: Live on Vercel
+**Total**: 44+ procedures across 8 routers | **Test Coverage**: 646 tests passing | **Production Status**: Live on Vercel
 
 ---
 
@@ -928,8 +929,7 @@ Example error response:
 
 ✅ **Comprehensive testing infrastructure implemented:**
 
-- **tRPC API Tests**: **123 tests** across all 6 routers using PostgreSQL Testcontainers
-- **React Component Tests**: **173 tests** across 19 component files with mocked tRPC
+- **TypeScript Tests**: **646 tests** across 41 test files (tRPC routers + React components)
 - **Go Service Tests**: **46 tests** with 91.7% scheduler coverage
 - **Integration Tests**: Real database testing for both TypeScript and Go services
 

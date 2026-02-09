@@ -80,7 +80,7 @@ pnpm test:quality:update  # Update visual baselines
 
 ### Integration
 ```bash
-pnpm test:integration    # Cross-service tests (requires Go 1.24+)
+pnpm test:integration    # Cross-service tests (requires Go 1.25+)
 ```
 
 ## Building

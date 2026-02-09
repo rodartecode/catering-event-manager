@@ -91,7 +91,7 @@ git add test/e2e/quality-gates/*.png
 
 ```bash
 # Ensure Go toolchain available
-go version  # Requires Go 1.24+
+go version  # Requires Go 1.25+
 
 # Test build
 cd apps/scheduling-service

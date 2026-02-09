@@ -15,7 +15,7 @@ Primary user value: Centralizes event management from inquiry to follow-up, prev
 
 **Language/Version**:
 - TypeScript 5.9+ (Next.js application)
-- Go 1.24+ (Scheduling service)
+- Go 1.25+ (Scheduling service)
 - Node.js 20 LTS
 
 **Primary Dependencies**:

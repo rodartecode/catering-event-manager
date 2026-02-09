@@ -1,6 +1,6 @@
 # Production Deployment Guide
 
-**Last updated**: 2026-02-01
+**Last updated**: 2026-02-09
 
 Complete guide for deploying the catering event management system to production environments including cloud platforms, containerization, monitoring, and maintenance procedures.
 
@@ -222,11 +222,11 @@ psql "postgresql://postgres:[PASSWORD]@db.[PROJECT].supabase.co:5432/postgres" -
 
 **Staging deployment** mirrors production topology with separate instances:
 
-| Service | Platform | App/Project Name |
-|---------|----------|------------------|
-| Web App | Vercel | Staging Vercel project (separate from production) |
-| Scheduler | Fly.io | `catering-scheduler-staging` |
-| Database | Supabase | Separate staging Supabase project |
+| Service | Platform | App/Project Name | URL |
+|---------|----------|------------------|-----|
+| Web App | Vercel | `catering-event-manager-staging` | `https://catering-event-manager-staging.vercel.app` |
+| Scheduler | Fly.io | `catering-scheduler-staging` | `https://catering-scheduler-staging.fly.dev` |
+| Database | Supabase | Reusing production (free tier — branching requires Pro plan) | Same as production |
 
 ### Setting Up Staging
 
@@ -336,7 +336,7 @@ git push origin main
 
 - **Node.js**: 20 LTS
 - **pnpm**: 10+
-- **Go**: 1.24.0+
+- **Go**: 1.25.0+
 - **Docker**: 24+
 - **kubectl**: (if using Kubernetes)
 
@@ -1753,7 +1753,7 @@ jobs:
     - name: Setup Go
       uses: actions/setup-go@v4
       with:
-        go-version: '1.24'
+        go-version: '1.25'
 
     - name: Test Go service
       run: |

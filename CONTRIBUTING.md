@@ -8,13 +8,13 @@ Thank you for your interest in contributing! This guide will help you get starte
 
 - Node.js 20 LTS
 - pnpm 10+
-- Go 1.24.0+
+- Go 1.25.0+
 - Docker and Docker Compose
 - PostgreSQL 17 (via Docker or local)
 
 ### Current Tech Stack
 
-This project uses the latest stable versions (as of January 25, 2026):
+This project uses the latest stable versions (as of February 9, 2026):
 
 | Component | Version | Purpose |
 | --------- | ------- | ------- |
@@ -24,11 +24,11 @@ This project uses the latest stable versions (as of January 25, 2026):
 | tRPC | 11.8.1 | Type-safe API layer |
 | Drizzle ORM | 0.45.1 | TypeScript database ORM |
 | Zod | 4.3.6 | Runtime type validation |
-| Go Fiber | 3.x | High-performance Go web framework |
+| Go Fiber | 3.0.0 | High-performance Go web framework |
 | PostgreSQL | 17 | Primary database |
 | Vitest | 4.0.18 | Testing framework |
 | ESLint | 9.39.2 | Code linting with flat config |
-| Biome | 2.3.12 | Code formatting |
+| Biome | 2.3.14 | Code formatting |
 
 **Recent Major Upgrades**: We recently upgraded from older versions to the latest stable releases, including breaking changes from Zod 3→4, Tailwind 3→4, and Next.js 15→16. All breaking changes have been resolved and tests are passing.
 
@@ -217,7 +217,7 @@ git push origin main
 ### Current Test Status
 
 ✅ **646 TypeScript tests passing** across 41 test files
-✅ **41 Go tests passing** with 91.7% scheduler coverage
+✅ **46 Go tests passing** with 91.7% scheduler coverage
 ✅ **Complete test infrastructure** with PostgreSQL TestContainers
 
 ### Test Types

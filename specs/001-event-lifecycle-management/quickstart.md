@@ -32,7 +32,7 @@ Install these before proceeding:
    pnpm --version  # Should be 10.x.x
    ```
 
-3. **Go 1.24+**: https://go.dev/dl/
+3. **Go 1.25+**: https://go.dev/dl/
    ```bash
    go version  # Should be go1.24.x
    ```

@@ -42,7 +42,10 @@ src/server/routers/
 ├── task.ts        # Task management
 ├── resource.ts    # Resource scheduling
 ├── analytics.ts   # Reporting
-└── clients.ts     # Client communication
+├── clients.ts     # Client communication
+├── user.ts        # User management
+├── portal.ts      # Client portal (read-only)
+└── template.ts    # Task templates
 ```
 
 ## Authentication & Authorization
@@ -82,10 +85,12 @@ USING GIST (tsrange(start_time, end_time));
 
 ## Real-Time Updates
 
-Server-Sent Events (SSE) via tRPC subscriptions:
-- Event status changes visible within 2 seconds (SC-004)
+Currently uses polling (5-second `refetchInterval`) for near-real-time updates:
+- Event status changes visible within seconds
 - Task assignment notifications
 - Resource conflict alerts
+
+Future: SSE via tRPC subscriptions when Redis Pub/Sub infrastructure is added.
 
 ## Performance Targets
 

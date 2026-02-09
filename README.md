@@ -2,7 +2,7 @@
 
 **Production-ready event lifecycle management system** for catering companies - from initial inquiry to post-event follow-up.
 
-**Last updated**: February 2, 2026 (Production database seeded with demo data, CI pipeline automation)
+**Last updated**: February 9, 2026
 
 ## Architecture
 
@@ -17,10 +17,10 @@
 - Frontend: Next.js 16.1.4 + React 19.2.3 + Tailwind CSS 4.1.18
 - API: tRPC v11.8.1 (type-safe RPC)
 - Database: PostgreSQL 17 + Drizzle ORM 0.45.1
-- Scheduling: Go 1.24.0 + Fiber v3 + SQLC 1.27+
+- Scheduling: Go 1.25.0 + Fiber v3 + SQLC 1.27+
 - Monorepo: pnpm 10+ + Turborepo 2.7.6
 - Testing: Vitest 4.0.18 + Playwright 1.58.0 + TestContainers
-- Linting: ESLint 9.39.2 + TypeScript-ESLint 8.53.1
+- Linting: ESLint 9.39.2 + TypeScript-ESLint 8.54.0
 - Validation: Zod 4.3.6
 
 ## Quick Start
@@ -29,7 +29,7 @@
 
 - Node.js 20 LTS
 - pnpm 10+
-- Go 1.24.0+
+- Go 1.25.0+
 - Docker Desktop
 - PostgreSQL 17 (or use Docker)
 
@@ -231,7 +231,7 @@ pnpm type-check
 # Linting (updated for Next.js 16)
 pnpm lint
 
-# Code formatting (Biome 2.3.12)
+# Code formatting (Biome 2.3.14)
 pnpm format
 
 # Database operations
@@ -261,10 +261,10 @@ pnpm test:ui
 pnpm test:coverage
 ```
 
-**Test Results** (as of January 27, 2026):
+**Test Results** (as of February 9, 2026):
 
-- ✅ **559 tests passing, 2 skipped** across 35 test files
-- ✅ **7 tRPC routers fully tested** (event, task, resource, clients, analytics, user, portal)
+- ✅ **646 tests passing** across 41 test files
+- ✅ **8 tRPC routers fully tested** (event, task, resource, clients, analytics, user, portal, template)
 - ✅ **19 React component test suites** covering auth, events, tasks, resources, clients, analytics, dashboard
 - ✅ Complete test infrastructure with PostgreSQL TestContainers
 - ✅ Zero breaking changes after Zod 4 upgrade (all error handling updated)
@@ -395,10 +395,10 @@ pnpm test:quality:update
 
 ### 📊 Current Implementation Metrics
 
-- **7 tRPC API routers** with 36+ procedures (fully tested)
-- **11 database tables** with optimized indexes (PostgreSQL 17)
+- **8 tRPC API routers** with 44+ procedures (fully tested)
+- **14 database tables** with optimized indexes (PostgreSQL 17)
 - **60+ React components** across 7 feature areas
-- **4 main dashboard sections** (Events, Tasks, Resources, Clients, Analytics)
+- **5 main dashboard sections** (Events, Tasks, Resources, Clients, Analytics)
 - **Complete testing infrastructure** (Vitest + TestContainers + Playwright)
 - **Full CRUD operations** for all entities
 - **Production-ready authentication** and client portal
@@ -597,25 +597,24 @@ Before production deployment:
 - [ ] Review CSP for any required external resources
 - [ ] Test security headers at [securityheaders.com](https://securityheaders.com/)
 
-## Recent Updates (February 2, 2026)
+## Recent Updates (February 9, 2026)
+
+### Infrastructure & DevOps Hardening (February 8-9)
+
+- Upgraded Go to 1.25.0, Fiber to v3.0.0 stable, Biome to 2.3.14
+- Aligned Go version across CI, Dockerfile, and go.mod
+- Added staging environment (Vercel + Fly.io + Supabase)
+- Configured Dependabot for automated dependency updates
+- Fixed Docker build issues (empty directories, config package refs)
+- All CI jobs passing on both `main` and `staging` branches
 
 ### Production Database Seeded (February 2)
 
-✅ **Live Demo Environment Ready**
 - Production database populated with comprehensive demo data
 - Demo accounts ready for testing (admin@example.com, manager@example.com)
-- Complete event lifecycle examples with tasks, resources, and communications
-- All user roles functional with realistic data scenarios
+- Automated database migration deployment to production via CI
 
-### CI/CD Pipeline Enhancements (February 2)
-- Automated database migration deployment to production
-- Fixed pnpm setup for deploy-production GitHub Actions job
-- Resolved LF line ending issues affecting code formatting
-- Production defect fixes: DEF-004 (authentication), DEF-005 (task dependencies), DEF-006 (resource conflicts)
-
-### Major Package Upgrades Completed (January 25, 2026)
-
-### Major Package Upgrades Completed
+### Major Package Upgrades (January 25, 2026)
 
 | Package | Previous | Current |
 |---------|----------|---------|
@@ -626,22 +625,10 @@ Before production deployment:
 | tRPC | 11.7.x | **11.8.1** |
 | Drizzle ORM | 0.36.4 | **0.45.1** |
 | ESLint | 8.x | **9.39.2** |
-| Biome | 1.9.4 | **2.3.12** |
+| Biome | 1.9.4 | **2.3.14** |
 | Vitest | 3.x | **4.0.18** |
-
-### Breaking Changes Handled
-
-1. **Next.js 16**: Route conflicts resolved, ESLint config migrated to flat config
-2. **Tailwind 4**: Import syntax updated, PostCSS plugin migrated
-3. **Zod 4**: Error structure updated (`.errors` → `.issues`)
-4. **ESLint 9**: Flat configuration with TypeScript-ESLint 8
-5. **React 19**: Suspense boundaries added for `useSearchParams()`
-
-### Performance Improvements
-
-- **Build time**: Improved with Turbo 2.7.6 and optimized Next.js 16 builds
-- **Type checking**: Faster with TypeScript 5.9.3 and updated Drizzle ORM
-- **Edge runtime**: Magic link generation now uses Web Crypto API
+| Go | 1.24.0 | **1.25.0** |
+| Fiber | v3-beta.3 | **v3.0.0** |
 
 ## License
 

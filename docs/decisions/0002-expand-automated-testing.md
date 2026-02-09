@@ -70,7 +70,7 @@ New `test/scenarios/` directory contains multi-step behavioral tests that verify
 
 - Test suite runtime increased (~110s for unit/scenario tests, additional time for integration)
 - `fileParallelism: false` required due to shared Testcontainers database
-- Cross-service tests require Go 1.24+ toolchain in CI
+- Cross-service tests require Go 1.25+ toolchain in CI
 - Event list cursor pagination has a known limitation (ID-based cursor with date ordering) documented in tests but not yet fixed
 
 ### Trade-offs
