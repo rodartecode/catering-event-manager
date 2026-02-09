@@ -17,7 +17,7 @@
 - Frontend: Next.js 16.1.4 + React 19.2.3 + Tailwind CSS 4.1.18
 - API: tRPC v11.8.1 (type-safe RPC)
 - Database: PostgreSQL 17 + Drizzle ORM 0.45.1
-- Scheduling: Go 1.25.0 + Fiber v3 + SQLC 1.27+
+- Scheduling: Go 1.25.7 + Fiber v3 + SQLC 1.27+
 - Monorepo: pnpm 10+ + Turborepo 2.7.6
 - Testing: Vitest 4.0.18 + Playwright 1.58.0 + TestContainers
 - Linting: ESLint 9.39.2 + TypeScript-ESLint 8.54.0
@@ -29,7 +29,7 @@
 
 - Node.js 20 LTS
 - pnpm 10+
-- Go 1.25.0+
+- Go 1.25.7+
 - Docker Desktop
 - PostgreSQL 17 (or use Docker)
 
@@ -601,7 +601,7 @@ Before production deployment:
 
 ### Infrastructure & DevOps Hardening (February 8-9)
 
-- Upgraded Go to 1.25.0, Fiber to v3.0.0 stable, Biome to 2.3.14
+- Upgraded Go to 1.25.7, Fiber to v3.0.0 stable, Biome to 2.3.14
 - Aligned Go version across CI, Dockerfile, and go.mod
 - Added staging environment (Vercel + Fly.io + Supabase)
 - Configured Dependabot for automated dependency updates
@@ -627,7 +627,7 @@ Before production deployment:
 | ESLint | 8.x | **9.39.2** |
 | Biome | 1.9.4 | **2.3.14** |
 | Vitest | 3.x | **4.0.18** |
-| Go | 1.24.0 | **1.25.0** |
+| Go | 1.24.0 | **1.25.7** |
 | Fiber | v3-beta.3 | **v3.0.0** |
 
 ## License

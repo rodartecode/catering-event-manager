@@ -58,7 +58,7 @@
 |-----------|---------|---------|
 | Next.js | 16.1.4 | Frontend framework |
 | React | 19.2.3 | UI library |
-| Go | 1.25.0 | Scheduling microservice |
+| Go | 1.25.7 | Scheduling microservice |
 | PostgreSQL | 17.6 | Primary database |
 | tRPC | 11.8.1 | Type-safe API |
 
