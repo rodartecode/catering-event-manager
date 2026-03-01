@@ -34,7 +34,7 @@ A curated backlog of potential features and improvements for the catering event 
 
 ### Event Management
 
-- [ ] **Event cloning** - Clone existing event configurations as templates
+- [x] **Event cloning** - Clone existing event configurations as templates (implemented 2026-02-09)
 - [ ] **Bulk operations** - Import/export events, batch status updates
 - [ ] **Document management** - Attach contracts, menus, floor plans to events
 - [ ] **Event checklists** - Custom verification checklists per event type
@@ -79,7 +79,7 @@ A curated backlog of potential features and improvements for the catering event 
 - [ ] **Mobile-responsive improvements** - Better mobile layouts for field use
 - [ ] **Dark mode** - System/user preference dark theme
 - [ ] **Keyboard shortcuts** - Power user navigation
-- [ ] **Advanced search** - Full-text search across all entities
+- [x] **Advanced search** - Full-text search across all entities (implemented 2026-02-28)
 - [ ] **Customizable dashboard** - User-configurable dashboard widgets
 - [ ] **WebSocket updates** - Replace SSE with WebSocket for real-time
 - [ ] **Collaborative editing** - Multiple users editing same entity
@@ -112,6 +112,8 @@ A curated backlog of potential features and improvements for the catering event 
 
 | Date | Item | Notes |
 |------|------|-------|
+| 2026-02-28 | Advanced search | Full-text ILIKE search across events, clients, tasks, resources |
+| 2026-02-09 | Event cloning | Deep-copy events with task dependency remapping |
 | 2026-02-03 | Task templates | Auto-generate tasks from predefined templates |
 | 2026-02-02 | Automated database migrations | CI runs migrations before deployment |
 | 2026-02-01 | Production deployment | Vercel + Fly.io + Supabase |

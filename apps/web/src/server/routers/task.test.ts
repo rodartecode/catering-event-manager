@@ -927,6 +927,38 @@ describe('task router', () => {
     });
   });
 
+  describe('task.listByEvent - search query', () => {
+    it('filters tasks by title query', async () => {
+      const caller = createAdminCaller(db);
+      const client = await createClient(db);
+      const event = await createEvent(db, client.id, 1);
+      await createTask(db, event.id, { title: 'Setup Decorations' });
+      await createTask(db, event.id, { title: 'Order Flowers' });
+
+      const result = await caller.task.listByEvent({ eventId: event.id, query: 'decor' });
+
+      expect(result.items).toHaveLength(1);
+      expect(result.items[0].title).toBe('Setup Decorations');
+    });
+
+    it('combines query with status filter', async () => {
+      const caller = createAdminCaller(db);
+      const client = await createClient(db);
+      const event = await createEvent(db, client.id, 1);
+      await createTask(db, event.id, { title: 'Setup Tables', status: 'pending' });
+      await createTask(db, event.id, { title: 'Setup Chairs', status: 'completed' });
+
+      const result = await caller.task.listByEvent({
+        eventId: event.id,
+        query: 'setup',
+        status: 'pending',
+      });
+
+      expect(result.items).toHaveLength(1);
+      expect(result.items[0].title).toBe('Setup Tables');
+    });
+  });
+
   // ============================================
   // Deepened Tests: Delete with Cascade
   // ============================================

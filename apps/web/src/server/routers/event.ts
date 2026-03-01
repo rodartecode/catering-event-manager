@@ -9,7 +9,7 @@ import {
 } from '@catering-event-manager/database/schema';
 import { TRPCError } from '@trpc/server';
 import { addDays, differenceInMilliseconds } from 'date-fns';
-import { and, asc, desc, eq, gte, lte, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, ilike, lte, or, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { adminProcedure, protectedProcedure, router } from '../trpc';
 
@@ -42,6 +42,7 @@ const listEventsInput = z.object({
   clientId: z.number().optional(),
   dateFrom: z.coerce.date().optional(),
   dateTo: z.coerce.date().optional(),
+  query: z.string().min(2).max(100).optional(),
   limit: z.number().min(1).max(100).default(50),
   cursor: z.number().optional(),
 });
@@ -170,7 +171,7 @@ export const eventRouter = router({
   // FR-004: List events with filters and pagination
   list: protectedProcedure.input(listEventsInput).query(async ({ ctx, input }) => {
     const { db } = ctx;
-    const { status, clientId, dateFrom, dateTo, limit, cursor } = input;
+    const { status, clientId, dateFrom, dateTo, query, limit, cursor } = input;
 
     // Build where conditions
     const conditions = [eq(events.isArchived, false)];
@@ -189,6 +190,11 @@ export const eventRouter = router({
 
     if (dateTo) {
       conditions.push(lte(events.eventDate, dateTo));
+    }
+
+    if (query) {
+      const pattern = `%${query}%`;
+      conditions.push(or(ilike(events.eventName, pattern), ilike(events.location, pattern))!);
     }
 
     if (cursor) {

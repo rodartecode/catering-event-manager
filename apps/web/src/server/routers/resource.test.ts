@@ -498,6 +498,30 @@ describe('resource router', () => {
     });
   });
 
+  describe('resource.list - search query', () => {
+    it('filters resources by name query', async () => {
+      const caller = createManagerCaller(db);
+      await createResource(db, { name: 'Portable Oven' });
+      await createResource(db, { name: 'Head Chef' });
+
+      const result = await caller.resource.list({ query: 'oven' });
+
+      expect(result.items).toHaveLength(1);
+      expect(result.items[0].name).toBe('Portable Oven');
+    });
+
+    it('combines query with type filter', async () => {
+      const caller = createManagerCaller(db);
+      await createResource(db, { name: 'Large Oven', type: 'equipment' });
+      await createResource(db, { name: 'Oven Technician', type: 'staff' });
+
+      const result = await caller.resource.list({ query: 'oven', type: 'equipment' });
+
+      expect(result.items).toHaveLength(1);
+      expect(result.items[0].name).toBe('Large Oven');
+    });
+  });
+
   // ============================================
   // Deepened Tests: Multiple Conflict Response
   // ============================================

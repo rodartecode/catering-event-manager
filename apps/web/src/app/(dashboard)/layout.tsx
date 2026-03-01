@@ -5,6 +5,7 @@ import { SkipLink } from '@/components/a11y/SkipLink';
 import { SessionGuard } from '@/components/auth/SessionGuard';
 import { MobileNav } from '@/components/dashboard/MobileNav';
 import { Sidebar } from '@/components/dashboard/Sidebar';
+import { SearchBar } from '@/components/search/SearchBar';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -25,6 +26,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
           {/* Main Content */}
           <main id="main-content" className="flex-1 lg:ml-64">
+            <div className="sticky top-0 z-20 bg-gray-100 px-4 py-3 lg:px-8 border-b border-gray-200">
+              <SearchBar />
+            </div>
             {children}
           </main>
         </div>

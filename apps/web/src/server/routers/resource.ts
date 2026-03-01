@@ -1,6 +1,6 @@
 import { resourceSchedule, resources } from '@catering-event-manager/database/schema';
 import { TRPCError } from '@trpc/server';
-import { and, eq, gt, sql } from 'drizzle-orm';
+import { and, eq, gt, ilike, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { logger } from '@/lib/logger';
 import { SchedulingClientError, schedulingClient } from '../services/scheduling-client';
@@ -21,6 +21,7 @@ const createResourceInput = z.object({
 const listResourcesInput = z.object({
   type: resourceTypeEnum.optional(),
   isAvailable: z.boolean().optional(),
+  query: z.string().min(2).max(100).optional(),
   limit: z.number().min(1).max(100).default(50),
   cursor: z.number().optional(),
 });
@@ -86,7 +87,7 @@ export const resourceRouter = router({
   // FR-015: List resources with filters
   list: protectedProcedure.input(listResourcesInput).query(async ({ ctx, input }) => {
     const { db } = ctx;
-    const { type, isAvailable, limit, cursor } = input;
+    const { type, isAvailable, query, limit, cursor } = input;
 
     // Build where conditions
     const conditions = [];
@@ -97,6 +98,10 @@ export const resourceRouter = router({
 
     if (isAvailable !== undefined) {
       conditions.push(eq(resources.isAvailable, isAvailable));
+    }
+
+    if (query) {
+      conditions.push(ilike(resources.name, `%${query}%`));
     }
 
     if (cursor) {

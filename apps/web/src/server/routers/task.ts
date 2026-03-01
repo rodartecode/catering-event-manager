@@ -8,7 +8,7 @@ import {
   users,
 } from '@catering-event-manager/database/schema';
 import { TRPCError } from '@trpc/server';
-import { and, eq, inArray, lt, ne, sql } from 'drizzle-orm';
+import { and, eq, ilike, inArray, lt, ne, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { logger } from '@/lib/logger';
 import { SchedulingClientError, schedulingClient } from '../services/scheduling-client';
@@ -40,6 +40,7 @@ const listTasksInput = z.object({
   category: z.enum(['pre_event', 'during_event', 'post_event', 'all']).optional(),
   overdueOnly: z.boolean().optional(),
   assignedToMe: z.boolean().optional(),
+  query: z.string().min(2).max(100).optional(),
   limit: z.number().min(1).max(100).default(50),
   cursor: z.number().optional(),
 });
@@ -518,7 +519,7 @@ export const taskRouter = router({
   // FR-011: List tasks for event with filters
   listByEvent: protectedProcedure.input(listTasksInput).query(async ({ ctx, input }) => {
     const { db, session } = ctx;
-    const { eventId, status, category, overdueOnly, assignedToMe, limit, cursor } = input;
+    const { eventId, status, category, overdueOnly, assignedToMe, query, limit, cursor } = input;
 
     // Build where conditions
     const conditions = [eq(tasks.eventId, eventId)];
@@ -537,6 +538,10 @@ export const taskRouter = router({
 
     if (assignedToMe) {
       conditions.push(eq(tasks.assignedTo, parseInt(session.user.id, 10)));
+    }
+
+    if (query) {
+      conditions.push(ilike(tasks.title, `%${query}%`));
     }
 
     if (cursor) {

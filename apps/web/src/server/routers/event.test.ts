@@ -286,6 +286,70 @@ describe('event router', () => {
     });
   });
 
+  describe('event.list - search query', () => {
+    it('filters events by name query', async () => {
+      const caller = createAdminCaller(db);
+      const client = await createClient(db);
+      await caller.event.create({
+        clientId: client.id,
+        eventName: 'Summer Wedding',
+        eventDate: new Date('2026-07-01'),
+      });
+      await caller.event.create({
+        clientId: client.id,
+        eventName: 'Corporate Dinner',
+        eventDate: new Date('2026-08-01'),
+      });
+
+      const result = await caller.event.list({ query: 'wedding' });
+
+      expect(result.items).toHaveLength(1);
+      expect(result.items[0].eventName).toBe('Summer Wedding');
+    });
+
+    it('combines query with status filter', async () => {
+      const caller = createAdminCaller(db);
+      const client = await createClient(db);
+      const event1 = await caller.event.create({
+        clientId: client.id,
+        eventName: 'Spring Gala',
+        eventDate: new Date('2026-07-01'),
+      });
+      await caller.event.create({
+        clientId: client.id,
+        eventName: 'Autumn Gala',
+        eventDate: new Date('2026-08-01'),
+      });
+
+      // Move first event to planning
+      await caller.event.updateStatus({ id: event1.id, newStatus: 'planning' });
+
+      const result = await caller.event.list({ query: 'gala', status: 'planning' });
+
+      expect(result.items).toHaveLength(1);
+      expect(result.items[0].eventName).toBe('Spring Gala');
+    });
+
+    it('returns all events when no query provided', async () => {
+      const caller = createAdminCaller(db);
+      const client = await createClient(db);
+      await caller.event.create({
+        clientId: client.id,
+        eventName: 'Event A',
+        eventDate: new Date('2026-07-01'),
+      });
+      await caller.event.create({
+        clientId: client.id,
+        eventName: 'Event B',
+        eventDate: new Date('2026-08-01'),
+      });
+
+      const result = await caller.event.list({});
+
+      expect(result.items).toHaveLength(2);
+    });
+  });
+
   describe('event.updateStatus', () => {
     it('transitions inquiry to planning', async () => {
       const caller = createAdminCaller(db);

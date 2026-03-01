@@ -88,6 +88,51 @@ describe('clients router', () => {
     });
   });
 
+  describe('clients.list - search query', () => {
+    it('filters clients by company name', async () => {
+      const caller = createManagerCaller(db);
+      await createClient(db, { companyName: 'Acme Catering' });
+      await createClient(db, { companyName: 'Beta Foods' });
+
+      const result = await caller.clients.list({ query: 'acme' });
+
+      expect(result).toHaveLength(1);
+      expect(result[0].companyName).toBe('Acme Catering');
+    });
+
+    it('filters clients by contact name', async () => {
+      const caller = createManagerCaller(db);
+      await createClient(db, { contactName: 'Jane Smith', companyName: 'XYZ Corp' });
+      await createClient(db, { contactName: 'Bob Jones', companyName: 'ABC Inc' });
+
+      const result = await caller.clients.list({ query: 'smith' });
+
+      expect(result).toHaveLength(1);
+      expect(result[0].contactName).toBe('Jane Smith');
+    });
+
+    it('filters clients by email', async () => {
+      const caller = createManagerCaller(db);
+      await createClient(db, { email: 'jane@acmecorp.com' });
+      await createClient(db, { email: 'bob@other.com' });
+
+      const result = await caller.clients.list({ query: 'acmecorp' });
+
+      expect(result).toHaveLength(1);
+      expect(result[0].email).toBe('jane@acmecorp.com');
+    });
+
+    it('returns all clients when no query provided', async () => {
+      const caller = createManagerCaller(db);
+      await createClient(db, { companyName: 'Company A' });
+      await createClient(db, { companyName: 'Company B' });
+
+      const result = await caller.clients.list();
+
+      expect(result).toHaveLength(2);
+    });
+  });
+
   describe('clients.getById', () => {
     it('returns client details', async () => {
       const caller = createManagerCaller(db);

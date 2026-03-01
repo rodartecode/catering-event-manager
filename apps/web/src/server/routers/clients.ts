@@ -1,6 +1,6 @@
 import { clients, communications, events, users } from '@catering-event-manager/database/schema';
 import { TRPCError } from '@trpc/server';
-import { and, desc, eq, lte, sql } from 'drizzle-orm';
+import { and, desc, eq, ilike, lte, or, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { sendWelcomeEmail } from '@/lib/email';
 import { logger } from '@/lib/logger';
@@ -11,9 +11,26 @@ export const clientsRouter = router({
   // Client CRUD Operations
   // ============================================
 
-  list: protectedProcedure.query(async ({ ctx }) => {
-    return ctx.db.select().from(clients).orderBy(desc(clients.createdAt));
-  }),
+  list: protectedProcedure
+    .input(z.object({ query: z.string().min(2).max(100).optional() }).optional())
+    .query(async ({ ctx, input }) => {
+      const query = input?.query;
+      if (query) {
+        const pattern = `%${query}%`;
+        return ctx.db
+          .select()
+          .from(clients)
+          .where(
+            or(
+              ilike(clients.companyName, pattern),
+              ilike(clients.contactName, pattern),
+              ilike(clients.email, pattern)
+            )
+          )
+          .orderBy(desc(clients.createdAt));
+      }
+      return ctx.db.select().from(clients).orderBy(desc(clients.createdAt));
+    }),
 
   getById: protectedProcedure.input(z.object({ id: z.number() })).query(async ({ ctx, input }) => {
     const [client] = await ctx.db.select().from(clients).where(eq(clients.id, input.id));
