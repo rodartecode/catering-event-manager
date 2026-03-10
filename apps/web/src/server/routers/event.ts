@@ -214,7 +214,7 @@ export const eventRouter = router({
       })
       .from(events)
       .leftJoin(clients, eq(events.clientId, clients.id))
-      .leftJoin(sql`tasks`, sql`tasks.event_id = ${events.id}`)
+      .leftJoin(tasks, eq(tasks.eventId, events.id))
       .where(and(...conditions))
       .groupBy(events.id, clients.companyName)
       .orderBy(desc(events.eventDate))
