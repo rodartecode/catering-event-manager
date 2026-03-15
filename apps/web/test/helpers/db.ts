@@ -38,6 +38,10 @@ export async function setupTestDatabase(): Promise<TestDatabase> {
   // Create Drizzle instance
   testDb = drizzle(sqlClient, { schema });
 
+  // Grant superuser to test_user so it bypasses RLS (matches production
+  // where the app connects as the postgres superuser)
+  await testDb.execute(sql`ALTER USER test_user WITH SUPERUSER`);
+
   // Run migrations (push schema to DB)
   await runMigrations(testDb);
 
@@ -279,6 +283,26 @@ async function runMigrations(db: TestDatabase): Promise<void> {
       PRIMARY KEY (identifier, token)
     )
   `);
+
+  // Enable RLS on all tables (matches migration 0005_enable_rls.sql)
+  // Note: portal_access_log is not created in test helper (not needed for tests)
+  const rlsTables = [
+    'clients',
+    'users',
+    'events',
+    'event_status_log',
+    'tasks',
+    'resources',
+    'task_resources',
+    'resource_schedule',
+    'communications',
+    'task_templates',
+    'task_template_items',
+    'verification_tokens',
+  ];
+  for (const table of rlsTables) {
+    await db.execute(sql.raw(`ALTER TABLE ${table} ENABLE ROW LEVEL SECURITY`));
+  }
 }
 
 /**
