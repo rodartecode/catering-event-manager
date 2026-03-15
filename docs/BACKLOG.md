@@ -16,6 +16,7 @@ A curated backlog of potential features and improvements for the catering event 
 |----------|--------|------|-------------|
 | High | | **Automate Go service deployment** | Currently manual; add Fly.io deployment to CI pipeline |
 | High | | **Staging environment** | Add staging branch with dedicated Vercel deployment |
+| High | | **Enable RLS on all public tables** | All 13 tables lack Row Level Security; Supabase REST API exposes them. Enable RLS with deny-all policies (app uses direct connection as `postgres` role, which bypasses RLS). Especially urgent for `verification_tokens` which exposes sensitive `token` column. |
 | High | | **Security scanning** | Integrate Snyk or Dependabot for vulnerability scanning |
 | High | | **Container registry** | Publish Docker images to GHCR for versioned deployments |
 | Medium | | **Distributed Turbo caching** | Remote cache for faster CI builds |
