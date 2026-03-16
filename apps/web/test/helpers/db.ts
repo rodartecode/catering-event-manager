@@ -104,6 +104,30 @@ async function runMigrations(db: TestDatabase): Promise<void> {
     END $$;
   `);
 
+  await db.execute(sql`
+    DO $$ BEGIN
+      CREATE TYPE expense_category AS ENUM ('labor', 'food_supplies', 'equipment_rental', 'venue', 'transportation', 'decor', 'beverages', 'other');
+    EXCEPTION
+      WHEN duplicate_object THEN null;
+    END $$;
+  `);
+
+  await db.execute(sql`
+    DO $$ BEGIN
+      CREATE TYPE invoice_status AS ENUM ('draft', 'sent', 'paid', 'overdue', 'cancelled');
+    EXCEPTION
+      WHEN duplicate_object THEN null;
+    END $$;
+  `);
+
+  await db.execute(sql`
+    DO $$ BEGIN
+      CREATE TYPE payment_method AS ENUM ('cash', 'check', 'credit_card', 'bank_transfer', 'other');
+    EXCEPTION
+      WHEN duplicate_object THEN null;
+    END $$;
+  `);
+
   // Create tables (clients first for FK references)
   await db.execute(sql`
     CREATE TABLE IF NOT EXISTS clients (
@@ -274,6 +298,70 @@ async function runMigrations(db: TestDatabase): Promise<void> {
     )
   `);
 
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS expenses (
+      id SERIAL PRIMARY KEY,
+      event_id INTEGER NOT NULL REFERENCES events(id),
+      category expense_category NOT NULL,
+      description VARCHAR(500) NOT NULL,
+      amount DECIMAL(10,2) NOT NULL,
+      vendor VARCHAR(255),
+      expense_date TIMESTAMP WITH TIME ZONE NOT NULL,
+      notes TEXT,
+      created_by INTEGER NOT NULL REFERENCES users(id),
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS invoices (
+      id SERIAL PRIMARY KEY,
+      event_id INTEGER NOT NULL REFERENCES events(id),
+      invoice_number VARCHAR(50) NOT NULL UNIQUE,
+      status invoice_status NOT NULL DEFAULT 'draft',
+      subtotal DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+      tax_rate DECIMAL(5,4) NOT NULL DEFAULT 0.0000,
+      tax_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+      total DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+      notes TEXT,
+      due_date TIMESTAMP WITH TIME ZONE,
+      sent_at TIMESTAMP WITH TIME ZONE,
+      created_by INTEGER NOT NULL REFERENCES users(id),
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS invoice_line_items (
+      id SERIAL PRIMARY KEY,
+      invoice_id INTEGER NOT NULL REFERENCES invoices(id) ON DELETE CASCADE,
+      description VARCHAR(500) NOT NULL,
+      quantity DECIMAL(10,2) NOT NULL DEFAULT 1.00,
+      unit_price DECIMAL(10,2) NOT NULL,
+      amount DECIMAL(10,2) NOT NULL,
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS payments (
+      id SERIAL PRIMARY KEY,
+      invoice_id INTEGER NOT NULL REFERENCES invoices(id),
+      amount DECIMAL(10,2) NOT NULL,
+      method payment_method NOT NULL,
+      payment_date TIMESTAMP WITH TIME ZONE NOT NULL,
+      reference VARCHAR(255),
+      notes TEXT,
+      recorded_by INTEGER NOT NULL REFERENCES users(id),
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
   // Portal magic link tokens table
   await db.execute(sql`
     CREATE TABLE IF NOT EXISTS verification_tokens (
@@ -296,6 +384,10 @@ async function runMigrations(db: TestDatabase): Promise<void> {
     'task_resources',
     'resource_schedule',
     'communications',
+    'expenses',
+    'payments',
+    'invoice_line_items',
+    'invoices',
     'task_templates',
     'task_template_items',
     'verification_tokens',
@@ -312,7 +404,7 @@ async function runMigrations(db: TestDatabase): Promise<void> {
 export async function cleanDatabase(db: TestDatabase): Promise<void> {
   // Truncate tables in order (respecting foreign key constraints)
   await db.execute(
-    sql`TRUNCATE verification_tokens, communications, resource_schedule, task_resources, tasks, event_status_log, events, resources, users, clients, task_template_items, task_templates RESTART IDENTITY CASCADE`
+    sql`TRUNCATE verification_tokens, communications, payments, invoice_line_items, invoices, expenses, resource_schedule, task_resources, tasks, event_status_log, events, resources, users, clients, task_template_items, task_templates RESTART IDENTITY CASCADE`
   );
 }
 

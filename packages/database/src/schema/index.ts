@@ -2,6 +2,10 @@ export * from './clients'; // Must be before users due to FK reference
 export * from './communications';
 export * from './event-status-log';
 export * from './events';
+export * from './expenses';
+export * from './invoice-line-items';
+export * from './invoices';
+export * from './payments';
 export * from './portal-access-log';
 export * from './resource-schedule';
 export * from './resources';

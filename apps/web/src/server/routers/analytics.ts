@@ -1,6 +1,8 @@
 import {
   eventStatusEnum,
   events,
+  expenses,
+  invoices,
   resourceSchedule,
   resources,
   taskCategoryEnum,
@@ -267,5 +269,134 @@ export const analyticsRouter = router({
     });
 
     return performanceData;
+  }),
+
+  // Financial summary analytics
+  financialSummary: protectedProcedure.input(dateRangeInput).query(async ({ ctx, input }) => {
+    const { db } = ctx;
+    const { dateFrom, dateTo } = input;
+
+    // Get invoices in date range
+    const invoiceList = await db
+      .select({
+        id: invoices.id,
+        status: invoices.status,
+        total: invoices.total,
+      })
+      .from(invoices)
+      .where(and(gte(invoices.createdAt, dateFrom), lte(invoices.createdAt, dateTo)));
+
+    // Calculate totals by status
+    let totalRevenue = 0;
+    let outstanding = 0;
+    const statusCounts: Record<string, number> = {};
+
+    for (const inv of invoiceList) {
+      const total = parseFloat(inv.total ?? '0');
+      statusCounts[inv.status] = (statusCounts[inv.status] || 0) + 1;
+
+      if (inv.status === 'paid') {
+        totalRevenue += total;
+      } else if (inv.status === 'sent' || inv.status === 'overdue') {
+        outstanding += total;
+      }
+    }
+
+    // Get total expenses in date range
+    const expenseList = await db
+      .select({ amount: expenses.amount })
+      .from(expenses)
+      .where(and(gte(expenses.createdAt, dateFrom), lte(expenses.createdAt, dateTo)));
+
+    let totalExpenses = 0;
+    for (const exp of expenseList) {
+      totalExpenses += parseFloat(exp.amount ?? '0');
+    }
+
+    const profitMargin =
+      totalRevenue > 0
+        ? Math.round(((totalRevenue - totalExpenses) / totalRevenue) * 10000) / 100
+        : 0;
+
+    return {
+      totalRevenue: Math.round(totalRevenue * 100) / 100,
+      outstanding: Math.round(outstanding * 100) / 100,
+      totalExpenses: Math.round(totalExpenses * 100) / 100,
+      profitMargin,
+      invoicesByStatus: statusCounts,
+      invoiceCount: invoiceList.length,
+    };
+  }),
+
+  // Per-event profitability
+  eventProfitability: protectedProcedure.input(dateRangeInput).query(async ({ ctx, input }) => {
+    const { db } = ctx;
+    const { dateFrom, dateTo } = input;
+
+    // Get events in date range
+    const eventList = await db
+      .select({
+        id: events.id,
+        eventName: events.eventName,
+        eventDate: events.eventDate,
+        status: events.status,
+      })
+      .from(events)
+      .where(
+        and(
+          eq(events.isArchived, false),
+          gte(events.createdAt, dateFrom),
+          lte(events.createdAt, dateTo)
+        )
+      );
+
+    const profitabilityData = await Promise.all(
+      eventList.map(async (event) => {
+        // Get invoice totals for this event (only paid)
+        const eventInvoices = await db
+          .select({ total: invoices.total, status: invoices.status })
+          .from(invoices)
+          .where(eq(invoices.eventId, event.id));
+
+        let quotedTotal = 0;
+        let paidTotal = 0;
+        for (const inv of eventInvoices) {
+          const total = parseFloat(inv.total ?? '0');
+          quotedTotal += total;
+          if (inv.status === 'paid') {
+            paidTotal += total;
+          }
+        }
+
+        // Get expense totals for this event
+        const eventExpenses = await db
+          .select({ amount: expenses.amount })
+          .from(expenses)
+          .where(eq(expenses.eventId, event.id));
+
+        let actualCost = 0;
+        for (const exp of eventExpenses) {
+          actualCost += parseFloat(exp.amount ?? '0');
+        }
+
+        const profit = Math.round((paidTotal - actualCost) * 100) / 100;
+        const margin = paidTotal > 0 ? Math.round((profit / paidTotal) * 10000) / 100 : 0;
+
+        return {
+          eventId: event.id,
+          eventName: event.eventName,
+          eventDate: event.eventDate,
+          status: event.status,
+          quotedTotal: Math.round(quotedTotal * 100) / 100,
+          paidTotal: Math.round(paidTotal * 100) / 100,
+          actualCost: Math.round(actualCost * 100) / 100,
+          profit,
+          margin,
+        };
+      })
+    );
+
+    // Sort by profit descending
+    return profitabilityData.sort((a, b) => b.profit - a.profit);
   }),
 });

@@ -339,6 +339,207 @@ export async function createCommunication(
 }
 
 /**
+ * Create a test expense.
+ */
+export async function createExpense(
+  db: TestDatabase,
+  eventId: number,
+  createdBy: number,
+  overrides: Partial<{
+    category:
+      | 'labor'
+      | 'food_supplies'
+      | 'equipment_rental'
+      | 'venue'
+      | 'transportation'
+      | 'decor'
+      | 'beverages'
+      | 'other';
+    description: string;
+    amount: string;
+    vendor: string;
+    expenseDate: Date;
+    notes: string;
+  }> = {}
+) {
+  const id = nextId();
+
+  const result = await db.execute(sql`
+    INSERT INTO expenses (event_id, category, description, amount, vendor, expense_date, notes, created_by)
+    VALUES (
+      ${eventId},
+      ${overrides.category || 'food_supplies'},
+      ${overrides.description || `Expense ${id}`},
+      ${overrides.amount || '100.00'},
+      ${overrides.vendor || null},
+      ${(overrides.expenseDate || new Date()).toISOString()},
+      ${overrides.notes || null},
+      ${createdBy}
+    )
+    RETURNING id, event_id, category, description, amount, vendor, expense_date, notes, created_by, created_at, updated_at
+  `);
+
+  return result[0] as {
+    id: number;
+    event_id: number;
+    category: string;
+    description: string;
+    amount: string;
+    vendor: string | null;
+    expense_date: Date;
+    notes: string | null;
+    created_by: number;
+    created_at: Date;
+    updated_at: Date;
+  };
+}
+
+/**
+ * Create a test invoice.
+ */
+export async function createInvoice(
+  db: TestDatabase,
+  eventId: number,
+  createdBy: number,
+  overrides: Partial<{
+    invoiceNumber: string;
+    status: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled';
+    subtotal: string;
+    taxRate: string;
+    taxAmount: string;
+    total: string;
+    notes: string;
+    dueDate: Date;
+    sentAt: Date;
+  }> = {}
+) {
+  const id = nextId();
+
+  const result = await db.execute(sql`
+    INSERT INTO invoices (event_id, invoice_number, status, subtotal, tax_rate, tax_amount, total, notes, due_date, sent_at, created_by)
+    VALUES (
+      ${eventId},
+      ${overrides.invoiceNumber || `INV-TEST-${id.toString().padStart(3, '0')}`},
+      ${overrides.status || 'draft'},
+      ${overrides.subtotal || '0.00'},
+      ${overrides.taxRate || '0.0000'},
+      ${overrides.taxAmount || '0.00'},
+      ${overrides.total || '0.00'},
+      ${overrides.notes || null},
+      ${overrides.dueDate?.toISOString() || null},
+      ${overrides.sentAt?.toISOString() || null},
+      ${createdBy}
+    )
+    RETURNING id, event_id, invoice_number, status, subtotal, tax_rate, tax_amount, total, notes, due_date, sent_at, created_by, created_at, updated_at
+  `);
+
+  return result[0] as {
+    id: number;
+    event_id: number;
+    invoice_number: string;
+    status: string;
+    subtotal: string;
+    tax_rate: string;
+    tax_amount: string;
+    total: string;
+    notes: string | null;
+    due_date: Date | null;
+    sent_at: Date | null;
+    created_by: number;
+    created_at: Date;
+    updated_at: Date;
+  };
+}
+
+/**
+ * Create a test invoice line item.
+ */
+export async function createInvoiceLineItem(
+  db: TestDatabase,
+  invoiceId: number,
+  overrides: Partial<{
+    description: string;
+    quantity: string;
+    unitPrice: string;
+    amount: string;
+    sortOrder: number;
+  }> = {}
+) {
+  const id = nextId();
+  const quantity = overrides.quantity || '1.00';
+  const unitPrice = overrides.unitPrice || '100.00';
+  const amount = overrides.amount || (parseFloat(quantity) * parseFloat(unitPrice)).toFixed(2);
+
+  const result = await db.execute(sql`
+    INSERT INTO invoice_line_items (invoice_id, description, quantity, unit_price, amount, sort_order)
+    VALUES (
+      ${invoiceId},
+      ${overrides.description || `Line Item ${id}`},
+      ${quantity},
+      ${unitPrice},
+      ${amount},
+      ${overrides.sortOrder ?? 0}
+    )
+    RETURNING id, invoice_id, description, quantity, unit_price, amount, sort_order, created_at, updated_at
+  `);
+
+  return result[0] as {
+    id: number;
+    invoice_id: number;
+    description: string;
+    quantity: string;
+    unit_price: string;
+    amount: string;
+    sort_order: number;
+    created_at: Date;
+    updated_at: Date;
+  };
+}
+
+/**
+ * Create a test payment.
+ */
+export async function createPayment(
+  db: TestDatabase,
+  invoiceId: number,
+  recordedBy: number,
+  overrides: Partial<{
+    amount: string;
+    method: 'cash' | 'check' | 'credit_card' | 'bank_transfer' | 'other';
+    paymentDate: Date;
+    reference: string;
+    notes: string;
+  }> = {}
+) {
+  const result = await db.execute(sql`
+    INSERT INTO payments (invoice_id, amount, method, payment_date, reference, notes, recorded_by)
+    VALUES (
+      ${invoiceId},
+      ${overrides.amount || '100.00'},
+      ${overrides.method || 'bank_transfer'},
+      ${(overrides.paymentDate || new Date()).toISOString()},
+      ${overrides.reference || null},
+      ${overrides.notes || null},
+      ${recordedBy}
+    )
+    RETURNING id, invoice_id, amount, method, payment_date, reference, notes, recorded_by, created_at, updated_at
+  `);
+
+  return result[0] as {
+    id: number;
+    invoice_id: number;
+    amount: string;
+    method: string;
+    payment_date: Date;
+    reference: string | null;
+    notes: string | null;
+    recorded_by: number;
+    created_at: Date;
+    updated_at: Date;
+  };
+}
+
+/**
  * Convenience: Create a client with an event.
  * Creates a user automatically to satisfy the created_by requirement.
  */

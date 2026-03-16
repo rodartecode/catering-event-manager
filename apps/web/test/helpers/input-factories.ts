@@ -3,6 +3,9 @@ import {
   createClient,
   createCommunication,
   createEvent,
+  createExpense,
+  createInvoice,
+  createPayment,
   createResource,
   createResourceSchedule,
   createTask,
@@ -23,6 +26,9 @@ export interface AuthMatrixData {
   resource: { id: number };
   communication: { id: number };
   scheduleEntry: { id: number };
+  expense: { id: number };
+  invoice: { id: number };
+  payment: { id: number };
 }
 
 /**
@@ -96,6 +102,32 @@ export async function setupAuthMatrixData(db: TestDatabase): Promise<AuthMatrixD
     { taskId: task.id }
   );
 
+  const invoice = await createInvoice(db, event.id, adminUser.id, {
+    invoiceNumber: 'INV-MATRIX-001',
+    status: 'draft',
+    subtotal: '100.00',
+    total: '100.00',
+  });
+
+  // Create a sent invoice for payment recording
+  const sentInvoice = await createInvoice(db, event.id, adminUser.id, {
+    invoiceNumber: 'INV-MATRIX-002',
+    status: 'sent',
+    subtotal: '100.00',
+    total: '100.00',
+  });
+
+  const payment = await createPayment(db, sentInvoice.id, adminUser.id, {
+    amount: '50.00',
+    method: 'bank_transfer',
+  });
+
+  const expense = await createExpense(db, event.id, adminUser.id, {
+    category: 'food_supplies',
+    description: 'Auth Matrix Expense',
+    amount: '100.00',
+  });
+
   return {
     adminUser: { id: adminUser.id, email: adminUser.email },
     managerUser: { id: managerUser.id, email: managerUser.email },
@@ -107,6 +139,9 @@ export async function setupAuthMatrixData(db: TestDatabase): Promise<AuthMatrixD
     resource: { id: resource.id },
     communication: { id: communication.id },
     scheduleEntry: { id: scheduleEntry.id },
+    expense: { id: expense.id },
+    invoice: { id: invoice.id },
+    payment: { id: payment.id },
   };
 }
 
@@ -216,10 +251,47 @@ export function getProcedureInput(
     'clients.disablePortalAccess': { clientId: data.client.id },
     'clients.getPortalUser': { clientId: data.client.id },
 
+    // Expense router
+    'expense.create': {
+      eventId: data.event.id,
+      category: 'food_supplies',
+      description: 'Auth Test Expense',
+      amount: '100.00',
+      expenseDate: new Date('2026-04-01'),
+    },
+    'expense.update': { id: data.expense.id, description: 'Updated Auth Expense' },
+    'expense.delete': { id: data.expense.id },
+    'expense.listByEvent': { eventId: data.event.id },
+    'expense.getEventCostSummary': { eventId: data.event.id },
+
+    // Invoice router
+    'invoice.create': {
+      eventId: data.event.id,
+      lineItems: [{ description: 'Auth Test', quantity: '1.00', unitPrice: '100.00' }],
+    },
+    'invoice.list': {},
+    'invoice.getById': { id: data.invoice.id },
+    'invoice.updateStatus': { id: data.invoice.id, newStatus: 'sent' },
+    'invoice.update': { id: data.invoice.id, notes: 'Updated' },
+    'invoice.delete': { id: data.invoice.id },
+    'invoice.listByEvent': { eventId: data.event.id },
+
+    // Payment router
+    'payment.record': {
+      invoiceId: data.invoice.id,
+      amount: '50.00',
+      method: 'bank_transfer',
+      paymentDate: new Date('2026-04-01'),
+    },
+    'payment.listByInvoice': { invoiceId: data.invoice.id },
+    'payment.delete': { id: data.payment.id },
+
     // Analytics router
     'analytics.eventCompletion': { dateFrom, dateTo },
     'analytics.resourceUtilization': { dateFrom, dateTo },
     'analytics.taskPerformance': { dateFrom, dateTo },
+    'analytics.financialSummary': { dateFrom, dateTo },
+    'analytics.eventProfitability': { dateFrom, dateTo },
 
     // User router
     'user.register': {
@@ -313,6 +385,30 @@ export const allProcedures: ProcedureDefinition[] = [
   { router: 'resource', procedure: 'getAvailable', access: 'protected', type: 'query' },
   { router: 'resource', procedure: 'schedulingServiceHealth', access: 'protected', type: 'query' },
 
+  // Expense router - adminProcedure
+  { router: 'expense', procedure: 'create', access: 'admin', type: 'mutation' },
+  { router: 'expense', procedure: 'update', access: 'admin', type: 'mutation' },
+  { router: 'expense', procedure: 'delete', access: 'admin', type: 'mutation' },
+  // Expense router - protectedProcedure
+  { router: 'expense', procedure: 'listByEvent', access: 'protected', type: 'query' },
+  { router: 'expense', procedure: 'getEventCostSummary', access: 'protected', type: 'query' },
+
+  // Invoice router - adminProcedure
+  { router: 'invoice', procedure: 'create', access: 'admin', type: 'mutation' },
+  { router: 'invoice', procedure: 'updateStatus', access: 'admin', type: 'mutation' },
+  { router: 'invoice', procedure: 'update', access: 'admin', type: 'mutation' },
+  { router: 'invoice', procedure: 'delete', access: 'admin', type: 'mutation' },
+  // Invoice router - protectedProcedure
+  { router: 'invoice', procedure: 'list', access: 'protected', type: 'query' },
+  { router: 'invoice', procedure: 'getById', access: 'protected', type: 'query' },
+  { router: 'invoice', procedure: 'listByEvent', access: 'protected', type: 'query' },
+
+  // Payment router - adminProcedure
+  { router: 'payment', procedure: 'record', access: 'admin', type: 'mutation' },
+  { router: 'payment', procedure: 'delete', access: 'admin', type: 'mutation' },
+  // Payment router - protectedProcedure
+  { router: 'payment', procedure: 'listByInvoice', access: 'protected', type: 'query' },
+
   // Clients router - adminProcedure
   { router: 'clients', procedure: 'create', access: 'admin', type: 'mutation' },
   { router: 'clients', procedure: 'update', access: 'admin', type: 'mutation' },
@@ -333,6 +429,8 @@ export const allProcedures: ProcedureDefinition[] = [
   { router: 'analytics', procedure: 'eventCompletion', access: 'protected', type: 'query' },
   { router: 'analytics', procedure: 'resourceUtilization', access: 'protected', type: 'query' },
   { router: 'analytics', procedure: 'taskPerformance', access: 'protected', type: 'query' },
+  { router: 'analytics', procedure: 'financialSummary', access: 'protected', type: 'query' },
+  { router: 'analytics', procedure: 'eventProfitability', access: 'protected', type: 'query' },
 
   // User router - publicProcedure
   { router: 'user', procedure: 'register', access: 'public', type: 'mutation' },

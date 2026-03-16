@@ -6,6 +6,8 @@ import { CloneEventDialog } from '@/components/events/CloneEventDialog';
 import { EventStatusBadge } from '@/components/events/EventStatusBadge';
 import { EventStatusTimeline } from '@/components/events/EventStatusTimeline';
 import { EventStatusUpdateDialog } from '@/components/events/EventStatusUpdateDialog';
+import { ExpenseList, ExpenseSummaryCard } from '@/components/expenses';
+import { InvoiceList } from '@/components/invoices';
 import { TaskList } from '@/components/tasks';
 import { trpc } from '@/lib/trpc';
 import { useIsAdmin } from '@/lib/use-auth';
@@ -193,10 +195,28 @@ export default function EventDetailPage() {
             <h2 className="text-xl font-semibold mb-4">Tasks</h2>
             <TaskList eventId={eventId} isAdmin={isAdmin} />
           </div>
+
+          {/* Expenses Section */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-xl font-semibold mb-4">Expenses</h2>
+            <ExpenseList eventId={eventId} isAdmin={isAdmin} />
+          </div>
+
+          {/* Invoices Section */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-xl font-semibold mb-4">Invoices</h2>
+            <InvoiceList eventId={eventId} isAdmin={isAdmin} />
+          </div>
         </div>
 
         {/* Sidebar */}
         <div className="space-y-6">
+          {/* Cost Summary */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-xl font-semibold mb-4">Cost Summary</h2>
+            <ExpenseSummaryCard eventId={eventId} />
+          </div>
+
           {/* Status Timeline */}
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-xl font-semibold mb-4">Status History</h2>

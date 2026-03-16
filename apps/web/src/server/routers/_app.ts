@@ -2,6 +2,9 @@ import { router } from '../trpc';
 import { analyticsRouter } from './analytics';
 import { clientsRouter } from './clients';
 import { eventRouter } from './event';
+import { expenseRouter } from './expense';
+import { invoiceRouter } from './invoice';
+import { paymentRouter } from './payment';
 import { portalRouter } from './portal';
 import { resourceRouter } from './resource';
 import { searchRouter } from './search';
@@ -13,6 +16,9 @@ export const appRouter = router({
   event: eventRouter,
   task: taskRouter,
   resource: resourceRouter,
+  expense: expenseRouter,
+  invoice: invoiceRouter,
+  payment: paymentRouter,
   analytics: analyticsRouter,
   clients: clientsRouter,
   user: userRouter,
