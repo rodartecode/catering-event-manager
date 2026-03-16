@@ -1,109 +1,323 @@
 # Feature Backlog
 
-A curated backlog of potential features and improvements for the catering event manager. Ideas to draw from without committing to specific timelines.
+Curated backlog for the catering event manager. Each item includes structured metadata for agent consumption.
 
-**How to use this document:**
-- Items are organized by category with checkboxes for tracking consideration status
-- Check items when actively working on them or when decided against
-- Move completed items to the Archive section with implementation date
-- Move rejected items to Archive with reason
+**Field reference:**
+- **Priority**: P1 (build next) → P4 (future/experimental)
+- **Scope**: S (1-2 files, <1 day) · M (3-6 files, 1-3 days) · L (cross-cutting, 3-7 days) · XL (multi-phase, 1-2 weeks)
+- **Touches**: schema · api · ui · go-service · infra · docs
+- **Depends on**: items that must be completed first (by slug)
+- **Done when**: brief acceptance criteria
 
 ---
 
-## Infrastructure & DevOps
+## P1 — Build Next
 
-| Priority | Status | Item | Description |
-|----------|--------|------|-------------|
-| High | | **Automate Go service deployment** | Currently manual; add Fly.io deployment to CI pipeline |
-| High | | **Staging environment** | Add staging branch with dedicated Vercel deployment |
-| High | ✅ | **Enable RLS on all public tables** | All 13 tables lack Row Level Security; Supabase REST API exposes them. Enable RLS with deny-all policies (app uses direct connection as `postgres` role, which bypasses RLS). Especially urgent for `verification_tokens` which exposes sensitive `token` column. |
-| High | | **Security scanning** | Integrate Snyk or Dependabot for vulnerability scanning |
-| High | | **Container registry** | Publish Docker images to GHCR for versioned deployments |
-| Medium | | **Distributed Turbo caching** | Remote cache for faster CI builds |
-| Medium | | **APM integration** | Sentry for error tracking and performance monitoring |
-| Medium | | **Database backup automation** | Formalize Supabase backup policy and verification |
-| Low | | **Blue-green deployments** | Zero-downtime updates for production |
+### financial-layer
+**Invoicing, cost tracking, and payment recording**
+- Scope: XL
+- Touches: schema, api, ui
+- Depends on: none
+- Done when:
+  - `invoices` table with line items, tax, total; linked to event
+  - `payments` table with amount, date, method; linked to invoice
+  - `expenses` table with category, amount, vendor; linked to event
+  - tRPC routers: `invoice.create`, `invoice.list`, `invoice.getById`, `invoice.updateStatus`; `payment.record`, `payment.listByInvoice`; `expense.create`, `expense.listByEvent`
+  - Invoice PDF export (React-PDF or server-side generation)
+  - Event detail page shows cost summary (quoted vs actual vs profit)
+  - Dashboard analytics card: revenue, outstanding payments, profit margin
+- Notes: This is the biggest functional gap. A catering business needs to know what it quoted, what it spent, and whether it made money. Consider phasing: (1) cost tracking + expenses, (2) invoicing + PDF, (3) payment recording + dashboard.
 
-## Feature Enhancements
+### document-management
+**File uploads attached to events**
+- Scope: L
+- Touches: schema, api, ui
+- Depends on: none
+- Done when:
+  - `documents` table with event_id, name, type (contract/menu/floor_plan/permit/photo), storage_key, uploaded_by
+  - File upload to Supabase Storage (or S3-compatible)
+  - tRPC: `document.upload`, `document.list`, `document.delete`, `document.getDownloadUrl`
+  - Event detail page shows documents section with upload dropzone
+  - Client portal shows shared documents (contracts, finalized menus)
+  - File size limit enforced (10MB default)
+- Notes: Catering runs on documents — contracts, menus, floor plans, dietary sheets, permits. Version history on contracts is a nice-to-have for v2.
 
-### Scheduling & Resources
+### notification-system
+**In-app notifications and email digests**
+- Scope: L
+- Touches: schema, api, ui
+- Depends on: none
+- Done when:
+  - `notifications` table with user_id, type, title, body, read_at, entity_type, entity_id
+  - tRPC: `notification.list`, `notification.markRead`, `notification.markAllRead`, `notification.getUnreadCount`
+  - Bell icon in header with unread count badge
+  - Notification dropdown with grouped items (task assigned, status changed, overdue, follow-up due)
+  - User preferences page: toggle per notification type (in-app, email)
+  - Daily email digest cron for unread notifications
+- Notes: The follow-up cron (`/api/cron/follow-ups`) already exists. This generalizes notifications beyond follow-ups. Start with in-app only, add email digest second.
 
-- [ ] **Multi-event resource pooling** - Optimize resource allocation across concurrent events
-- [ ] **Advanced scheduling algorithms** - Critical path analysis, resource leveling
-- [ ] **Drag-and-drop scheduling UI** - Visual calendar-based resource assignment
-- [ ] **Resource templates** - Predefined resource sets for event types
+---
 
-### Event Management
+## P2 — High Value
 
-- [x] **Event cloning** - Clone existing event configurations as templates (implemented 2026-02-09)
-- [ ] **Bulk operations** - Import/export events, batch status updates
-- [ ] **Document management** - Attach contracts, menus, floor plans to events
-- [ ] **Event checklists** - Custom verification checklists per event type
+### menu-planning
+**Menu items, dietary management, and quantity calculation**
+- Scope: L
+- Touches: schema, api, ui
+- Depends on: none (but pairs well with `financial-layer` for cost basis)
+- Done when:
+  - `menu_items` table: name, description, cost_per_person, category (appetizer/main/dessert/beverage), allergens (array), dietary_tags (vegan/gf/halal/kosher/etc)
+  - `event_menus` junction: event_id, menu_item_id, quantity_override
+  - tRPC: `menu.create`, `menu.list`, `menu.getById`, `menu.update`, `menu.delete`
+  - Event menu builder UI: attach items to event, auto-calculate quantities from `estimated_attendees`
+  - Per-event dietary restriction summary (aggregated from menu items)
+  - Shopping list generation: aggregate ingredients across concurrent events for bulk purchasing
+- Notes: This is the biggest domain differentiator. No generic PM tool handles menus, portions, and dietary restrictions. Menu cost feeds directly into the financial layer's cost basis for invoicing.
 
-### Task Management
+### staff-skills
+**Staff skills matrix and shift availability**
+- Scope: M
+- Touches: schema, api, ui
+- Depends on: none
+- Done when:
+  - `staff_skills` junction: user_id, skill (food_safety_cert/bartender/sommelier/lead_chef/etc)
+  - `staff_availability` table: user_id, day_of_week, start_time, end_time, is_recurring
+  - tRPC: `staff.updateSkills`, `staff.getAvailability`, `staff.setAvailability`, `staff.findAvailable` (filters by skill + time range)
+  - Staff profile page shows skills and weekly availability
+  - Task assignment dialog suggests staff matching required skills + availability
+- Notes: Current `resources` table has `type: staff` but no concept of skills or shift availability. This extends the existing resource system. Feeds into Go scheduler's conflict detection.
 
-- [x] **Task templates** - Auto-generate tasks from event type (implemented 2026-02-03)
-- [ ] **Gantt chart view** - Visual timeline of task dependencies
-- [ ] **Time tracking** - Log actual time spent on tasks
-- [ ] **Recurring tasks** - Tasks that repeat across events or on schedule
+### bulk-operations
+**Import/export events, batch status updates**
+- Scope: M
+- Touches: api, ui
+- Depends on: none
+- Done when:
+  - CSV export for events, clients, tasks, resources (server-side generation)
+  - CSV import for events and clients with validation and error reporting
+  - Batch status update UI: select multiple events/tasks, apply status change
+  - tRPC: `event.exportCsv`, `event.importCsv`, `event.batchUpdateStatus`; same pattern for tasks
+- Notes: Essential for onboarding (importing existing client/event data) and reporting (export to Excel/Google Sheets).
 
-### Communication
+### gantt-chart
+**Visual timeline of task dependencies**
+- Scope: M
+- Touches: ui
+- Depends on: none
+- Done when:
+  - Gantt chart component on event detail page showing tasks on a timeline
+  - Task bars colored by status, connected by dependency arrows
+  - Critical path highlighted
+  - Click task bar to open task detail
+  - Responsive: horizontal scroll for long timelines
+- Notes: Tasks already have `due_date` and `depends_on_task_id`. This is purely a visualization layer. Consider using an existing library (e.g., frappe-gantt, dhtmlx-gantt) vs building custom.
 
-- [ ] **Configurable email notifications** - User-customizable notification preferences
-- [ ] **Email templates** - Branded templates for client communication
-- [ ] **SMS notifications** - Text alerts for urgent items
-- [ ] **In-app notification center** - Centralized notification management
+### drag-drop-scheduling
+**Visual calendar-based resource assignment**
+- Scope: L
+- Touches: ui, api
+- Depends on: none
+- Done when:
+  - Calendar view showing resource schedules (day/week/month)
+  - Drag to create new schedule blocks
+  - Drag to move/resize existing blocks
+  - Conflict detection on drop (calls Go service)
+  - Resource filter sidebar (by type, availability)
+- Notes: High UX impact. The Go scheduler already handles conflict detection — this adds the visual interaction layer. Consider react-big-calendar or @dnd-kit.
 
-## Business Features
+---
 
-### Financial
+## P3 — Domain Differentiators
 
-- [ ] **Invoicing** - Generate and track invoices per event
-- [ ] **Payment tracking** - Record payments, outstanding balances
-- [ ] **Cost tracking** - Track expenses per event for profitability
-- [ ] **Profit margin calculations** - Automated P&L per event
+### kitchen-production
+**Kitchen production scheduling and station allocation**
+- Scope: L
+- Touches: schema, api, ui, go-service
+- Depends on: `menu-planning`
+- Done when:
+  - `kitchen_stations` table: name, type (oven/grill/prep_counter/cold_storage), capacity
+  - `production_tasks` table: menu_item_id, event_id, station_id, start_time, duration, prep_type (marinate/bake/plate/etc)
+  - Production timeline view: work backwards from event time (e.g., "marinate 24h before", "bake 4h before")
+  - Station conflict detection via Go scheduler (stations as schedulable resources)
+  - Auto-generate production tasks from menu items (each dish = set of prep steps)
+- Notes: Extends task templates — menu-driven production templates. This is what separates professional catering software from generic PM tools. Start with manual production task creation, then add auto-generation.
 
-### Vendor Management
+### venue-database
+**Venue profiles with logistics intelligence**
+- Scope: M
+- Touches: schema, api, ui
+- Depends on: none
+- Done when:
+  - `venues` table: name, address, capacity, has_kitchen, kitchen_type, equipment_available (array), parking_notes, load_in_notes, contact_info
+  - `events.venue_id` FK replaces free-text `location` field (keep `location` as fallback for ad-hoc venues)
+  - tRPC: `venue.create`, `venue.list`, `venue.getById`, `venue.update`
+  - Event creation: select venue from database, auto-populate logistics notes
+  - Equipment checklist per venue ("this venue has no oven — add portable oven to resources")
+- Notes: `events.location` is currently a text field. Venue profiles enable reuse and logistics planning. Travel time between venues (for same-day multi-event allocation) is a v2 enhancement.
 
-- [ ] **Vendor database** - Manage external vendors and suppliers
-- [ ] **Vendor assignments** - Assign vendors to events/tasks
-- [ ] **Vendor portal** - Limited access for vendor task management
+### post-event-feedback
+**Client feedback surveys and quality scoring**
+- Scope: S
+- Touches: schema, api, ui
+- Depends on: none
+- Done when:
+  - `event_feedback` table: event_id, client_id, nps_score (0-10), food_rating, service_rating, comments, submitted_at
+  - Auto-send feedback request email when event status → `completed`
+  - Client portal: feedback submission form
+  - Analytics: average NPS, ratings by staff/venue/menu
+- Notes: Closes the loop on the event lifecycle. Correlating quality scores with staff assignments, menu choices, and venues produces actionable insights.
 
-### Multi-Tenancy
+### ai-event-costing
+**Historical cost analysis and anomaly detection**
+- Scope: M
+- Touches: api, ui
+- Depends on: `financial-layer`, `menu-planning`
+- Done when:
+  - Cost comparison endpoint: given event parameters (attendees, menu type, venue), return percentile ranges from historical data
+  - Event creation/editing shows "typical cost range" hint
+  - Flag events whose cost estimate deviates >30% from comparable events
+  - Uses simple statistics (averages, percentiles) — no ML required initially
+- Notes: Needs historical cost data from the financial layer + menu data. Start simple with SQL aggregations. Can evolve to ML-based predictions later.
 
-- [ ] **Organization accounts** - Multiple users under one organization
-- [ ] **White-label portal** - Custom branding for client portal
-- [ ] **Custom role permissions** - Granular permission configuration
+### vendor-management
+**External vendor database and event assignments**
+- Scope: M
+- Touches: schema, api, ui
+- Depends on: none
+- Done when:
+  - `vendors` table: company_name, contact_name, email, phone, service_type, notes
+  - `event_vendors` junction: event_id, vendor_id, role, cost
+  - tRPC: `vendor.create`, `vendor.list`, `vendor.getById`, `vendor.update`, `vendor.assignToEvent`
+  - Event detail page shows assigned vendors with costs
+  - Vendor list page with filtering by service type
+- Notes: Many caterers subcontract (rentals, florals, AV, photography). Tracking vendor assignments per event feeds into cost tracking.
 
-## User Experience
+### time-tracking
+**Log actual time spent on tasks**
+- Scope: M
+- Touches: schema, api, ui
+- Depends on: none
+- Done when:
+  - `time_entries` table: task_id, user_id, started_at, ended_at, duration_minutes, notes
+  - tRPC: `time.start`, `time.stop`, `time.log` (manual entry), `time.listByTask`, `time.listByUser`
+  - Task detail shows time log with total
+  - Timer widget on task card (start/stop)
+  - Analytics: actual vs estimated time per task category
+- Notes: Enables productivity metrics and more accurate future estimates. Pairs with `ai-event-costing` for labor cost predictions.
 
-- [ ] **Mobile-responsive improvements** - Better mobile layouts for field use
-- [ ] **Dark mode** - System/user preference dark theme
-- [ ] **Keyboard shortcuts** - Power user navigation
-- [x] **Advanced search** - Full-text search across all entities (implemented 2026-02-28)
-- [ ] **Customizable dashboard** - User-configurable dashboard widgets
-- [ ] **WebSocket updates** - Replace SSE with WebSocket for real-time
-- [ ] **Collaborative editing** - Multiple users editing same entity
-- [ ] **Presence indicators** - Show who's viewing/editing
-- [ ] **Activity feed** - Recent activity across the system
+---
 
-## AI & Automation
+## P4 — Future / Experimental
 
-- [ ] **Resource suggestions** - AI recommends resources based on event type
-- [ ] **Conflict resolution alternatives** - Suggest alternative resources on conflict
-- [ ] **Prep time predictions** - ML-based task duration estimates
-- [ ] **Smart scheduling** - Auto-schedule based on skills/availability
-- [ ] **Natural language event creation** - Create events from text description
+### client-brief-auto-setup
+**Parse client inquiry into event + menu + resources via LLM**
+- Scope: M
+- Touches: api, ui
+- Depends on: `menu-planning`, `venue-database`
+- Done when:
+  - Text input or email paste → Claude API parses into structured event parameters
+  - Auto-creates event with suggested venue, menu items, resource requirements
+  - User reviews and confirms before saving
+  - Works from natural language: "200-person corporate dinner, downtown venue, vegetarian options, budget $15k"
+- Notes: Builds on event cloning + task templates + menu planning + venue database. Only useful after those foundations exist. Use Claude API (Anthropic SDK) for parsing.
 
-## Analytics & Reporting
+### weather-alerts
+**Weather-aware outdoor event alerts**
+- Scope: S
+- Touches: api, ui
+- Depends on: `venue-database` (for outdoor venue flag)
+- Done when:
+  - Outdoor events flagged with weather check 48h/24h/6h before event
+  - Weather data from public API (Open-Meteo or similar)
+  - Alert banner on event detail page when severe weather forecasted
+  - Notification triggered for event manager
+- Notes: Many catering events are outdoor. Simple API integration with high practical value. Contingency suggestions (tent rental, indoor backup) are v2.
 
-- [ ] **Custom report builder** - User-defined report configurations
-- [ ] **Trend analysis** - Historical performance trends
-- [ ] **Forecasting** - Predict busy periods and resource needs
-- [ ] **Export options** - PDF, Excel export for all reports
-- [ ] **Client lifetime value** - Track revenue per client over time
-- [ ] **Event type comparison** - Compare performance across event types
-- [ ] **Staff performance metrics** - Task completion rates by assignee
+### smart-scheduling
+**Auto-schedule tasks and resources based on skills/availability**
+- Scope: L
+- Touches: go-service, api, ui
+- Depends on: `staff-skills`, `kitchen-production`
+- Done when:
+  - Given an event with tasks, auto-assign staff based on skills + availability
+  - Optimize across concurrent events (minimize travel, balance workload)
+  - User reviews suggested schedule and can adjust
+  - Go service handles optimization algorithm
+- Notes: Requires staff skills and kitchen production data. Constraint satisfaction problem — start with greedy heuristic, not full optimization.
+
+### multi-tenancy
+**Organization accounts and custom roles**
+- Scope: XL
+- Touches: schema, api, ui
+- Depends on: none (but touches everything)
+- Done when:
+  - `organizations` table, all entities scoped to org_id
+  - Custom role permissions (beyond admin/manager/client)
+  - White-label client portal (custom branding per org)
+  - User invitation flow with org context
+- Notes: Major architectural change. Only pursue if targeting multi-customer SaaS. Current single-tenant model works fine for a single catering business.
+
+### collaborative-editing
+**Real-time multi-user editing with presence**
+- Scope: XL
+- Touches: api, ui
+- Depends on: `notification-system`
+- Done when:
+  - WebSocket connection for real-time updates
+  - Presence indicators (who's viewing/editing an entity)
+  - Optimistic updates with conflict resolution
+  - Activity feed showing recent changes across the system
+- Notes: Replaces current polling. High complexity, moderate value for small teams. Consider only if team size grows beyond 5-10 concurrent users.
+
+### custom-reports
+**User-defined report configurations and exports**
+- Scope: L
+- Touches: api, ui
+- Depends on: `financial-layer`
+- Done when:
+  - Report builder UI: select entity type, fields, filters, grouping, date range
+  - PDF and Excel/CSV export
+  - Saved report configurations per user
+  - Scheduled report delivery via email
+- Notes: Prerequisite: financial data to make reports meaningful. Basic export (CSV) should come with `bulk-operations` first.
+
+### recurring-tasks
+**Tasks that repeat across events or on schedule**
+- Scope: M
+- Touches: schema, api, ui
+- Depends on: none
+- Done when:
+  - `task_recurrence` table: task_id, frequency (daily/weekly/monthly), next_due, end_date
+  - Cron generates task instances from recurrence rules
+  - UI for setting recurrence on task creation
+  - Recurring task management page
+- Notes: Useful for maintenance tasks (equipment cleaning, inventory checks) that aren't event-specific.
+
+### mobile-app
+**Mobile-responsive improvements for field use**
+- Scope: L
+- Touches: ui
+- Depends on: none
+- Done when:
+  - All dashboard pages render correctly on mobile viewport
+  - Touch-friendly interactions (larger tap targets, swipe gestures)
+  - Offline-capable task checklist (service worker + local storage)
+  - Camera integration for document upload from phone
+- Notes: Current UI is responsive but not mobile-optimized. Field staff (servers, chefs) need quick task access on phones during events.
+
+---
+
+## Infrastructure
+
+| Priority | Item | Description | Scope |
+|----------|------|-------------|-------|
+| High | **Automate Go service deployment** | Add Fly.io deployment to CI pipeline (currently manual) | M |
+| High | **Security scanning** | Integrate Snyk or Dependabot for vulnerability scanning | S |
+| High | **Container registry** | Publish Docker images to GHCR for versioned deployments | M |
+| Medium | **Distributed Turbo caching** | Remote cache for faster CI builds | S |
+| Medium | **APM integration** | Sentry for error tracking and performance monitoring | M |
+| Medium | **Database backup automation** | Formalize Supabase backup policy and verification | S |
+| Low | **Blue-green deployments** | Zero-downtime updates for production | L |
 
 ---
 
