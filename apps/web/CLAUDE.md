@@ -17,16 +17,24 @@ Next.js 16 + React 19 full-stack application with tRPC v11 API, Next-Auth v5 aut
 ```
 src/
 ├── server/routers/           # tRPC API (→ src/server/CLAUDE.md)
-│   ├── _app.ts              # Root router
-│   ├── event.ts             # Event management (✅ implemented)
+│   ├── _app.ts              # Root router (13 routers)
+│   ├── event.ts             # Event management
 │   ├── task.ts              # Task management
 │   ├── resource.ts          # Resource scheduling
+│   ├── document.ts          # Document management
+│   ├── expense.ts           # Expense tracking
+│   ├── invoice.ts           # Invoicing
+│   ├── payment.ts           # Payments
 │   ├── analytics.ts         # Reporting
-│   └── clients.ts           # Client management
+│   ├── clients.ts           # Client management
+│   └── ...                  # portal, user, search, template
 │
 ├── components/              # Domain-organized UI
 │   ├── events/             # Event components
 │   ├── tasks/              # Task components
+│   ├── documents/          # Document upload/list
+│   ├── expenses/           # Expense tracking
+│   ├── invoices/           # Invoice management
 │   ├── dashboard/          # Layout components
 │   └── auth/               # Auth forms
 │

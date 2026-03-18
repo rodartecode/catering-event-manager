@@ -2,6 +2,7 @@ import type { db as DbType } from '@catering-event-manager/database/client';
 import {
   clients,
   communications,
+  documents,
   eventStatusLog,
   events,
   tasks,
@@ -11,6 +12,7 @@ import { TRPCError } from '@trpc/server';
 import { and, asc, desc, eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { sendMagicLinkEmail } from '@/lib/email';
+import { DOCUMENTS_BUCKET, storageClient } from '@/lib/storage';
 import { createMagicLinkToken } from '../auth';
 import { clientProcedure, publicProcedure, router } from '../trpc';
 
@@ -290,6 +292,75 @@ export const portalRouter = router({
         .orderBy(desc(communications.contactedAt));
 
       return communicationList;
+    }),
+
+  // Get shared documents for an event
+  getEventDocuments: clientProcedure
+    .input(z.object({ eventId: z.number().positive() }))
+    .query(async ({ ctx, input }) => {
+      const { db, clientId } = ctx;
+
+      await verifyEventOwnership(db, input.eventId, clientId);
+
+      const documentList = await db
+        .select({
+          id: documents.id,
+          name: documents.name,
+          type: documents.type,
+          fileSize: documents.fileSize,
+          mimeType: documents.mimeType,
+          createdAt: documents.createdAt,
+        })
+        .from(documents)
+        .where(and(eq(documents.eventId, input.eventId), eq(documents.sharedWithClient, true)))
+        .orderBy(desc(documents.createdAt));
+
+      return documentList;
+    }),
+
+  // Get download URL for a shared document
+  getDocumentDownloadUrl: clientProcedure
+    .input(z.object({ documentId: z.number().positive(), eventId: z.number().positive() }))
+    .query(async ({ ctx, input }) => {
+      const { db, clientId } = ctx;
+
+      await verifyEventOwnership(db, input.eventId, clientId);
+
+      const doc = await db
+        .select({
+          id: documents.id,
+          storageKey: documents.storageKey,
+          name: documents.name,
+          sharedWithClient: documents.sharedWithClient,
+          eventId: documents.eventId,
+        })
+        .from(documents)
+        .where(eq(documents.id, input.documentId))
+        .then((rows) => rows[0]);
+
+      if (!doc || doc.eventId !== input.eventId || !doc.sharedWithClient) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Document not found' });
+      }
+
+      if (!storageClient) {
+        throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Storage not configured' });
+      }
+
+      const { data, error } = await storageClient.storage
+        .from(DOCUMENTS_BUCKET)
+        .createSignedUrl(doc.storageKey, 3600);
+
+      if (error || !data) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to create download URL',
+        });
+      }
+
+      return {
+        url: data.signedUrl,
+        fileName: doc.name,
+      };
     }),
 
   // Get client profile

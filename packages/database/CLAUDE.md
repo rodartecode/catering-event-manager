@@ -21,7 +21,15 @@ src/schema/
 ├── resources.ts         # Independent entity
 ├── task-resources.ts    # Junction table
 ├── resource-schedule.ts # References resources, events, tasks
-└── communications.ts    # References events, clients, users
+├── communications.ts    # References events, clients, users
+├── documents.ts         # References events, users (Supabase Storage)
+├── expenses.ts          # References events, users
+├── invoices.ts          # References events, users
+├── invoice-line-items.ts # References invoices
+├── payments.ts          # References invoices, users
+├── task-templates.ts    # Independent entity
+├── task-template-items.ts # References task-templates
+└── verification-tokens.ts # Portal magic link tokens
 ```
 
 ## Core Enums

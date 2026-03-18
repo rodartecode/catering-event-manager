@@ -13,35 +13,6 @@ Curated backlog for the catering event manager. Each item includes structured me
 
 ## P1 — Build Next
 
-### financial-layer
-**Invoicing, cost tracking, and payment recording**
-- Scope: XL
-- Touches: schema, api, ui
-- Depends on: none
-- Done when:
-  - `invoices` table with line items, tax, total; linked to event
-  - `payments` table with amount, date, method; linked to invoice
-  - `expenses` table with category, amount, vendor; linked to event
-  - tRPC routers: `invoice.create`, `invoice.list`, `invoice.getById`, `invoice.updateStatus`; `payment.record`, `payment.listByInvoice`; `expense.create`, `expense.listByEvent`
-  - Invoice PDF export (React-PDF or server-side generation)
-  - Event detail page shows cost summary (quoted vs actual vs profit)
-  - Dashboard analytics card: revenue, outstanding payments, profit margin
-- Notes: This is the biggest functional gap. A catering business needs to know what it quoted, what it spent, and whether it made money. Consider phasing: (1) cost tracking + expenses, (2) invoicing + PDF, (3) payment recording + dashboard.
-
-### document-management
-**File uploads attached to events**
-- Scope: L
-- Touches: schema, api, ui
-- Depends on: none
-- Done when:
-  - `documents` table with event_id, name, type (contract/menu/floor_plan/permit/photo), storage_key, uploaded_by
-  - File upload to Supabase Storage (or S3-compatible)
-  - tRPC: `document.upload`, `document.list`, `document.delete`, `document.getDownloadUrl`
-  - Event detail page shows documents section with upload dropzone
-  - Client portal shows shared documents (contracts, finalized menus)
-  - File size limit enforced (10MB default)
-- Notes: Catering runs on documents — contracts, menus, floor plans, dietary sheets, permits. Version history on contracts is a nice-to-have for v2.
-
 ### notification-system
 **In-app notifications and email digests**
 - Scope: L
@@ -327,6 +298,8 @@ Curated backlog for the catering event manager. Each item includes structured me
 
 | Date | Item | Notes |
 |------|------|-------|
+| 2026-03-18 | Document management | File uploads via Supabase Storage with presigned URLs, client portal sharing, drag-and-drop UI |
+| 2026-03-16 | Financial layer | Expenses, invoicing with PDF, payments with auto-status transitions, profitability analytics |
 | 2026-03-15 | Enable RLS on all public tables | Deny-all RLS on 13 tables; blocks Supabase REST API, app unaffected (postgres superuser bypasses RLS) |
 | 2026-02-28 | Advanced search | Full-text ILIKE search across events, clients, tasks, resources |
 | 2026-02-09 | Event cloning | Deep-copy events with task dependency remapping |

@@ -38,6 +38,13 @@ LOG_LEVEL=info                              # debug, info, warn, error
 CORS_ALLOWED_ORIGINS="http://localhost:3000"
 ```
 
+### Document Storage (Supabase)
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL="https://your-project.supabase.co"
+SUPABASE_SERVICE_ROLE_KEY="your-service-role-key"
+```
+
 ## Optional Variables
 
 ```bash

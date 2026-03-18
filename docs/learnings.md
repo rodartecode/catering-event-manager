@@ -162,7 +162,7 @@ export default tseslint.config(
 - `specs/*/tasks.md` (Tests header section)
 - Run `pnpm test` and `go test ./...` to get accurate counts
 
-**Context**: Current status (2026-02-01): 646 TypeScript tests, 41 Go tests
+**Context**: Current status (2026-03-18): 866 TypeScript tests, 41 Go tests
 
 ---
 
@@ -185,3 +185,9 @@ Example:
 **Solution**: Required explicit `httpSubscriptionLink` in tRPC client config - the default client doesn't include SSE support
 **Context**: Always check tRPC client links when subscriptions aren't working; import from `@trpc/client/links/httpSubscriptionLink`
 ```
+
+### [2026-03-16] Presigned URL upload pattern for document management
+
+**Problem**: Uploading files through tRPC requires base64 encoding, which adds ~33% overhead for large files
+**Solution**: Two-step presigned URL flow: `createUploadUrl` (tRPC mutation) → client PUTs file directly to Supabase Storage → `confirmUpload` (tRPC mutation) records metadata in DB
+**Context**: Use this pattern for any file upload feature. The storage client (`@/lib/storage`) is server-only. Mock `@/lib/storage` in tests with `vi.mock`. Storage key format: `events/{eventId}/{uuid}/{sanitizedFileName}`

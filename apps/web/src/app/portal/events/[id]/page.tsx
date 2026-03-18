@@ -232,6 +232,79 @@ function EventTasks({ eventId }: { eventId: number }) {
   );
 }
 
+function EventDocuments({ eventId }: { eventId: number }) {
+  const { data: documents, isLoading } = trpc.portal.getEventDocuments.useQuery({ eventId });
+
+  if (isLoading) {
+    return <div className="animate-pulse h-32 bg-gray-100 rounded" />;
+  }
+
+  if (!documents || documents.length === 0) {
+    return <p className="text-gray-500 text-sm">No documents shared yet.</p>;
+  }
+
+  function formatFileSize(bytes: number): string {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  return (
+    <ul className="divide-y divide-gray-200">
+      {documents.map((doc) => (
+        <li key={doc.id} className="py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-gray-100 rounded-full text-gray-600">
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+            </div>
+            <div>
+              <p className="text-sm text-gray-900">{doc.name}</p>
+              <p className="text-xs text-gray-500">{formatFileSize(doc.fileSize)}</p>
+            </div>
+          </div>
+          <PortalDocumentDownload documentId={doc.id} eventId={eventId} />
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function PortalDocumentDownload({ documentId, eventId }: { documentId: number; eventId: number }) {
+  const utils = trpc.useUtils();
+
+  async function handleDownload() {
+    try {
+      const result = await utils.portal.getDocumentDownloadUrl.fetch({ documentId, eventId });
+      window.open(result.url, '_blank');
+    } catch {
+      // silently fail for portal users
+    }
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={handleDownload}
+      className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+    >
+      Download
+    </button>
+  );
+}
+
 function EventCommunications({ eventId }: { eventId: number }) {
   const { data: communications, isLoading } = trpc.portal.getEventCommunications.useQuery({
     eventId,
@@ -559,6 +632,12 @@ export default function PortalEventDetailPage() {
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Tasks</h2>
           <EventTasks eventId={eventId} />
         </div>
+      </div>
+
+      {/* Shared Documents */}
+      <div className="bg-white rounded-lg shadow p-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Documents</h2>
+        <EventDocuments eventId={eventId} />
       </div>
 
       {/* Communications */}

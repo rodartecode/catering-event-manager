@@ -339,6 +339,54 @@ export async function createCommunication(
 }
 
 /**
+ * Create a test document.
+ */
+export async function createDocument(
+  db: TestDatabase,
+  eventId: number,
+  uploadedBy: number,
+  overrides: Partial<{
+    name: string;
+    type: 'contract' | 'menu' | 'floor_plan' | 'permit' | 'photo';
+    storageKey: string;
+    fileSize: number;
+    mimeType: string;
+    sharedWithClient: boolean;
+  }> = {}
+) {
+  const id = nextId();
+
+  const result = await db.execute(sql`
+    INSERT INTO documents (event_id, name, type, storage_key, file_size, mime_type, shared_with_client, uploaded_by)
+    VALUES (
+      ${eventId},
+      ${overrides.name || `Document ${id}`},
+      ${overrides.type || 'contract'},
+      ${overrides.storageKey || `events/${eventId}/${id}/file.pdf`},
+      ${overrides.fileSize || 1024},
+      ${overrides.mimeType || 'application/pdf'},
+      ${overrides.sharedWithClient || false},
+      ${uploadedBy}
+    )
+    RETURNING id, event_id, name, type, storage_key, file_size, mime_type, shared_with_client, uploaded_by, created_at, updated_at
+  `);
+
+  return result[0] as {
+    id: number;
+    event_id: number;
+    name: string;
+    type: string;
+    storage_key: string;
+    file_size: number;
+    mime_type: string;
+    shared_with_client: boolean;
+    uploaded_by: number;
+    created_at: Date;
+    updated_at: Date;
+  };
+}
+
+/**
  * Create a test expense.
  */
 export async function createExpense(

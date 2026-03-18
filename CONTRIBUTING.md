@@ -14,7 +14,7 @@ Thank you for your interest in contributing! This guide will help you get starte
 
 ### Current Tech Stack
 
-This project uses the latest stable versions (as of February 9, 2026):
+This project uses the latest stable versions (as of March 18, 2026):
 
 | Component | Version | Purpose |
 | --------- | ------- | ------- |
@@ -216,7 +216,7 @@ git push origin main
 
 ### Current Test Status
 
-✅ **646 TypeScript tests passing** across 41 test files
+✅ **866 TypeScript tests passing** across 52 test files
 ✅ **46 Go tests passing** with 91.7% scheduler coverage
 ✅ **Complete test infrastructure** with PostgreSQL TestContainers
 

@@ -2,7 +2,7 @@
 
 **Status**: ✅ 100% Complete - Production Ready
 
-**Last Updated**: 2026-02-01
+**Last Updated**: 2026-03-18
 
 ---
 
@@ -37,16 +37,19 @@
 - Event lifecycle management (inquiry → follow-up)
 - Task management with dependencies
 - Resource scheduling with conflict detection
-- Analytics dashboard with caching
-- Client portal with magic link auth
+- Financial management (expenses, invoicing, payments)
+- Document management (Supabase Storage, client sharing)
+- Analytics dashboard with caching and profitability
+- Client portal with magic link auth and shared documents
 - User management with role-based access
+- Global search across all entities
 - Real-time updates (polling + subscriptions ready)
 
 ### 🧪 Quality Assurance
 
 | Test Category | Status | Coverage |
 |---------------|--------|----------|
-| **TypeScript Tests** | ✅ 646 tests passing | Vitest + TestContainers |
+| **TypeScript Tests** | ✅ 866 tests passing | Vitest + TestContainers |
 | **Go Tests** | ✅ 41 tests passing | 91.7% scheduler coverage |
 | **Integration Tests** | ✅ Cross-service validated | Real Go ↔ Next.js |
 | **E2E Tests** | ✅ Playwright workflows | 4 key user journeys |

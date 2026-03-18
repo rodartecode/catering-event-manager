@@ -128,6 +128,14 @@ async function runMigrations(db: TestDatabase): Promise<void> {
     END $$;
   `);
 
+  await db.execute(sql`
+    DO $$ BEGIN
+      CREATE TYPE document_type AS ENUM ('contract', 'menu', 'floor_plan', 'permit', 'photo');
+    EXCEPTION
+      WHEN duplicate_object THEN null;
+    END $$;
+  `);
+
   // Create tables (clients first for FK references)
   await db.execute(sql`
     CREATE TABLE IF NOT EXISTS clients (
@@ -362,6 +370,22 @@ async function runMigrations(db: TestDatabase): Promise<void> {
     )
   `);
 
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS documents (
+      id SERIAL PRIMARY KEY,
+      event_id INTEGER NOT NULL REFERENCES events(id),
+      name VARCHAR(255) NOT NULL,
+      type document_type NOT NULL,
+      storage_key VARCHAR(1000) NOT NULL,
+      file_size INTEGER NOT NULL,
+      mime_type VARCHAR(255) NOT NULL,
+      shared_with_client BOOLEAN NOT NULL DEFAULT false,
+      uploaded_by INTEGER NOT NULL REFERENCES users(id),
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
   // Portal magic link tokens table
   await db.execute(sql`
     CREATE TABLE IF NOT EXISTS verification_tokens (
@@ -384,6 +408,7 @@ async function runMigrations(db: TestDatabase): Promise<void> {
     'task_resources',
     'resource_schedule',
     'communications',
+    'documents',
     'expenses',
     'payments',
     'invoice_line_items',
@@ -404,7 +429,7 @@ async function runMigrations(db: TestDatabase): Promise<void> {
 export async function cleanDatabase(db: TestDatabase): Promise<void> {
   // Truncate tables in order (respecting foreign key constraints)
   await db.execute(
-    sql`TRUNCATE verification_tokens, communications, payments, invoice_line_items, invoices, expenses, resource_schedule, task_resources, tasks, event_status_log, events, resources, users, clients, task_template_items, task_templates RESTART IDENTITY CASCADE`
+    sql`TRUNCATE verification_tokens, documents, communications, payments, invoice_line_items, invoices, expenses, resource_schedule, task_resources, tasks, event_status_log, events, resources, users, clients, task_template_items, task_templates RESTART IDENTITY CASCADE`
   );
 }
 

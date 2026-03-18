@@ -1,5 +1,6 @@
 export * from './clients'; // Must be before users due to FK reference
 export * from './communications';
+export * from './documents';
 export * from './event-status-log';
 export * from './events';
 export * from './expenses';

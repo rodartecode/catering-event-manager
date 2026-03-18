@@ -1,10 +1,10 @@
 # API Documentation
 
-**Last updated**: 2026-02-09
-**Version**: 1.0
+**Last updated**: 2026-03-18
+**Version**: 1.1
 **Base URL**: `http://localhost:3000/api/trpc` (dev) | `https://catering-dev.vercel.app/api/trpc` (prod)
 
-This document describes the complete tRPC API for the production-ready Catering Event Manager system. All 8 development phases are complete with 44 total procedures implemented.
+This document describes the complete tRPC API for the production-ready Catering Event Manager system. 13 routers with 81 procedures implemented.
 
 ## Authentication
 
@@ -18,16 +18,21 @@ The API uses Next-Auth v5 session-based authentication with three roles:
 
 | Router | Purpose | Procedures | Auth | Status |
 |--------|---------|------------|------|--------|
-| `event` | Event lifecycle management | 8 procedures | admin/protected | ✅ 100% Complete |
-| `task` | Task management & assignment | 6 procedures | admin/protected | ✅ 100% Complete |
-| `resource` | Resource scheduling & conflicts | 7 procedures | admin/protected | ✅ 100% Complete |
-| `analytics` | Reporting & data analysis | 3 procedures | protected | ✅ 100% Complete |
-| `clients` | Client & communication management | 10 procedures | admin/protected | ✅ 100% Complete |
-| `user` | User management | 3 procedures | protected | ✅ 100% Complete |
-| `portal` | Client portal (read-only access) | 7 procedures | client | ✅ 100% Complete |
-| `template` | Task template auto-generation | varies | admin | ✅ 100% Complete |
+| `event` | Event lifecycle management | 8 procedures | admin/protected | ✅ Complete |
+| `task` | Task management & assignment | 14 procedures | admin/protected | ✅ Complete |
+| `resource` | Resource scheduling & conflicts | 9 procedures | admin/protected | ✅ Complete |
+| `document` | Document management & storage | 6 procedures | admin/protected | ✅ Complete |
+| `expense` | Expense tracking | 5 procedures | admin/protected | ✅ Complete |
+| `invoice` | Invoicing & PDF export | 7 procedures | admin/protected | ✅ Complete |
+| `payment` | Payment recording | 3 procedures | admin/protected | ✅ Complete |
+| `analytics` | Reporting & data analysis | 5 procedures | protected | ✅ Complete |
+| `clients` | Client & communication management | 13 procedures | admin/protected | ✅ Complete |
+| `user` | User management | 1 procedure | public | ✅ Complete |
+| `portal` | Client portal (read-only access) | 10 procedures | client/public | ✅ Complete |
+| `template` | Task template auto-generation | 2 procedures | admin | ✅ Complete |
+| `search` | Global search | 1 procedure | protected | ✅ Complete |
 
-**Total**: 44+ procedures across 8 routers | **Test Coverage**: 646 tests passing | **Production Status**: Live on Vercel
+**Total**: 81 procedures across 13 routers | **Test Coverage**: 866 tests passing | **Production Status**: Live on Vercel
 
 ---
 
@@ -929,7 +934,7 @@ Example error response:
 
 ✅ **Comprehensive testing infrastructure implemented:**
 
-- **TypeScript Tests**: **646 tests** across 41 test files (tRPC routers + React components)
+- **TypeScript Tests**: **866 tests** across 52 test files (tRPC routers + React components)
 - **Go Service Tests**: **46 tests** with 91.7% scheduler coverage
 - **Integration Tests**: Real database testing for both TypeScript and Go services
 

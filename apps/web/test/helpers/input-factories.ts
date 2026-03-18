@@ -2,6 +2,7 @@ import type { TestDatabase } from './db';
 import {
   createClient,
   createCommunication,
+  createDocument,
   createEvent,
   createExpense,
   createInvoice,
@@ -26,6 +27,7 @@ export interface AuthMatrixData {
   resource: { id: number };
   communication: { id: number };
   scheduleEntry: { id: number };
+  document: { id: number };
   expense: { id: number };
   invoice: { id: number };
   payment: { id: number };
@@ -122,6 +124,11 @@ export async function setupAuthMatrixData(db: TestDatabase): Promise<AuthMatrixD
     method: 'bank_transfer',
   });
 
+  const document = await createDocument(db, event.id, adminUser.id, {
+    name: 'Auth Matrix Document',
+    type: 'contract',
+  });
+
   const expense = await createExpense(db, event.id, adminUser.id, {
     category: 'food_supplies',
     description: 'Auth Matrix Expense',
@@ -139,6 +146,7 @@ export async function setupAuthMatrixData(db: TestDatabase): Promise<AuthMatrixD
     resource: { id: resource.id },
     communication: { id: communication.id },
     scheduleEntry: { id: scheduleEntry.id },
+    document: { id: document.id },
     expense: { id: expense.id },
     invoice: { id: invoice.id },
     payment: { id: payment.id },
@@ -251,6 +259,27 @@ export function getProcedureInput(
     'clients.disablePortalAccess': { clientId: data.client.id },
     'clients.getPortalUser': { clientId: data.client.id },
 
+    // Document router
+    'document.createUploadUrl': {
+      eventId: data.event.id,
+      fileName: 'test.pdf',
+      fileSize: 1024,
+      mimeType: 'application/pdf',
+      type: 'contract',
+    },
+    'document.confirmUpload': {
+      eventId: data.event.id,
+      name: 'Auth Test Document',
+      type: 'contract',
+      storageKey: `events/${data.event.id}/uuid/test.pdf`,
+      fileSize: 1024,
+      mimeType: 'application/pdf',
+    },
+    'document.listByEvent': { eventId: data.event.id },
+    'document.delete': { id: data.document.id },
+    'document.getDownloadUrl': { id: data.document.id },
+    'document.toggleSharing': { id: data.document.id },
+
     // Expense router
     'expense.create': {
       eventId: data.event.id,
@@ -308,6 +337,8 @@ export function getProcedureInput(
     'portal.getEventTimeline': { eventId: data.event.id },
     'portal.getEventTasks': { eventId: data.event.id },
     'portal.getEventCommunications': { eventId: data.event.id },
+    'portal.getEventDocuments': { eventId: data.event.id },
+    'portal.getDocumentDownloadUrl': { documentId: data.document.id, eventId: data.event.id },
     'portal.getProfile': undefined,
   };
 
@@ -385,6 +416,15 @@ export const allProcedures: ProcedureDefinition[] = [
   { router: 'resource', procedure: 'getAvailable', access: 'protected', type: 'query' },
   { router: 'resource', procedure: 'schedulingServiceHealth', access: 'protected', type: 'query' },
 
+  // Document router - adminProcedure
+  { router: 'document', procedure: 'createUploadUrl', access: 'admin', type: 'mutation' },
+  { router: 'document', procedure: 'confirmUpload', access: 'admin', type: 'mutation' },
+  { router: 'document', procedure: 'delete', access: 'admin', type: 'mutation' },
+  { router: 'document', procedure: 'toggleSharing', access: 'admin', type: 'mutation' },
+  // Document router - protectedProcedure
+  { router: 'document', procedure: 'listByEvent', access: 'protected', type: 'query' },
+  { router: 'document', procedure: 'getDownloadUrl', access: 'protected', type: 'query' },
+
   // Expense router - adminProcedure
   { router: 'expense', procedure: 'create', access: 'admin', type: 'mutation' },
   { router: 'expense', procedure: 'update', access: 'admin', type: 'mutation' },
@@ -444,5 +484,7 @@ export const allProcedures: ProcedureDefinition[] = [
   { router: 'portal', procedure: 'getEventTimeline', access: 'client', type: 'query' },
   { router: 'portal', procedure: 'getEventTasks', access: 'client', type: 'query' },
   { router: 'portal', procedure: 'getEventCommunications', access: 'client', type: 'query' },
+  { router: 'portal', procedure: 'getEventDocuments', access: 'client', type: 'query' },
+  { router: 'portal', procedure: 'getDocumentDownloadUrl', access: 'client', type: 'query' },
   { router: 'portal', procedure: 'getProfile', access: 'client', type: 'query' },
 ];

@@ -2,6 +2,7 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { DocumentList } from '@/components/documents';
 import { CloneEventDialog } from '@/components/events/CloneEventDialog';
 import { EventStatusBadge } from '@/components/events/EventStatusBadge';
 import { EventStatusTimeline } from '@/components/events/EventStatusTimeline';
@@ -206,6 +207,12 @@ export default function EventDetailPage() {
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-xl font-semibold mb-4">Invoices</h2>
             <InvoiceList eventId={eventId} isAdmin={isAdmin} />
+          </div>
+
+          {/* Documents Section */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-xl font-semibold mb-4">Documents</h2>
+            <DocumentList eventId={eventId} isAdmin={isAdmin} />
           </div>
         </div>
 

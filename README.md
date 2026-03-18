@@ -2,7 +2,7 @@
 
 **Production-ready event lifecycle management system** for catering companies - from initial inquiry to post-event follow-up.
 
-**Last updated**: February 9, 2026
+**Last updated**: March 18, 2026
 
 ## Architecture
 
@@ -261,10 +261,10 @@ pnpm test:ui
 pnpm test:coverage
 ```
 
-**Test Results** (as of February 9, 2026):
+**Test Results** (as of March 18, 2026):
 
-- ✅ **646 tests passing** across 41 test files
-- ✅ **8 tRPC routers fully tested** (event, task, resource, clients, analytics, user, portal, template)
+- ✅ **866 tests passing** across 52 test files
+- ✅ **13 tRPC routers fully tested** (event, task, resource, document, expense, invoice, payment, clients, analytics, user, portal, template, search)
 - ✅ **19 React component test suites** covering auth, events, tasks, resources, clients, analytics, dashboard
 - ✅ Complete test infrastructure with PostgreSQL TestContainers
 - ✅ Zero breaking changes after Zod 4 upgrade (all error handling updated)
@@ -323,7 +323,7 @@ pnpm test:e2e:ui
 
 **Coverage achieved**:
 
-- **tRPC routers**: 327+ tests across 7 routers
+- **tRPC routers**: 560+ tests across 13 routers
 - **React components**: 232+ tests across 19+ component files
 - **Go scheduler**: 91.7% coverage (exceeds 80% target)
 - **Critical algorithms**: 100% tested (conflict detection, availability)
@@ -366,8 +366,10 @@ pnpm test:quality:update
 - **👥 Resource Scheduling** - Staff/equipment scheduling with automated conflict detection (sub-100ms)
 - **📊 Analytics & Reporting** - Event completion rates, resource utilization, task performance with CSV export capability
 - **💬 Client Communication** - Communication history, follow-up scheduling, overdue notifications
+- **💰 Financial Management** - Expenses, invoicing with PDF export, payments with auto-status transitions, profitability analytics
+- **📎 Document Management** - File uploads via Supabase Storage (contracts, menus, floor plans, permits, photos) with client portal sharing
 - **🔐 Role-Based Authentication** - Administrator/Manager/Client roles with Next-Auth v5
-- **🏢 Client Portal** - Magic link authentication for clients to view their events and status
+- **🏢 Client Portal** - Magic link authentication for clients to view their events, documents, and status
 
 ### Technical Capabilities
 
@@ -395,9 +397,9 @@ pnpm test:quality:update
 
 ### 📊 Current Implementation Metrics
 
-- **8 tRPC API routers** with 44+ procedures (fully tested)
-- **14 database tables** with optimized indexes (PostgreSQL 17)
-- **60+ React components** across 7 feature areas
+- **13 tRPC API routers** with 81 procedures (fully tested)
+- **18 database tables** with optimized indexes (PostgreSQL 17)
+- **80+ React components** across 12 feature areas
 - **5 main dashboard sections** (Events, Tasks, Resources, Clients, Analytics)
 - **Complete testing infrastructure** (Vitest + TestContainers + Playwright)
 - **Full CRUD operations** for all entities
@@ -597,22 +599,33 @@ Before production deployment:
 - [ ] Review CSP for any required external resources
 - [ ] Test security headers at [securityheaders.com](https://securityheaders.com/)
 
-## Recent Updates (February 9, 2026)
+## Recent Updates (March 18, 2026)
+
+### Document Management (March 18)
+
+- File uploads attached to events via Supabase Storage with presigned URLs
+- Drag-and-drop upload dialog, client portal document sharing
+- 6 new tRPC procedures + 2 portal procedures
+- 20 new router tests + auth matrix coverage
+
+### Financial Layer (March 16)
+
+- Complete expense tracking, invoicing with PDF export, payment recording
+- Auto-status transitions (paid when payments cover total)
+- Profitability analytics: `financialSummary` and `eventProfitability` endpoints
+- 3 new routers (expense, invoice, payment) with 15 procedures
+
+### Security Hardening (March 15)
+
+- Row Level Security enabled on all public tables
+- Advanced search with full-text ILIKE across all entities
+- Dependency updates: testcontainers-go v0.41.0, jsdom 28.0.0
 
 ### Infrastructure & DevOps Hardening (February 8-9)
 
 - Upgraded Go to 1.25.7, Fiber to v3.0.0 stable, Biome to 2.3.14
-- Aligned Go version across CI, Dockerfile, and go.mod
 - Added staging environment (Vercel + Fly.io + Supabase)
 - Configured Dependabot for automated dependency updates
-- Fixed Docker build issues (empty directories, config package refs)
-- All CI jobs passing on both `main` and `staging` branches
-
-### Production Database Seeded (February 2)
-
-- Production database populated with comprehensive demo data
-- Demo accounts ready for testing (admin@example.com, manager@example.com)
-- Automated database migration deployment to production via CI
 
 ### Major Package Upgrades (January 25, 2026)
 

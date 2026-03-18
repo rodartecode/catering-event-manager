@@ -41,10 +41,15 @@ src/server/routers/
 ├── event.ts       # Event management
 ├── task.ts        # Task management
 ├── resource.ts    # Resource scheduling
-├── analytics.ts   # Reporting
+├── document.ts    # Document management (Supabase Storage)
+├── expense.ts     # Expense tracking
+├── invoice.ts     # Invoicing & PDF export
+├── payment.ts     # Payment recording
+├── analytics.ts   # Reporting & profitability
 ├── clients.ts     # Client communication
 ├── user.ts        # User management
 ├── portal.ts      # Client portal (read-only)
+├── search.ts      # Global search
 └── template.ts    # Task templates
 ```
 

@@ -1,8 +1,8 @@
 # Component Architecture Guide
 
-**Last updated**: 2026-02-01
+**Last updated**: 2026-03-18
 
-A comprehensive guide to the 69 React components that make up the production-ready catering event management system's user interface.
+A comprehensive guide to the 86 React components that make up the production-ready catering event management system's user interface.
 
 ## Table of Contents
 
@@ -18,14 +18,19 @@ Components are organized by feature domain in `apps/web/src/components/`:
 
 ```
 src/components/
-├── auth/                    # Authentication & user management (2 components)
-├── dashboard/              # Main navigation & layout (3 components)
-├── events/                 # Event lifecycle management (8 components)
-├── tasks/                  # Task management & assignment (9 components)
-├── resources/              # Resource scheduling (7 components)
-├── clients/                # Client communication (8 components)
+├── a11y/                   # Accessibility helpers (1 component)
+├── auth/                   # Authentication & user management (2 components)
 ├── analytics/              # Reports & data visualization (6 components)
-└── ui/                     # Reusable UI primitives (15 components)
+├── clients/                # Client communication (8 components)
+├── dashboard/              # Main navigation & layout (3 components)
+├── documents/              # Document management & uploads (3 components)
+├── events/                 # Event lifecycle management (8 components)
+├── expenses/               # Expense tracking (3 components)
+├── invoices/               # Invoicing & PDF (4 components)
+├── payments/               # Payment recording (1 component)
+├── resources/              # Resource scheduling (7 components)
+├── search/                 # Global search (2 components)
+└── tasks/                  # Task management & assignment (9 components)
 ```
 
 ## Component Categories
