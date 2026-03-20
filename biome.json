@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.3.14/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.4.8/schema.json",
   "assist": { "actions": { "source": { "organizeImports": "on" } } },
   "linter": {
     "enabled": false
@@ -33,6 +33,7 @@
       "!**/*.config.js",
       "!**/*.config.ts",
       "!**/.claude/**",
+      "!**/.vercel/**",
       "!**/next-env.d.ts",
       "!**/migrations/meta/**"
     ]

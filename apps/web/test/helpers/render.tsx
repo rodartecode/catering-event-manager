@@ -102,9 +102,6 @@ function customRender(ui: ReactElement, options: CustomRenderOptions = {}) {
 
 // Re-export everything from testing-library
 export * from '@testing-library/react';
-
 // Override render with our custom version
-export { customRender as render };
-
 // Export utilities for advanced use cases
-export { createTestQueryClient, createMockTrpcClient };
+export { createMockTrpcClient, createTestQueryClient, customRender as render };
