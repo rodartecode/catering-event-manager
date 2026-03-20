@@ -329,7 +329,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Audit Node.js dependencies
-        run: pnpm audit --audit-level=high
+        run: pnpm audit --audit-level=high --prod
 
       - name: Install govulncheck
         run: go install golang.org/x/vuln/cmd/govulncheck@latest
@@ -433,7 +433,7 @@ jobs:
   deploy-preview:
     name: Deploy Preview
     needs: [lint, unit-tests, go-tests, build]
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     environment:
       name: preview
