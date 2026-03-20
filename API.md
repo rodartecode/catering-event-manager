@@ -1,10 +1,10 @@
 # API Documentation
 
-**Last updated**: 2026-03-18
+**Last updated**: 2026-03-19
 **Version**: 1.1
 **Base URL**: `http://localhost:3000/api/trpc` (dev) | `https://catering-dev.vercel.app/api/trpc` (prod)
 
-This document describes the complete tRPC API for the production-ready Catering Event Manager system. 13 routers with 81 procedures implemented.
+This document describes the complete tRPC API for the production-ready Catering Event Manager system. 14 routers with 97 procedures implemented.
 
 ## Authentication
 
@@ -24,15 +24,16 @@ The API uses Next-Auth v5 session-based authentication with three roles:
 | `document` | Document management & storage | 6 procedures | admin/protected | ✅ Complete |
 | `expense` | Expense tracking | 5 procedures | admin/protected | ✅ Complete |
 | `invoice` | Invoicing & PDF export | 7 procedures | admin/protected | ✅ Complete |
+| `menu` | Menu planning & dietary tracking | 15 procedures | admin/protected | ✅ Complete |
 | `payment` | Payment recording | 3 procedures | admin/protected | ✅ Complete |
 | `analytics` | Reporting & data analysis | 5 procedures | protected | ✅ Complete |
 | `clients` | Client & communication management | 13 procedures | admin/protected | ✅ Complete |
 | `user` | User management | 1 procedure | public | ✅ Complete |
-| `portal` | Client portal (read-only access) | 10 procedures | client/public | ✅ Complete |
+| `portal` | Client portal (read-only access) | 11 procedures | client/public | ✅ Complete |
 | `template` | Task template auto-generation | 2 procedures | admin | ✅ Complete |
 | `search` | Global search | 1 procedure | protected | ✅ Complete |
 
-**Total**: 81 procedures across 13 routers | **Test Coverage**: 866 tests passing | **Production Status**: Live on Vercel
+**Total**: 97 procedures across 14 routers | **Test Coverage**: 943 tests passing | **Production Status**: Live on Vercel
 
 ---
 
@@ -421,6 +422,48 @@ Manages staff, equipment, and resource scheduling with conflict detection.
 
 ---
 
+## Menu Router (`menu`)
+
+Manages global menu item catalog, per-event menus with dietary tracking, cost estimation, and cross-event shopping lists.
+
+### Catalog CRUD
+
+| Procedure | Auth | Type | Description |
+|-----------|------|------|-------------|
+| `menu.createItem` | Admin | Mutation | Create global menu item (name, cost, category, allergens, dietary tags) |
+| `menu.updateItem` | Admin | Mutation | Update menu item fields |
+| `menu.deleteItem` | Admin | Mutation | Soft-delete (sets `is_active=false`) |
+| `menu.listItems` | Protected | Query | List items, filterable by category and active status |
+| `menu.getItemById` | Protected | Query | Get single menu item |
+
+### Event Menu Management
+
+| Procedure | Auth | Type | Description |
+|-----------|------|------|-------------|
+| `menu.createEventMenu` | Admin | Mutation | Create named menu for event (e.g., "Dinner Service") |
+| `menu.updateEventMenu` | Admin | Mutation | Update menu name/notes/sort order |
+| `menu.deleteEventMenu` | Admin | Mutation | Delete menu (CASCADE removes items) |
+| `menu.addItemToEventMenu` | Admin | Mutation | Attach catalog item to event menu (rejects inactive items) |
+| `menu.removeItemFromEventMenu` | Admin | Mutation | Remove item from event menu |
+| `menu.updateEventMenuItem` | Admin | Mutation | Update quantity override or notes |
+| `menu.listEventMenus` | Protected | Query | List all menus for event with items joined |
+
+### Analytics & Aggregation
+
+| Procedure | Auth | Type | Description |
+|-----------|------|------|-------------|
+| `menu.getEventMenuCostEstimate` | Protected | Query | Calculate total menu cost (cost_per_person × quantity, with attendee fallback) |
+| `menu.getEventDietarySummary` | Protected | Query | Aggregate allergens and dietary tags across event's menu items |
+| `menu.getShoppingList` | Protected | Query | Cross-event item aggregation by date range for bulk purchasing |
+
+**Key behaviors:**
+- Menu items use soft-delete (`is_active=false`) since they may be referenced by event menus
+- Cost estimate uses `COALESCE(quantity_override, estimated_attendees, 0)` per item
+- Shopping list excludes archived events and aggregates quantities across concurrent events
+- Unique constraint on `(event_menu_id, menu_item_id)` prevents duplicate items per menu
+
+---
+
 ## Analytics Router (`analytics`)
 
 Provides reporting and data analysis capabilities with caching.
@@ -786,6 +829,31 @@ Client portal access with magic link authentication. All procedures require clie
     followUpCompleted: boolean;
   }>;
 }
+```
+
+### `portal.getEventMenus`
+
+**Auth**: Client only
+**Purpose**: Get menus for a client's event (read-only)
+
+```typescript
+// Input
+{ eventId: number }
+
+// Response
+Array<{
+  id: number;
+  name: string;
+  notes: string | null;
+  items: Array<{
+    name: string;
+    description: string | null;
+    category: string;
+    costPerPerson: string;
+    allergens: string[];
+    dietaryTags: string[];
+  }>;
+}>
 ```
 
 ### `portal.getProfile`

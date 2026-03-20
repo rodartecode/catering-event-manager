@@ -2,7 +2,7 @@
 
 **Production-ready event lifecycle management system** for catering companies - from initial inquiry to post-event follow-up.
 
-**Last updated**: March 18, 2026
+**Last updated**: March 19, 2026
 
 ## Architecture
 
@@ -263,8 +263,8 @@ pnpm test:coverage
 
 **Test Results** (as of March 18, 2026):
 
-- ✅ **866 tests passing** across 52 test files
-- ✅ **13 tRPC routers fully tested** (event, task, resource, document, expense, invoice, payment, clients, analytics, user, portal, template, search)
+- ✅ **943 tests passing** across 53 test files
+- ✅ **14 tRPC routers fully tested** (event, task, resource, document, expense, invoice, payment, menu, clients, analytics, user, portal, template, search)
 - ✅ **19 React component test suites** covering auth, events, tasks, resources, clients, analytics, dashboard
 - ✅ Complete test infrastructure with PostgreSQL TestContainers
 - ✅ Zero breaking changes after Zod 4 upgrade (all error handling updated)
@@ -323,7 +323,7 @@ pnpm test:e2e:ui
 
 **Coverage achieved**:
 
-- **tRPC routers**: 560+ tests across 13 routers
+- **tRPC routers**: 600+ tests across 14 routers
 - **React components**: 232+ tests across 19+ component files
 - **Go scheduler**: 91.7% coverage (exceeds 80% target)
 - **Critical algorithms**: 100% tested (conflict detection, availability)
@@ -367,6 +367,7 @@ pnpm test:quality:update
 - **📊 Analytics & Reporting** - Event completion rates, resource utilization, task performance with CSV export capability
 - **💬 Client Communication** - Communication history, follow-up scheduling, overdue notifications
 - **💰 Financial Management** - Expenses, invoicing with PDF export, payments with auto-status transitions, profitability analytics
+- **🍽️ Menu Planning** - Global menu item catalog, per-event menus with dietary tracking, cost estimation, cross-event shopping lists
 - **📎 Document Management** - File uploads via Supabase Storage (contracts, menus, floor plans, permits, photos) with client portal sharing
 - **🔐 Role-Based Authentication** - Administrator/Manager/Client roles with Next-Auth v5
 - **🏢 Client Portal** - Magic link authentication for clients to view their events, documents, and status
@@ -397,9 +398,9 @@ pnpm test:quality:update
 
 ### 📊 Current Implementation Metrics
 
-- **13 tRPC API routers** with 81 procedures (fully tested)
-- **18 database tables** with optimized indexes (PostgreSQL 17)
-- **80+ React components** across 12 feature areas
+- **14 tRPC API routers** with 97 procedures (fully tested)
+- **21 database tables** with optimized indexes (PostgreSQL 17)
+- **90+ React components** across 13 feature areas
 - **5 main dashboard sections** (Events, Tasks, Resources, Clients, Analytics)
 - **Complete testing infrastructure** (Vitest + TestContainers + Playwright)
 - **Full CRUD operations** for all entities
@@ -599,7 +600,16 @@ Before production deployment:
 - [ ] Review CSP for any required external resources
 - [ ] Test security headers at [securityheaders.com](https://securityheaders.com/)
 
-## Recent Updates (March 18, 2026)
+## Recent Updates (March 19, 2026)
+
+### Menu Planning (March 19)
+
+- Global menu item catalog with categories, allergens (free-text), and dietary tags (enum)
+- Per-event named menus (e.g., "Cocktail Hour", "Dinner Service") with item management
+- Cost estimation based on attendees with quantity overrides
+- Dietary restriction summary and cross-event shopping list aggregation
+- Client portal read-only menu view
+- 15 new tRPC procedures + 1 portal procedure, 41 new router tests
 
 ### Document Management (March 18)
 

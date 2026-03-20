@@ -305,6 +305,92 @@ function PortalDocumentDownload({ documentId, eventId }: { documentId: number; e
   );
 }
 
+function PortalEventMenus({ eventId }: { eventId: number }) {
+  const { data: menus, isLoading } = trpc.portal.getEventMenus.useQuery({ eventId });
+
+  if (isLoading) {
+    return <div className="animate-pulse h-32 bg-gray-100 rounded" />;
+  }
+
+  if (!menus || menus.length === 0) {
+    return <p className="text-gray-500 text-sm">No menu information available yet.</p>;
+  }
+
+  const categoryLabels: Record<string, string> = {
+    appetizer: 'Appetizer',
+    main: 'Main',
+    side: 'Side',
+    dessert: 'Dessert',
+    beverage: 'Beverage',
+  };
+
+  const tagLabels: Record<string, string> = {
+    vegan: 'Vegan',
+    vegetarian: 'Vegetarian',
+    gluten_free: 'Gluten Free',
+    halal: 'Halal',
+    kosher: 'Kosher',
+    dairy_free: 'Dairy Free',
+    nut_free: 'Nut Free',
+  };
+
+  return (
+    <div className="space-y-6">
+      {menus.map((menu) => (
+        <div key={menu.id}>
+          <h3 className="text-sm font-semibold text-gray-800 mb-2">{menu.name}</h3>
+          {menu.notes && <p className="text-xs text-gray-500 mb-2">{menu.notes}</p>}
+          {menu.items.length === 0 ? (
+            <p className="text-sm text-gray-400">No items in this menu.</p>
+          ) : (
+            <ul className="divide-y divide-gray-100">
+              {menu.items.map((item, idx) => (
+                <li key={idx} className="py-2">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-sm text-gray-900">{item.name}</span>
+                      <span className="ml-2 text-xs text-gray-400">
+                        {categoryLabels[item.category] || item.category}
+                      </span>
+                    </div>
+                  </div>
+                  {item.description && (
+                    <p className="text-xs text-gray-500 mt-0.5">{item.description}</p>
+                  )}
+                  {item.dietaryTags && item.dietaryTags.length > 0 && (
+                    <div className="flex gap-1 mt-1">
+                      {item.dietaryTags.map((tag) => (
+                        <span
+                          key={tag}
+                          className="inline-flex items-center px-1.5 py-0.5 rounded text-xs bg-green-50 text-green-700"
+                        >
+                          {tagLabels[tag] || tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {item.allergens && item.allergens.length > 0 && (
+                    <div className="flex gap-1 mt-1">
+                      {item.allergens.map((allergen) => (
+                        <span
+                          key={allergen}
+                          className="inline-flex items-center px-1.5 py-0.5 rounded text-xs bg-red-50 text-red-700"
+                        >
+                          {allergen}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function EventCommunications({ eventId }: { eventId: number }) {
   const { data: communications, isLoading } = trpc.portal.getEventCommunications.useQuery({
     eventId,
@@ -632,6 +718,12 @@ export default function PortalEventDetailPage() {
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Tasks</h2>
           <EventTasks eventId={eventId} />
         </div>
+      </div>
+
+      {/* Menu */}
+      <div className="bg-white rounded-lg shadow p-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Menu</h2>
+        <PortalEventMenus eventId={eventId} />
       </div>
 
       {/* Shared Documents */}

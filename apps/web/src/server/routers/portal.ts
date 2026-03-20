@@ -3,8 +3,11 @@ import {
   clients,
   communications,
   documents,
+  eventMenuItems,
+  eventMenus,
   eventStatusLog,
   events,
+  menuItems,
   tasks,
   users,
 } from '@catering-event-manager/database/schema';
@@ -361,6 +364,71 @@ export const portalRouter = router({
         url: data.signedUrl,
         fileName: doc.name,
       };
+    }),
+
+  // Get menus for an event (read-only for client)
+  getEventMenus: clientProcedure
+    .input(z.object({ eventId: z.number().positive() }))
+    .query(async ({ ctx, input }) => {
+      const { db, clientId } = ctx;
+
+      await verifyEventOwnership(db, input.eventId, clientId);
+
+      const menus = await db
+        .select()
+        .from(eventMenus)
+        .where(eq(eventMenus.eventId, input.eventId))
+        .orderBy(asc(eventMenus.sortOrder), asc(eventMenus.name));
+
+      const menuIds = menus.map((m) => m.id);
+      if (menuIds.length === 0) return [];
+
+      const { sql } = await import('drizzle-orm');
+      const items = await db
+        .select({
+          eventMenuItem: eventMenuItems,
+          menuItem: {
+            id: menuItems.id,
+            name: menuItems.name,
+            description: menuItems.description,
+            category: menuItems.category,
+            allergens: menuItems.allergens,
+            dietaryTags: menuItems.dietaryTags,
+            costPerPerson: menuItems.costPerPerson,
+          },
+        })
+        .from(eventMenuItems)
+        .innerJoin(menuItems, eq(eventMenuItems.menuItemId, menuItems.id))
+        .where(
+          sql`${eventMenuItems.eventMenuId} IN (${sql.join(
+            menuIds.map((id) => sql`${id}`),
+            sql`, `
+          )})`
+        )
+        .orderBy(asc(eventMenuItems.sortOrder));
+
+      const itemsByMenu = new Map<number, typeof items>();
+      for (const row of items) {
+        const menuId = row.eventMenuItem.eventMenuId;
+        if (!itemsByMenu.has(menuId)) {
+          itemsByMenu.set(menuId, []);
+        }
+        itemsByMenu.get(menuId)!.push(row);
+      }
+
+      return menus.map((menu) => ({
+        id: menu.id,
+        name: menu.name,
+        notes: menu.notes,
+        items: (itemsByMenu.get(menu.id) || []).map((row) => ({
+          name: row.menuItem.name,
+          description: row.menuItem.description,
+          category: row.menuItem.category,
+          costPerPerson: row.menuItem.costPerPerson,
+          allergens: row.menuItem.allergens,
+          dietaryTags: row.menuItem.dietaryTags,
+        })),
+      }));
     }),
 
   // Get client profile

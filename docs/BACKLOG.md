@@ -31,19 +31,11 @@ Curated backlog for the catering event manager. Each item includes structured me
 
 ## P2 — High Value
 
-### menu-planning
+### ~~menu-planning~~ ✅ DONE (2026-03-19)
 **Menu items, dietary management, and quantity calculation**
 - Scope: L
 - Touches: schema, api, ui
-- Depends on: none (but pairs well with `financial-layer` for cost basis)
-- Done when:
-  - `menu_items` table: name, description, cost_per_person, category (appetizer/main/dessert/beverage), allergens (array), dietary_tags (vegan/gf/halal/kosher/etc)
-  - `event_menus` junction: event_id, menu_item_id, quantity_override
-  - tRPC: `menu.create`, `menu.list`, `menu.getById`, `menu.update`, `menu.delete`
-  - Event menu builder UI: attach items to event, auto-calculate quantities from `estimated_attendees`
-  - Per-event dietary restriction summary (aggregated from menu items)
-  - Shopping list generation: aggregate ingredients across concurrent events for bulk purchasing
-- Notes: This is the biggest domain differentiator. No generic PM tool handles menus, portions, and dietary restrictions. Menu cost feeds directly into the financial layer's cost basis for invoicing.
+- Implemented: Three-table design (menu_items + event_menus + event_menu_items), 15 menu router procedures + 1 portal procedure, catalog UI, event menu builder, cost estimation, dietary summary, shopping list, client portal view. Migration 0007.
 
 ### staff-skills
 **Staff skills matrix and shift availability**

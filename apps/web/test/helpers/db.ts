@@ -136,6 +136,22 @@ async function runMigrations(db: TestDatabase): Promise<void> {
     END $$;
   `);
 
+  await db.execute(sql`
+    DO $$ BEGIN
+      CREATE TYPE menu_item_category AS ENUM ('appetizer', 'main', 'side', 'dessert', 'beverage');
+    EXCEPTION
+      WHEN duplicate_object THEN null;
+    END $$;
+  `);
+
+  await db.execute(sql`
+    DO $$ BEGIN
+      CREATE TYPE dietary_tag AS ENUM ('vegan', 'vegetarian', 'gluten_free', 'halal', 'kosher', 'dairy_free', 'nut_free');
+    EXCEPTION
+      WHEN duplicate_object THEN null;
+    END $$;
+  `);
+
   // Create tables (clients first for FK references)
   await db.execute(sql`
     CREATE TABLE IF NOT EXISTS clients (
@@ -386,6 +402,47 @@ async function runMigrations(db: TestDatabase): Promise<void> {
     )
   `);
 
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS menu_items (
+      id SERIAL PRIMARY KEY,
+      name VARCHAR(255) NOT NULL,
+      description TEXT,
+      cost_per_person DECIMAL(10,2) NOT NULL,
+      category menu_item_category NOT NULL,
+      allergens TEXT[] DEFAULT '{}',
+      dietary_tags dietary_tag[] DEFAULT '{}',
+      is_active BOOLEAN NOT NULL DEFAULT true,
+      created_by INTEGER NOT NULL REFERENCES users(id),
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS event_menus (
+      id SERIAL PRIMARY KEY,
+      event_id INTEGER NOT NULL REFERENCES events(id),
+      name VARCHAR(255) NOT NULL,
+      notes TEXT,
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS event_menu_items (
+      id SERIAL PRIMARY KEY,
+      event_menu_id INTEGER NOT NULL REFERENCES event_menus(id) ON DELETE CASCADE,
+      menu_item_id INTEGER NOT NULL REFERENCES menu_items(id),
+      quantity_override INTEGER,
+      notes TEXT,
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(event_menu_id, menu_item_id)
+    )
+  `);
+
   // Portal magic link tokens table
   await db.execute(sql`
     CREATE TABLE IF NOT EXISTS verification_tokens (
@@ -409,6 +466,9 @@ async function runMigrations(db: TestDatabase): Promise<void> {
     'resource_schedule',
     'communications',
     'documents',
+    'event_menu_items',
+    'event_menus',
+    'menu_items',
     'expenses',
     'payments',
     'invoice_line_items',
@@ -429,7 +489,7 @@ async function runMigrations(db: TestDatabase): Promise<void> {
 export async function cleanDatabase(db: TestDatabase): Promise<void> {
   // Truncate tables in order (respecting foreign key constraints)
   await db.execute(
-    sql`TRUNCATE verification_tokens, documents, communications, payments, invoice_line_items, invoices, expenses, resource_schedule, task_resources, tasks, event_status_log, events, resources, users, clients, task_template_items, task_templates RESTART IDENTITY CASCADE`
+    sql`TRUNCATE verification_tokens, documents, event_menu_items, event_menus, menu_items, communications, payments, invoice_line_items, invoices, expenses, resource_schedule, task_resources, tasks, event_status_log, events, resources, users, clients, task_template_items, task_templates RESTART IDENTITY CASCADE`
   );
 }
 

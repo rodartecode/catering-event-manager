@@ -5,6 +5,7 @@ import { documentRouter } from './document';
 import { eventRouter } from './event';
 import { expenseRouter } from './expense';
 import { invoiceRouter } from './invoice';
+import { menuRouter } from './menu';
 import { paymentRouter } from './payment';
 import { portalRouter } from './portal';
 import { resourceRouter } from './resource';
@@ -20,6 +21,7 @@ export const appRouter = router({
   document: documentRouter,
   expense: expenseRouter,
   invoice: invoiceRouter,
+  menu: menuRouter,
   payment: paymentRouter,
   analytics: analyticsRouter,
   clients: clientsRouter,

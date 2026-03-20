@@ -27,6 +27,7 @@ src/components/
 ├── events/                 # Event lifecycle management (8 components)
 ├── expenses/               # Expense tracking (3 components)
 ├── invoices/               # Invoicing & PDF (4 components)
+├── menus/                  # Menu planning & dietary tracking (6 components)
 ├── payments/               # Payment recording (1 component)
 ├── resources/              # Resource scheduling (7 components)
 ├── search/                 # Global search (2 components)
@@ -163,7 +164,22 @@ src/components/
 - Responsive design
 - CSV export functionality
 
-### 8. UI Primitives (15 components)
+### 8. Menu Components (6 components)
+
+**Location**: `src/components/menus/`
+
+| Component | Purpose | Props | Tests |
+|-----------|---------|-------|-------|
+| `MenuItemCategoryBadge` | Colored badge for menu categories | `category: string` | Via router |
+| `DietaryTagBadge` | Badge for dietary restrictions | `tag: string` | Via router |
+| `AddMenuItemDialog` | Dialog to pick items from catalog | `eventMenuId, eventId, onClose` | Via router |
+| `EventMenuBuilder` | Collapsible menu sections with item management | `eventId, isAdmin` | Via router |
+| `EventMenuCostCard` | Sidebar card showing estimated menu cost | `eventId` | Via router |
+| `EventDietarySummary` | Sidebar card with allergens/dietary tags | `eventId` | Via router |
+
+**Pages**: `/menus` (catalog management), `/menus/shopping-list` (cross-event aggregation)
+
+### 9. UI Primitives (15 components)
 
 **Location**: `src/components/ui/`
 

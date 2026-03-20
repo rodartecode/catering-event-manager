@@ -588,6 +588,126 @@ export async function createPayment(
 }
 
 /**
+ * Create a test menu item (global catalog).
+ */
+export async function createMenuItem(
+  db: TestDatabase,
+  createdBy: number,
+  overrides: Partial<{
+    name: string;
+    description: string;
+    costPerPerson: string;
+    category: 'appetizer' | 'main' | 'side' | 'dessert' | 'beverage';
+    allergens: string[];
+    dietaryTags: string[];
+    isActive: boolean;
+  }> = {}
+) {
+  const id = nextId();
+
+  const result = await db.execute(sql`
+    INSERT INTO menu_items (name, description, cost_per_person, category, allergens, dietary_tags, is_active, created_by)
+    VALUES (
+      ${overrides.name || `Menu Item ${id}`},
+      ${overrides.description || null},
+      ${overrides.costPerPerson || '10.00'},
+      ${overrides.category || 'main'},
+      ${overrides.allergens ? `{${overrides.allergens.join(',')}}` : '{}'},
+      ${overrides.dietaryTags ? `{${overrides.dietaryTags.join(',')}}` : '{}'},
+      ${overrides.isActive !== undefined ? overrides.isActive : true},
+      ${createdBy}
+    )
+    RETURNING id, name, description, cost_per_person, category, allergens, dietary_tags, is_active, created_by, created_at, updated_at
+  `);
+
+  return result[0] as {
+    id: number;
+    name: string;
+    description: string | null;
+    cost_per_person: string;
+    category: string;
+    allergens: string[];
+    dietary_tags: string[];
+    is_active: boolean;
+    created_by: number;
+    created_at: Date;
+    updated_at: Date;
+  };
+}
+
+/**
+ * Create a test event menu (named menu grouping for an event).
+ */
+export async function createEventMenu(
+  db: TestDatabase,
+  eventId: number,
+  overrides: Partial<{
+    name: string;
+    notes: string;
+    sortOrder: number;
+  }> = {}
+) {
+  const id = nextId();
+
+  const result = await db.execute(sql`
+    INSERT INTO event_menus (event_id, name, notes, sort_order)
+    VALUES (
+      ${eventId},
+      ${overrides.name || `Menu ${id}`},
+      ${overrides.notes || null},
+      ${overrides.sortOrder ?? 0}
+    )
+    RETURNING id, event_id, name, notes, sort_order, created_at, updated_at
+  `);
+
+  return result[0] as {
+    id: number;
+    event_id: number;
+    name: string;
+    notes: string | null;
+    sort_order: number;
+    created_at: Date;
+    updated_at: Date;
+  };
+}
+
+/**
+ * Create a test event menu item (junction between event menu and menu item).
+ */
+export async function createEventMenuItem(
+  db: TestDatabase,
+  eventMenuId: number,
+  menuItemId: number,
+  overrides: Partial<{
+    quantityOverride: number;
+    notes: string;
+    sortOrder: number;
+  }> = {}
+) {
+  const result = await db.execute(sql`
+    INSERT INTO event_menu_items (event_menu_id, menu_item_id, quantity_override, notes, sort_order)
+    VALUES (
+      ${eventMenuId},
+      ${menuItemId},
+      ${overrides.quantityOverride || null},
+      ${overrides.notes || null},
+      ${overrides.sortOrder ?? 0}
+    )
+    RETURNING id, event_menu_id, menu_item_id, quantity_override, notes, sort_order, created_at
+  `);
+
+  return result[0] as {
+    id: number;
+    event_menu_id: number;
+    menu_item_id: number;
+    quantity_override: number | null;
+    notes: string | null;
+    sort_order: number;
+    created_at: Date;
+  };
+}
+
+/**
  * Convenience: Create a client with an event.
  * Creates a user automatically to satisfy the created_by requirement.
  */

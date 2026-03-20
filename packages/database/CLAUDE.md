@@ -23,6 +23,9 @@ src/schema/
 ├── resource-schedule.ts # References resources, events, tasks
 ├── communications.ts    # References events, clients, users
 ├── documents.ts         # References events, users (Supabase Storage)
+├── menu-items.ts        # Global menu catalog (allergens[], dietary_tags[])
+├── event-menus.ts       # Per-event menu groupings
+├── event-menu-items.ts  # Junction: event_menus ↔ menu_items
 ├── expenses.ts          # References events, users
 ├── invoices.ts          # References events, users
 ├── invoice-line-items.ts # References invoices
@@ -43,6 +46,12 @@ resourceTypeEnum: ['staff', 'equipment', 'materials']
 
 // Task Categories
 taskCategoryEnum: ['pre_event', 'during_event', 'post_event']
+
+// Menu Item Categories
+menuItemCategoryEnum: ['appetizer', 'main', 'side', 'dessert', 'beverage']
+
+// Dietary Tags
+dietaryTagEnum: ['vegan', 'vegetarian', 'gluten_free', 'halal', 'kosher', 'dairy_free', 'nut_free']
 ```
 
 ## Schema Patterns

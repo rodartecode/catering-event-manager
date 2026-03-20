@@ -4,8 +4,11 @@ import {
   createCommunication,
   createDocument,
   createEvent,
+  createEventMenu,
+  createEventMenuItem,
   createExpense,
   createInvoice,
+  createMenuItem,
   createPayment,
   createResource,
   createResourceSchedule,
@@ -31,6 +34,9 @@ export interface AuthMatrixData {
   expense: { id: number };
   invoice: { id: number };
   payment: { id: number };
+  menuItem: { id: number };
+  eventMenu: { id: number; event_id: number };
+  eventMenuItem: { id: number };
 }
 
 /**
@@ -135,6 +141,18 @@ export async function setupAuthMatrixData(db: TestDatabase): Promise<AuthMatrixD
     amount: '100.00',
   });
 
+  const menuItem = await createMenuItem(db, adminUser.id, {
+    name: 'Auth Matrix Menu Item',
+    costPerPerson: '15.00',
+    category: 'main',
+  });
+
+  const eventMenu = await createEventMenu(db, event.id, {
+    name: 'Auth Matrix Menu',
+  });
+
+  const eventMenuItem = await createEventMenuItem(db, eventMenu.id, menuItem.id);
+
   return {
     adminUser: { id: adminUser.id, email: adminUser.email },
     managerUser: { id: managerUser.id, email: managerUser.email },
@@ -150,6 +168,9 @@ export async function setupAuthMatrixData(db: TestDatabase): Promise<AuthMatrixD
     expense: { id: expense.id },
     invoice: { id: invoice.id },
     payment: { id: payment.id },
+    menuItem: { id: menuItem.id },
+    eventMenu: { id: eventMenu.id, event_id: event.id },
+    eventMenuItem: { id: eventMenuItem.id },
   };
 }
 
@@ -315,6 +336,35 @@ export function getProcedureInput(
     'payment.listByInvoice': { invoiceId: data.invoice.id },
     'payment.delete': { id: data.payment.id },
 
+    // Menu router
+    'menu.createItem': {
+      name: 'Auth Test Menu Item',
+      costPerPerson: '12.50',
+      category: 'main',
+      allergens: ['nuts'],
+      dietaryTags: ['gluten_free'],
+    },
+    'menu.updateItem': { id: data.menuItem.id, name: 'Updated Auth Menu Item' },
+    'menu.deleteItem': { id: data.menuItem.id },
+    'menu.listItems': {},
+    'menu.getItemById': { id: data.menuItem.id },
+    'menu.createEventMenu': {
+      eventId: data.event.id,
+      name: 'Auth Test Event Menu',
+    },
+    'menu.updateEventMenu': { id: data.eventMenu.id, name: 'Updated Auth Menu' },
+    'menu.deleteEventMenu': { id: data.eventMenu.id },
+    'menu.addItemToEventMenu': {
+      eventMenuId: data.eventMenu.id,
+      menuItemId: data.menuItem.id,
+    },
+    'menu.removeItemFromEventMenu': { id: data.eventMenuItem.id },
+    'menu.updateEventMenuItem': { id: data.eventMenuItem.id, quantityOverride: 50 },
+    'menu.listEventMenus': { eventId: data.event.id },
+    'menu.getEventMenuCostEstimate': { eventId: data.event.id },
+    'menu.getEventDietarySummary': { eventId: data.event.id },
+    'menu.getShoppingList': { dateFrom, dateTo },
+
     // Analytics router
     'analytics.eventCompletion': { dateFrom, dateTo },
     'analytics.resourceUtilization': { dateFrom, dateTo },
@@ -339,6 +389,7 @@ export function getProcedureInput(
     'portal.getEventCommunications': { eventId: data.event.id },
     'portal.getEventDocuments': { eventId: data.event.id },
     'portal.getDocumentDownloadUrl': { documentId: data.document.id, eventId: data.event.id },
+    'portal.getEventMenus': { eventId: data.event.id },
     'portal.getProfile': undefined,
   };
 
@@ -425,6 +476,24 @@ export const allProcedures: ProcedureDefinition[] = [
   { router: 'document', procedure: 'listByEvent', access: 'protected', type: 'query' },
   { router: 'document', procedure: 'getDownloadUrl', access: 'protected', type: 'query' },
 
+  // Menu router - adminProcedure
+  { router: 'menu', procedure: 'createItem', access: 'admin', type: 'mutation' },
+  { router: 'menu', procedure: 'updateItem', access: 'admin', type: 'mutation' },
+  { router: 'menu', procedure: 'deleteItem', access: 'admin', type: 'mutation' },
+  { router: 'menu', procedure: 'createEventMenu', access: 'admin', type: 'mutation' },
+  { router: 'menu', procedure: 'updateEventMenu', access: 'admin', type: 'mutation' },
+  { router: 'menu', procedure: 'deleteEventMenu', access: 'admin', type: 'mutation' },
+  { router: 'menu', procedure: 'addItemToEventMenu', access: 'admin', type: 'mutation' },
+  { router: 'menu', procedure: 'removeItemFromEventMenu', access: 'admin', type: 'mutation' },
+  { router: 'menu', procedure: 'updateEventMenuItem', access: 'admin', type: 'mutation' },
+  // Menu router - protectedProcedure
+  { router: 'menu', procedure: 'listItems', access: 'protected', type: 'query' },
+  { router: 'menu', procedure: 'getItemById', access: 'protected', type: 'query' },
+  { router: 'menu', procedure: 'listEventMenus', access: 'protected', type: 'query' },
+  { router: 'menu', procedure: 'getEventMenuCostEstimate', access: 'protected', type: 'query' },
+  { router: 'menu', procedure: 'getEventDietarySummary', access: 'protected', type: 'query' },
+  { router: 'menu', procedure: 'getShoppingList', access: 'protected', type: 'query' },
+
   // Expense router - adminProcedure
   { router: 'expense', procedure: 'create', access: 'admin', type: 'mutation' },
   { router: 'expense', procedure: 'update', access: 'admin', type: 'mutation' },
@@ -486,5 +555,6 @@ export const allProcedures: ProcedureDefinition[] = [
   { router: 'portal', procedure: 'getEventCommunications', access: 'client', type: 'query' },
   { router: 'portal', procedure: 'getEventDocuments', access: 'client', type: 'query' },
   { router: 'portal', procedure: 'getDocumentDownloadUrl', access: 'client', type: 'query' },
+  { router: 'portal', procedure: 'getEventMenus', access: 'client', type: 'query' },
   { router: 'portal', procedure: 'getProfile', access: 'client', type: 'query' },
 ];
