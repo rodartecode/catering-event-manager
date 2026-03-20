@@ -1,3 +1,4 @@
+export { GanttChart } from './GanttChart';
 export { OverdueIndicator } from './OverdueIndicator';
 export { TaskAssignDialog } from './TaskAssignDialog';
 export { TaskCard } from './TaskCard';

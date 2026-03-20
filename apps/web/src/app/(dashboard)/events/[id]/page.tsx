@@ -9,7 +9,8 @@ import { EventStatusTimeline } from '@/components/events/EventStatusTimeline';
 import { EventStatusUpdateDialog } from '@/components/events/EventStatusUpdateDialog';
 import { ExpenseList, ExpenseSummaryCard } from '@/components/expenses';
 import { InvoiceList } from '@/components/invoices';
-import { TaskList } from '@/components/tasks';
+import { EventDietarySummary, EventMenuBuilder, EventMenuCostCard } from '@/components/menus';
+import { GanttChart, TaskList } from '@/components/tasks';
 import { trpc } from '@/lib/trpc';
 import { useIsAdmin } from '@/lib/use-auth';
 
@@ -191,10 +192,22 @@ export default function EventDetailPage() {
             </div>
           )}
 
+          {/* Timeline Section */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-xl font-semibold mb-4">Timeline</h2>
+            <GanttChart eventId={eventId} eventDate={new Date(event.eventDate)} />
+          </div>
+
           {/* Tasks Section */}
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-xl font-semibold mb-4">Tasks</h2>
             <TaskList eventId={eventId} isAdmin={isAdmin} />
+          </div>
+
+          {/* Menus Section */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-xl font-semibold mb-4">Menus</h2>
+            <EventMenuBuilder eventId={eventId} isAdmin={isAdmin} />
           </div>
 
           {/* Expenses Section */}
@@ -218,6 +231,18 @@ export default function EventDetailPage() {
 
         {/* Sidebar */}
         <div className="space-y-6">
+          {/* Menu Cost Estimate */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-xl font-semibold mb-4">Menu Estimate</h2>
+            <EventMenuCostCard eventId={eventId} />
+          </div>
+
+          {/* Dietary Summary */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-xl font-semibold mb-4">Dietary Info</h2>
+            <EventDietarySummary eventId={eventId} />
+          </div>
+
           {/* Cost Summary */}
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-xl font-semibold mb-4">Cost Summary</h2>
