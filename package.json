@@ -5,7 +5,9 @@
   "description": "Catering event lifecycle management system",
   "pnpm": {
     "overrides": {
-      "drizzle-orm": "$drizzle-orm"
+      "drizzle-orm": "$drizzle-orm",
+      "undici": ">=7.24.0",
+      "flatted": ">=3.4.2"
     }
   },
   "dependencies": {
