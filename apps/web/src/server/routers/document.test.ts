@@ -21,7 +21,7 @@ import {
 
 // Mock storage client
 vi.mock('@/lib/storage', () => ({
-  storageClient: {
+  getStorageClient: () => ({
     storage: {
       from: () => ({
         createSignedUploadUrl: vi.fn().mockResolvedValue({
@@ -35,7 +35,7 @@ vi.mock('@/lib/storage', () => ({
         remove: vi.fn().mockResolvedValue({ data: [], error: null }),
       }),
     },
-  },
+  }),
   DOCUMENTS_BUCKET: 'event-documents',
   MAX_FILE_SIZE: 10 * 1024 * 1024,
   ALLOWED_MIME_TYPES: [

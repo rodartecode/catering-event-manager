@@ -15,7 +15,7 @@ import { TRPCError } from '@trpc/server';
 import { and, asc, desc, eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { sendMagicLinkEmail } from '@/lib/email';
-import { DOCUMENTS_BUCKET, storageClient } from '@/lib/storage';
+import { DOCUMENTS_BUCKET, getStorageClient } from '@/lib/storage';
 import { createMagicLinkToken } from '../auth';
 import { clientProcedure, publicProcedure, router } from '../trpc';
 
@@ -345,11 +345,12 @@ export const portalRouter = router({
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Document not found' });
       }
 
-      if (!storageClient) {
+      const client = getStorageClient();
+      if (!client) {
         throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Storage not configured' });
       }
 
-      const { data, error } = await storageClient.storage
+      const { data, error } = await client.storage
         .from(DOCUMENTS_BUCKET)
         .createSignedUrl(doc.storageKey, 3600);
 

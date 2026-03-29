@@ -3,17 +3,23 @@ import { TRPCError } from '@trpc/server';
 import { eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { logger } from '@/lib/logger';
-import { ALLOWED_MIME_TYPES, DOCUMENTS_BUCKET, MAX_FILE_SIZE, storageClient } from '@/lib/storage';
+import {
+  ALLOWED_MIME_TYPES,
+  DOCUMENTS_BUCKET,
+  getStorageClient,
+  MAX_FILE_SIZE,
+} from '@/lib/storage';
 import { adminProcedure, protectedProcedure, router } from '../trpc';
 
 function getStorage() {
-  if (!storageClient) {
+  const client = getStorageClient();
+  if (!client) {
     throw new TRPCError({
       code: 'INTERNAL_SERVER_ERROR',
       message: 'Storage not configured',
     });
   }
-  return storageClient;
+  return client;
 }
 
 // Input schemas

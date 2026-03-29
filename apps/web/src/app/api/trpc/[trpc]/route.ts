@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { fetchRequestHandler } from '@trpc/server/adapters/fetch';
 import { logger } from '@/lib/logger';
 import {

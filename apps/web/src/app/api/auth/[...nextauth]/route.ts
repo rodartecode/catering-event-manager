@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import type { NextRequest } from 'next/server';
 import { logger } from '@/lib/logger';
 import { getClientIp, rateLimitAuth } from '@/lib/rate-limit';
