@@ -1,6 +1,8 @@
 import { renderTrpcPanel } from 'trpc-panel';
 import { appRouter } from '@/server/routers/_app';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   return new Response(
     renderTrpcPanel(appRouter, {
