@@ -72,12 +72,12 @@ docs/
 | Runtime | Node.js | 20 LTS |
 | Runtime | Go | 1.25.7+ |
 | Database | PostgreSQL | 17 |
-| Frontend | Next.js | 16.1+ |
+| Frontend | Next.js | 16.2+ |
 | Frontend | React | 19.2+ |
-| API | tRPC | v11.8+ |
+| API | tRPC | v11.15+ |
 | ORM | Drizzle | 0.45+ |
-| Go Web | Fiber | v3 |
-| Testing | Vitest | 4.0+ |
+| Go Web | Fiber | v3.1+ |
+| Testing | Vitest | 4.1+ |
 
 ## Implementation Status
 

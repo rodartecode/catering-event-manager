@@ -2,7 +2,7 @@
 
 **Production-ready event lifecycle management system** for catering companies - from initial inquiry to post-event follow-up.
 
-**Last updated**: March 19, 2026
+**Last updated**: March 29, 2026
 
 ## Architecture
 
@@ -14,13 +14,13 @@
 
 **Tech Stack**:
 
-- Frontend: Next.js 16.1.4 + React 19.2.3 + Tailwind CSS 4.1.18
-- API: tRPC v11.8.1 (type-safe RPC)
-- Database: PostgreSQL 17 + Drizzle ORM 0.45.1
-- Scheduling: Go 1.25.7 + Fiber v3 + SQLC 1.27+
+- Frontend: Next.js 16.2.1 + React 19.2.3 + Tailwind CSS 4.2.2
+- API: tRPC v11.15.1 (type-safe RPC)
+- Database: PostgreSQL 17 + Drizzle ORM 0.45.2
+- Scheduling: Go 1.25.7 + Fiber v3.1.0 + SQLC 1.27+
 - Monorepo: pnpm 10+ + Turborepo 2.7.6
-- Testing: Vitest 4.0.18 + Playwright 1.58.0 + TestContainers
-- Linting: ESLint 9.39.2 + TypeScript-ESLint 8.54.0
+- Testing: Vitest 4.1.2 + Playwright 1.58.0 + TestContainers
+- Linting: ESLint 9.39.2 + TypeScript-ESLint 8.57.2
 - Validation: Zod 4.3.6
 
 ## Quick Start
@@ -205,7 +205,7 @@ catering-event-manager/
 │       ├── sql/               # SQLC queries
 │       └── cmd/               # Entry points
 ├── packages/
-│   ├── database/              # Drizzle ORM 0.45.1 schemas
+│   ├── database/              # Drizzle ORM 0.45.2 schemas
 │   ├── types/                 # Shared TypeScript types
 │   └── config/                # Shared configs (ESLint, Tailwind, TS)
 ├── specs/                     # Feature specifications
@@ -231,7 +231,7 @@ pnpm type-check
 # Linting (updated for Next.js 16)
 pnpm lint
 
-# Code formatting (Biome 2.3.14)
+# Code formatting (Biome 2.4.9)
 pnpm format
 
 # Database operations
@@ -245,7 +245,7 @@ pnpm db:seed       # Seed database with sample data
 
 Comprehensive testing infrastructure with PostgreSQL TestContainers for isolated database tests:
 
-### TypeScript Tests (Vitest 4.0.18)
+### TypeScript Tests (Vitest 4.1.2)
 
 ```bash
 # Run all tests
@@ -400,7 +400,7 @@ pnpm test:quality:update
 
 - **14 tRPC API routers** with 97 procedures (fully tested)
 - **21 database tables** with optimized indexes (PostgreSQL 17)
-- **90+ React components** across 13 feature areas
+- **~100 React components** across 14 feature areas
 - **5 main dashboard sections** (Events, Tasks, Resources, Clients, Analytics)
 - **Complete testing infrastructure** (Vitest + TestContainers + Playwright)
 - **Full CRUD operations** for all entities
@@ -633,7 +633,7 @@ Before production deployment:
 
 ### Infrastructure & DevOps Hardening (February 8-9)
 
-- Upgraded Go to 1.25.7, Fiber to v3.0.0 stable, Biome to 2.3.14
+- Upgraded Go to 1.25.7, Fiber to v3.0.0 stable, Biome to 2.3.14 (since bumped to 2.4.9)
 - Added staging environment (Vercel + Fly.io + Supabase)
 - Configured Dependabot for automated dependency updates
 
@@ -641,17 +641,17 @@ Before production deployment:
 
 | Package | Previous | Current |
 |---------|----------|---------|
-| Next.js | 15.5.6 | **16.1.4** |
+| Next.js | 15.5.6 | **16.2.1** |
 | React | 18.x | **19.2.3** |
-| Tailwind CSS | 3.4.18 | **4.1.18** |
+| Tailwind CSS | 3.4.18 | **4.2.2** |
 | Zod | 3.25.76 | **4.3.6** |
-| tRPC | 11.7.x | **11.8.1** |
-| Drizzle ORM | 0.36.4 | **0.45.1** |
+| tRPC | 11.7.x | **11.15.1** |
+| Drizzle ORM | 0.36.4 | **0.45.2** |
 | ESLint | 8.x | **9.39.2** |
-| Biome | 1.9.4 | **2.3.14** |
-| Vitest | 3.x | **4.0.18** |
+| Biome | 1.9.4 | **2.4.9** |
+| Vitest | 3.x | **4.1.2** |
 | Go | 1.24.0 | **1.25.7** |
-| Fiber | v3-beta.3 | **v3.0.0** |
+| Fiber | v3-beta.3 | **v3.1.0** |
 
 ## License
 

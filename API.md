@@ -1,6 +1,6 @@
 # API Documentation
 
-**Last updated**: 2026-03-19
+**Last updated**: 2026-03-29
 **Version**: 1.1
 **Base URL**: `http://localhost:3000/api/trpc` (dev) | `https://catering-dev.vercel.app/api/trpc` (prod)
 

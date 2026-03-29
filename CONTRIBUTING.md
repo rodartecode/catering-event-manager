@@ -14,21 +14,21 @@ Thank you for your interest in contributing! This guide will help you get starte
 
 ### Current Tech Stack
 
-This project uses the latest stable versions (as of March 19, 2026):
+This project uses the latest stable versions (as of March 29, 2026):
 
 | Component | Version | Purpose |
 | --------- | ------- | ------- |
-| Next.js | 16.1.4 | React framework with App Router |
+| Next.js | 16.2.1 | React framework with App Router |
 | React | 19.2.3 | Frontend UI library |
-| Tailwind CSS | 4.1.18 | Utility-first CSS framework |
-| tRPC | 11.8.1 | Type-safe API layer |
-| Drizzle ORM | 0.45.1 | TypeScript database ORM |
+| Tailwind CSS | 4.2.2 | Utility-first CSS framework |
+| tRPC | 11.15.1 | Type-safe API layer |
+| Drizzle ORM | 0.45.2 | TypeScript database ORM |
 | Zod | 4.3.6 | Runtime type validation |
-| Go Fiber | 3.0.0 | High-performance Go web framework |
+| Go Fiber | 3.1.0 | High-performance Go web framework |
 | PostgreSQL | 17 | Primary database |
-| Vitest | 4.0.18 | Testing framework |
+| Vitest | 4.1.2 | Testing framework |
 | ESLint | 9.39.2 | Code linting with flat config |
-| Biome | 2.3.14 | Code formatting |
+| Biome | 2.4.9 | Code formatting |
 
 **Recent Major Upgrades**: We recently upgraded from older versions to the latest stable releases, including breaking changes from Zod 3→4, Tailwind 3→4, and Next.js 15→16. All breaking changes have been resolved and tests are passing.
 
