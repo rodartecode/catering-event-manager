@@ -13,14 +13,14 @@ export async function generateInvoiceNumber(db: {
 
   // Find the highest sequence number for today
   const result = (await db.execute(
-    sql`SELECT invoice_number FROM invoices WHERE invoice_number LIKE ${prefix + '%'} ORDER BY invoice_number DESC LIMIT 1`
+    sql`SELECT invoice_number FROM invoices WHERE invoice_number LIKE ${`${prefix}%`} ORDER BY invoice_number DESC LIMIT 1`
   )) as unknown as { invoice_number: string }[];
 
   let sequence = 1;
   if (result.length > 0) {
     const lastNumber = result[0].invoice_number;
     const lastSeq = parseInt(lastNumber.split('-')[2], 10);
-    if (!isNaN(lastSeq)) {
+    if (!Number.isNaN(lastSeq)) {
       sequence = lastSeq + 1;
     }
   }

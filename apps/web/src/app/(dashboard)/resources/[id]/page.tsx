@@ -27,7 +27,7 @@ export default function ResourceDetailPage() {
 
   const { data: resource, isLoading: resourceLoading } = trpc.resource.getById.useQuery(
     { id: resourceId },
-    { enabled: !isNaN(resourceId) }
+    { enabled: !Number.isNaN(resourceId) }
   );
 
   const { data: scheduleData, isLoading: scheduleLoading } = trpc.resource.getSchedule.useQuery(
@@ -36,7 +36,7 @@ export default function ResourceDetailPage() {
       startDate,
       endDate,
     },
-    { enabled: !isNaN(resourceId) }
+    { enabled: !Number.isNaN(resourceId) }
   );
 
   const deleteMutation = trpc.resource.delete.useMutation({

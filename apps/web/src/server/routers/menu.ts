@@ -446,7 +446,7 @@ export const menuRouter = router({
       if (!itemsByMenu.has(menuId)) {
         itemsByMenu.set(menuId, []);
       }
-      itemsByMenu.get(menuId)!.push(row);
+      itemsByMenu.get(menuId)?.push(row);
     }
 
     return menus.map((menu) => ({

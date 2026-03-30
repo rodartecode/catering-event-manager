@@ -199,7 +199,7 @@ describe('Rate Limiting', () => {
       };
 
       const response = createRateLimitResponse(result);
-      const retryAfter = parseInt(response.headers.get('Retry-After') || '0');
+      const retryAfter = parseInt(response.headers.get('Retry-After') || '0', 10);
       expect(retryAfter).toBeGreaterThan(0);
       expect(retryAfter).toBeLessThanOrEqual(30);
     });
