@@ -8,13 +8,13 @@ Thank you for your interest in contributing! This guide will help you get starte
 
 - Node.js 20 LTS
 - pnpm 10+
-- Go 1.25.8+
+- Go 1.26+
 - Docker and Docker Compose
 - PostgreSQL 17 (via Docker or local)
 
 ### Current Tech Stack
 
-This project uses the latest stable versions (as of March 29, 2026):
+This project uses the latest stable versions (as of March 30, 2026):
 
 | Component | Version | Purpose |
 | --------- | ------- | ------- |

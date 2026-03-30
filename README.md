@@ -257,7 +257,7 @@ pnpm test:coverage
 
 **Test Results** (as of March 18, 2026):
 
-- ✅ **943 tests passing** across 53 test files
+- ✅ **976 tests passing** across 55 test files
 - ✅ **14 tRPC routers fully tested** (event, task, resource, document, expense, invoice, payment, menu, clients, analytics, user, portal, template, search)
 - ✅ **19 React component test suites** covering auth, events, tasks, resources, clients, analytics, dashboard
 - ✅ Complete test infrastructure with PostgreSQL TestContainers
@@ -283,7 +283,7 @@ go test -bench=. ./internal/scheduler
 
 **Test Results**:
 
-- ✅ **46 tests passing** (0 failures)
+- ✅ **48 tests passing** (0 failures)
 - ✅ **Coverage: scheduler 91.7%, api 88.3%, domain 100%**
 - ✅ All critical conflict detection algorithms fully tested
 - ✅ Test infrastructure: PostgreSQL TestContainers + testify
