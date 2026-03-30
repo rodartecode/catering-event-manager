@@ -46,7 +46,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.1",
-    "@eslint/js": "^9.39.4",
+    "@eslint/js": "^10.0.1",
     "@next/eslint-plugin-next": "^16.2.1",
     "@playwright/test": "^1.58.2",
     "@tailwindcss/postcss": "^4.2.2",
@@ -61,7 +61,7 @@
     "@vitest/coverage-v8": "^4.1.2",
     "@vitest/ui": "^4.1.2",
     "axe-core": "^4.11.1",
-    "eslint": "^9.39.4",
+    "eslint": "^10.1.0",
     "jsdom": "^29.0.1",
     "postcss": "^8.5.8",
     "tailwindcss": "^4.2.2",
