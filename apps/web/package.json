@@ -68,6 +68,7 @@
     "testcontainers": "^11.13.0",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.57.2",
+    "vite": "^8.0.0",
     "vitest": "^4.1.2",
     "vitest-axe": "^0.1.0"
   }
