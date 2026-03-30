@@ -17,7 +17,7 @@ const resourceFormSchema = z.object({
   hourlyRate: z
     .string()
     .optional()
-    .refine((val) => !val || !isNaN(parseFloat(val)), 'Hourly rate must be a valid number'),
+    .refine((val) => !val || !Number.isNaN(parseFloat(val)), 'Hourly rate must be a valid number'),
   notes: z.string().optional(),
 });
 

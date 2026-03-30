@@ -1,6 +1,6 @@
-/* eslint-disable no-console */
-// This is the structured logging utility - console calls here are intentional
+// This is the structured logging utility - console calls here are intentional.
 // All other code should use this logger instead of console.*
+// Biome noConsole warnings on this file are expected and acceptable.
 
 type LogLevel = 'info' | 'warn' | 'error';
 

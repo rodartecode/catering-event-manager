@@ -155,7 +155,7 @@ export async function seedTestTask(data: {
       status: data.status || 'pending',
       dueDate: data.dueDate || null,
       assignedTo: data.assignedTo || null,
-      isOverdue: isOverdue ? true : false,
+      isOverdue: !!isOverdue,
     })
     .returning();
 

@@ -129,7 +129,7 @@ describe('CloneEventDialog', () => {
     await waitFor(() => {
       expect(mutationCallbacks.onSuccess).toBeDefined();
     });
-    mutationCallbacks.onSuccess!({ id: 42 });
+    mutationCallbacks.onSuccess?.({ id: 42 });
 
     expect(mockPush).toHaveBeenCalledWith('/events/42');
     expect(onClose).toHaveBeenCalled();

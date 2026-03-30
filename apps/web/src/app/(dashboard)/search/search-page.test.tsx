@@ -25,7 +25,7 @@ const fullResults = {
   resources: [{ id: 1, name: 'Main Oven', type: 'equipment', isAvailable: true }],
 };
 
-let mockData: typeof fullResults | undefined = undefined;
+let mockData: typeof fullResults | undefined;
 let mockIsLoading = false;
 
 vi.mock('@/lib/trpc', () => ({

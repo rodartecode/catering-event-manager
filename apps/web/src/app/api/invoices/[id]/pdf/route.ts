@@ -8,7 +8,7 @@ import {
   invoices,
 } from '@catering-event-manager/database/schema';
 import { eq } from 'drizzle-orm';
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/server/auth';
 
 function formatCurrency(amount: string | null): string {
@@ -17,7 +17,7 @@ function formatCurrency(amount: string | null): string {
   );
 }
 
-export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
   if (!session?.user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

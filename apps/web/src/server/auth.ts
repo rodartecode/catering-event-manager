@@ -166,7 +166,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           where: eq(users.email, credentials.email as string),
         });
 
-        if (!user || !user.isActive) {
+        if (!user?.isActive) {
           return null;
         }
 

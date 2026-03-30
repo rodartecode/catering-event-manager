@@ -126,7 +126,7 @@ async function checkDependencyCompletion(
     .where(eq(tasks.id, taskId))
     .limit(1);
 
-  if (!task || !task.dependsOnTaskId) {
+  if (!task?.dependsOnTaskId) {
     return null;
   }
 
