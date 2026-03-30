@@ -43,7 +43,7 @@ pnpm type-check
 
 | Command | Description |
 |---------|-------------|
-| `pnpm lint` | ESLint + Biome linting |
+| `pnpm lint` | Biome linting |
 | `pnpm type-check` | TypeScript type checking |
 | `pnpm format` | Format code with Biome |
 | `pnpm format:check` | Check formatting without writing |
