@@ -57,7 +57,6 @@ const DAY_WIDTH = 60;
 const BAR_HEIGHT = 28;
 const ROW_HEIGHT = 40;
 const BAR_DEFAULT_WIDTH = 80;
-const _LABEL_COLUMN_WIDTH = 0; // Labels rendered separately
 const HEADER_HEIGHT = 32;
 
 const CATEGORY_ORDER: TaskCategory[] = ['pre_event', 'during_event', 'post_event'];
