@@ -1,6 +1,6 @@
 module github.com/catering-event-manager/scheduling-service
 
-go 1.25.8
+go 1.26.1
 
 require (
 	github.com/gofiber/fiber/v3 v3.1.0

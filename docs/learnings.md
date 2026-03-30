@@ -69,6 +69,12 @@ Enables testing full HTTP stack including middleware, routing, and error handlin
 **Solution**: Embed complete SQL schema in testcontainer setup, matching Drizzle schema exactly including indexes and constraints
 **Context**: Critical for hybrid applications - both services must test against identical schema. Copy DDL from `packages/database/drizzle/` to Go test setup
 
+### [2026-03-30] Go 1.26.1 upgrade from 1.25.8
+
+**Problem**: Upgrading to Go 1.26 (major version) with new default Green Tea GC and potential encoding/json v2 behavior changes
+**Solution**: Straightforward version bump across go.mod, Dockerfile, CI. Codebase uses no deprecated APIs, no unsafe, no CGO — low risk.
+**Context**: Key GODEBUG escape hatches if issues arise: `GOEXPERIMENT=nogreenteagc` (revert GC), `GODEBUG=urlstrictcolons=0` (revert strict URL parsing), `GODEBUG=httpcookiemaxnum=0` (disable cookie limit). New `errors.AsType` generic function available as alternative to manual type assertions in `handlers.go`. Run `go fix ./...` to apply modernizer suggestions.
+
 ## Authentication
 
 ### [2026-01-25] Edge Runtime compatibility for magic link tokens

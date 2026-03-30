@@ -336,7 +336,7 @@ git push origin main
 
 - **Node.js**: 20 LTS
 - **pnpm**: 10+
-- **Go**: 1.25.7+
+- **Go**: 1.26+
 - **Docker**: 24+
 - **kubectl**: (if using Kubernetes)
 

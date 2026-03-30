@@ -2,7 +2,7 @@
 
 **Production-ready event lifecycle management system** for catering companies - from initial inquiry to post-event follow-up.
 
-**Last updated**: March 29, 2026
+**Last updated**: March 30, 2026
 
 ## Architecture
 
@@ -14,13 +14,13 @@
 
 **Tech Stack**:
 
-- Frontend: Next.js 16.2.1 + React 19.2.3 + Tailwind CSS 4.2.2
-- API: tRPC v11.15.1 (type-safe RPC)
+- Frontend: Next.js 16.2.1 + React 19.2.4 + Tailwind CSS 4.2.2
+- API: tRPC v11.16.0 (type-safe RPC)
 - Database: PostgreSQL 17 + Drizzle ORM 0.45.2
-- Scheduling: Go 1.25.7 + Fiber v3.1.0 + SQLC 1.27+
-- Monorepo: pnpm 10+ + Turborepo 2.7.6
-- Testing: Vitest 4.1.2 + Playwright 1.58.0 + TestContainers
-- Linting: ESLint 9.39.2 + TypeScript-ESLint 8.57.2
+- Scheduling: Go 1.26.1 + Fiber v3.1.0 + SQLC 1.27+
+- Monorepo: pnpm 10+ + Turborepo 2.8.21
+- Testing: Vitest 4.1.2 + Playwright 1.58.2 + TestContainers
+- Linting & Formatting: Biome 2.4.9
 - Validation: Zod 4.3.6
 
 ## Quick Start
@@ -29,7 +29,7 @@
 
 - Node.js 20 LTS
 - pnpm 10+
-- Go 1.25.7+
+- Go 1.26+
 - Docker Desktop
 - PostgreSQL 17 (or use Docker)
 
@@ -164,10 +164,6 @@ psql $DATABASE_URL -c "\dt"  # List tables
 cd packages/database && pnpm db:push
 cd apps/scheduling-service && sqlc generate
 
-# ESLint configuration issues (after Next.js 16 upgrade)
-rm -rf node_modules/.cache
-pnpm lint
-
 # Dependency issues
 rm -rf node_modules apps/*/node_modules packages/*/node_modules
 pnpm install
@@ -207,7 +203,7 @@ catering-event-manager/
 ├── packages/
 │   ├── database/              # Drizzle ORM 0.45.2 schemas
 │   ├── types/                 # Shared TypeScript types
-│   └── config/                # Shared configs (ESLint, Tailwind, TS)
+│   └── config/                # Shared configs (Tailwind, TS)
 ├── specs/                     # Feature specifications
 ├── docs/                      # Project documentation
 ├── docker-compose.yml         # Development stack
@@ -225,13 +221,11 @@ pnpm dev
 # Build all packages
 pnpm build
 
-# Type checking (ESLint 9 + TypeScript-ESLint 8)
+# Type checking
 pnpm type-check
 
-# Linting (updated for Next.js 16)
+# Linting and formatting (Biome 2.4.9)
 pnpm lint
-
-# Code formatting (Biome 2.4.9)
 pnpm format
 
 # Database operations
@@ -263,7 +257,7 @@ pnpm test:coverage
 
 **Test Results** (as of March 18, 2026):
 
-- ✅ **943 tests passing** across 53 test files
+- ✅ **976 tests passing** across 55 test files
 - ✅ **14 tRPC routers fully tested** (event, task, resource, document, expense, invoice, payment, menu, clients, analytics, user, portal, template, search)
 - ✅ **19 React component test suites** covering auth, events, tasks, resources, clients, analytics, dashboard
 - ✅ Complete test infrastructure with PostgreSQL TestContainers
@@ -289,7 +283,7 @@ go test -bench=. ./internal/scheduler
 
 **Test Results**:
 
-- ✅ **46 tests passing** (0 failures)
+- ✅ **48 tests passing** (0 failures)
 - ✅ **Coverage: scheduler 91.7%, api 88.3%, domain 100%**
 - ✅ All critical conflict detection algorithms fully tested
 - ✅ Test infrastructure: PostgreSQL TestContainers + testify
@@ -642,15 +636,14 @@ Before production deployment:
 | Package | Previous | Current |
 |---------|----------|---------|
 | Next.js | 15.5.6 | **16.2.1** |
-| React | 18.x | **19.2.3** |
+| React | 18.x | **19.2.4** |
 | Tailwind CSS | 3.4.18 | **4.2.2** |
 | Zod | 3.25.76 | **4.3.6** |
-| tRPC | 11.7.x | **11.15.1** |
+| tRPC | 11.7.x | **11.16.0** |
 | Drizzle ORM | 0.36.4 | **0.45.2** |
-| ESLint | 8.x | **9.39.2** |
-| Biome | 1.9.4 | **2.4.9** |
+| Biome | 1.9.4 | **2.4.9** (replaced ESLint) |
 | Vitest | 3.x | **4.1.2** |
-| Go | 1.24.0 | **1.25.7** |
+| Go | 1.24.0 | **1.26.1** |
 | Fiber | v3-beta.3 | **v3.1.0** |
 
 ## License

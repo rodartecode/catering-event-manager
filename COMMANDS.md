@@ -43,7 +43,7 @@ pnpm type-check
 
 | Command | Description |
 |---------|-------------|
-| `pnpm lint` | ESLint + Biome linting |
+| `pnpm lint` | Biome linting |
 | `pnpm type-check` | TypeScript type checking |
 | `pnpm format` | Format code with Biome |
 | `pnpm format:check` | Check formatting without writing |
@@ -80,7 +80,7 @@ pnpm test:quality:update  # Update visual baselines
 
 ### Integration
 ```bash
-pnpm test:integration    # Cross-service tests (requires Go 1.25+)
+pnpm test:integration    # Cross-service tests (requires Go 1.26+)
 ```
 
 ## Building

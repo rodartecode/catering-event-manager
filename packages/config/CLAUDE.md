@@ -9,7 +9,6 @@ packages/config/
 ├── typescript-config/     # Shared TypeScript options
 │   ├── base.json         # Base config (ES2022, strict)
 │   └── package.json
-├── eslint-config/        # (placeholder - ESLint in apps)
 └── tailwind-config/      # (placeholder - Tailwind in apps)
 ```
 
@@ -50,22 +49,17 @@ packages/config/
 | `strict` | true | Full type safety |
 | `isolatedModules` | true | For SWC, esbuild |
 
-## ESLint Configuration
-
-ESLint v9 flat config per-app (framework-specific):
-
-**Location**: `apps/web/eslint.config.mjs`
-
-**Key rules**:
-- TypeScript-ESLint recommended
-- Next.js plugin with Core Web Vitals
-- `no-console: warn` (use `@/lib/logger`)
-- Unused vars with `_` prefix allowed
-
 ## Biome Configuration
 
-Root-level `biome.json` for formatting:
+Root-level `biome.json` handles both linting and formatting:
 
+**Linting** (recommended rules + custom):
+- `noExplicitAny`: warn
+- `noUnusedVariables`: warn (ignores `_` prefix)
+- `noConsole`: warn (use `@/lib/logger`)
+- `noUnusedImports`: warn
+
+**Formatting**:
 - 2 spaces indentation
 - Single quotes (JS), double quotes (JSX)
 - 100 character line width
@@ -73,6 +67,7 @@ Root-level `biome.json` for formatting:
 - Always use semicolons
 
 ```bash
+pnpm lint          # Biome linting
 pnpm format        # Format code
 pnpm format:check  # Check formatting
 ```
@@ -84,15 +79,6 @@ Tailwind v4 config per-app (content paths specific):
 **Location**: `apps/web/tailwind.config.ts`
 
 ## Adding Shared Configurations
-
-### Shared ESLint (future)
-
-```javascript
-// packages/config/eslint-config/index.mjs
-export const sharedRules = {
-  // Shared rules
-};
-```
 
 ### Shared Tailwind Preset (future)
 
@@ -116,12 +102,9 @@ pnpm install  # Ensure packages linked
 cd apps/web && pnpm type-check
 ```
 
-### ESLint/Biome Conflicts
+### Biome Issues
 
-- **Biome**: Formatting only
-- **ESLint**: Code quality rules
-
-Check both configs for overlapping rules.
+Biome handles both linting and formatting. If rules conflict, check `biome.json` at the repo root.
 
 ## Related Documentation
 
