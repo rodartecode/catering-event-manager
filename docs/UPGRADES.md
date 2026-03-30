@@ -14,6 +14,7 @@ Tracks major dependency upgrades — blockers, peer dep constraints, and recomme
 | Vite 7 → 8 | #30 | 2026-03-29 |
 | ESLint → Biome (linting) | #32 | 2026-03-30 |
 | Go 1.25.7 → 1.25.8 | #32 | 2026-03-30 |
+| Go 1.25.8 → 1.26.1 | #33 | 2026-03-30 |
 
 ---
 
