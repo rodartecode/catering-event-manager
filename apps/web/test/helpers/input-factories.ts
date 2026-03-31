@@ -216,6 +216,9 @@ export function getProcedureInput(
     'event.updateStatus': { id: data.event.id, newStatus: 'planning' },
     'event.update': { id: data.event.id, eventName: 'Updated Auth Event' },
     'event.archive': { id: data.completedEvent.id },
+    'event.exportCsv': {},
+    'event.importCsv': { csvData: 'eventName,clientName,eventDate' },
+    'event.batchUpdateStatus': { ids: [data.event.id], newStatus: 'planning' },
 
     // Task router
     'task.create': {
@@ -240,6 +243,8 @@ export function getProcedureInput(
     'task.getAssignableUsers': undefined,
     'task.getAvailableDependencies': { eventId: data.event.id },
     'task.markOverdueTasks': undefined,
+    'task.exportCsv': {},
+    'task.batchUpdateStatus': { ids: [data.task.id], newStatus: 'completed' },
 
     // Resource router
     'resource.create': { name: 'Auth Test Resource', type: 'staff' },
@@ -257,6 +262,7 @@ export function getProcedureInput(
     },
     'resource.update': { id: data.resource.id, name: 'Updated Auth Resource' },
     'resource.delete': { id: data.resource.id },
+    'resource.exportCsv': {},
     'resource.getAvailable': {},
     'resource.schedulingServiceHealth': undefined,
 
@@ -288,6 +294,8 @@ export function getProcedureInput(
       sendWelcome: false,
     },
     'clients.disablePortalAccess': { clientId: data.client.id },
+    'clients.exportCsv': undefined,
+    'clients.importCsv': { csvData: 'companyName,contactName,email' },
     'clients.getPortalUser': { clientId: data.client.id },
 
     // Document router
@@ -443,6 +451,9 @@ export const allProcedures: ProcedureDefinition[] = [
   { router: 'event', procedure: 'updateStatus', access: 'admin', type: 'mutation' },
   { router: 'event', procedure: 'update', access: 'admin', type: 'mutation' },
   { router: 'event', procedure: 'archive', access: 'admin', type: 'mutation' },
+  { router: 'event', procedure: 'exportCsv', access: 'admin', type: 'mutation' },
+  { router: 'event', procedure: 'importCsv', access: 'admin', type: 'mutation' },
+  { router: 'event', procedure: 'batchUpdateStatus', access: 'admin', type: 'mutation' },
   // Event router - protectedProcedure
   { router: 'event', procedure: 'list', access: 'protected', type: 'query' },
   { router: 'event', procedure: 'getById', access: 'protected', type: 'query' },
@@ -461,6 +472,8 @@ export const allProcedures: ProcedureDefinition[] = [
   { router: 'task', procedure: 'update', access: 'admin', type: 'mutation' },
   { router: 'task', procedure: 'delete', access: 'admin', type: 'mutation' },
   { router: 'task', procedure: 'markOverdueTasks', access: 'admin', type: 'mutation' },
+  { router: 'task', procedure: 'exportCsv', access: 'admin', type: 'mutation' },
+  { router: 'task', procedure: 'batchUpdateStatus', access: 'admin', type: 'mutation' },
   // Task router - protectedProcedure
   { router: 'task', procedure: 'updateStatus', access: 'protected', type: 'mutation' },
   { router: 'task', procedure: 'listByEvent', access: 'protected', type: 'query' },
@@ -480,6 +493,7 @@ export const allProcedures: ProcedureDefinition[] = [
   { router: 'resource', procedure: 'create', access: 'admin', type: 'mutation' },
   { router: 'resource', procedure: 'update', access: 'admin', type: 'mutation' },
   { router: 'resource', procedure: 'delete', access: 'admin', type: 'mutation' },
+  { router: 'resource', procedure: 'exportCsv', access: 'admin', type: 'mutation' },
   // Resource router - protectedProcedure
   { router: 'resource', procedure: 'list', access: 'protected', type: 'query' },
   { router: 'resource', procedure: 'getById', access: 'protected', type: 'query' },
@@ -546,6 +560,8 @@ export const allProcedures: ProcedureDefinition[] = [
   { router: 'clients', procedure: 'scheduleFollowUp', access: 'admin', type: 'mutation' },
   { router: 'clients', procedure: 'enablePortalAccess', access: 'admin', type: 'mutation' },
   { router: 'clients', procedure: 'disablePortalAccess', access: 'admin', type: 'mutation' },
+  { router: 'clients', procedure: 'exportCsv', access: 'admin', type: 'mutation' },
+  { router: 'clients', procedure: 'importCsv', access: 'admin', type: 'mutation' },
   // Clients router - protectedProcedure
   { router: 'clients', procedure: 'list', access: 'protected', type: 'query' },
   { router: 'clients', procedure: 'getById', access: 'protected', type: 'query' },

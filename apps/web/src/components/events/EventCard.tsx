@@ -11,9 +11,12 @@ interface EventCardProps {
     taskCount: number;
     completedTaskCount: number;
   };
+  selectable?: boolean;
+  selected?: boolean;
+  onToggleSelect?: () => void;
 }
 
-export function EventCard({ event }: EventCardProps) {
+export function EventCard({ event, selectable, selected, onToggleSelect }: EventCardProps) {
   const taskProgress =
     event.taskCount > 0 ? Math.round((event.completedTaskCount / event.taskCount) * 100) : 0;
 
@@ -23,71 +26,100 @@ export function EventCard({ event }: EventCardProps) {
     day: 'numeric',
   });
 
+  const cardContent = (
+    <>
+      <div className="flex justify-between items-start mb-3">
+        {selectable && (
+          <input
+            type="checkbox"
+            checked={selected}
+            onChange={onToggleSelect}
+            onClick={(e) => e.stopPropagation()}
+            aria-label={`Select ${event.eventName}`}
+            className="mr-3 mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+          />
+        )}
+        <h3
+          className={`text-xl font-semibold text-gray-900 flex-1 ${!selectable ? 'group-hover:text-blue-600' : ''} transition`}
+        >
+          {event.eventName}
+        </h3>
+        <EventStatusBadge status={event.status} />
+      </div>
+
+      <div className="space-y-2 text-sm text-gray-600 mb-4">
+        <div className="flex items-center">
+          <svg
+            className="w-4 h-4 mr-2 text-gray-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+            />
+          </svg>
+          <span>{event.clientName || 'Unknown Client'}</span>
+        </div>
+
+        <div className="flex items-center">
+          <svg
+            className="w-4 h-4 mr-2 text-gray-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+            />
+          </svg>
+          <span>{formattedDate}</span>
+        </div>
+      </div>
+
+      {/* Task Progress */}
+      {event.taskCount > 0 && (
+        <div className="space-y-2">
+          <div className="flex justify-between text-sm text-gray-600">
+            <span>Tasks</span>
+            <span>
+              {event.completedTaskCount}/{event.taskCount}
+            </span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div
+              className="bg-blue-600 h-2 rounded-full transition-all"
+              style={{ width: `${taskProgress}%` }}
+            />
+          </div>
+        </div>
+      )}
+    </>
+  );
+
+  if (selectable) {
+    return (
+      <div
+        onClick={onToggleSelect}
+        className={`bg-white rounded-lg shadow hover:shadow-lg transition-shadow p-6 h-full cursor-pointer ${selected ? 'ring-2 ring-blue-600' : ''}`}
+      >
+        {cardContent}
+      </div>
+    );
+  }
+
   return (
     <Link href={`/events/${event.id}`} className="block group">
       <div className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow p-6 h-full">
-        <div className="flex justify-between items-start mb-3">
-          <h3 className="text-xl font-semibold text-gray-900 group-hover:text-blue-600 transition">
-            {event.eventName}
-          </h3>
-          <EventStatusBadge status={event.status} />
-        </div>
-
-        <div className="space-y-2 text-sm text-gray-600 mb-4">
-          <div className="flex items-center">
-            <svg
-              className="w-4 h-4 mr-2 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-              />
-            </svg>
-            <span>{event.clientName || 'Unknown Client'}</span>
-          </div>
-
-          <div className="flex items-center">
-            <svg
-              className="w-4 h-4 mr-2 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-              />
-            </svg>
-            <span>{formattedDate}</span>
-          </div>
-        </div>
-
-        {/* Task Progress */}
-        {event.taskCount > 0 && (
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm text-gray-600">
-              <span>Tasks</span>
-              <span>
-                {event.completedTaskCount}/{event.taskCount}
-              </span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div
-                className="bg-blue-600 h-2 rounded-full transition-all"
-                style={{ width: `${taskProgress}%` }}
-              />
-            </div>
-          </div>
-        )}
+        {cardContent}
       </div>
     </Link>
   );

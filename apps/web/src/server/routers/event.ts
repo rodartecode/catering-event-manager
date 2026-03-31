@@ -9,8 +9,10 @@ import {
 } from '@catering-event-manager/database/schema';
 import { TRPCError } from '@trpc/server';
 import { addDays, differenceInMilliseconds } from 'date-fns';
-import { and, asc, desc, eq, gte, ilike, isNotNull, lte, or, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, ilike, inArray, isNotNull, lte, or, sql } from 'drizzle-orm';
 import { z } from 'zod';
+import type { ImportError } from '../services/csv';
+import { buildFieldMapping, generateCSV, parseCSV, validateImportRows } from '../services/csv';
 import { createNotifications } from '../services/notifications';
 import { adminProcedure, protectedProcedure, router } from '../trpc';
 
@@ -516,6 +518,314 @@ export const eventRouter = router({
       return newEvent;
     });
   }),
+
+  // Bulk: Export events as CSV
+  exportCsv: adminProcedure
+    .input(
+      z.object({
+        status: eventStatusEnum.optional(),
+        dateFrom: z.coerce.date().optional(),
+        dateTo: z.coerce.date().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { db } = ctx;
+
+      const conditions = [eq(events.isArchived, false)];
+      if (input.status) {
+        conditions.push(eq(events.status, input.status));
+      }
+      if (input.dateFrom) {
+        conditions.push(gte(events.eventDate, input.dateFrom));
+      }
+      if (input.dateTo) {
+        conditions.push(lte(events.eventDate, input.dateTo));
+      }
+
+      const results = await db
+        .select({
+          id: events.id,
+          eventName: events.eventName,
+          clientName: clients.companyName,
+          eventDate: events.eventDate,
+          location: events.location,
+          status: events.status,
+          estimatedAttendees: events.estimatedAttendees,
+          notes: events.notes,
+          createdAt: events.createdAt,
+        })
+        .from(events)
+        .leftJoin(clients, eq(events.clientId, clients.id))
+        .where(and(...conditions))
+        .orderBy(desc(events.eventDate));
+
+      const headers = [
+        'ID',
+        'Event Name',
+        'Client Name',
+        'Event Date',
+        'Location',
+        'Status',
+        'Estimated Attendees',
+        'Notes',
+        'Created At',
+      ];
+
+      const rows = results.map((r) => [
+        r.id,
+        r.eventName,
+        r.clientName,
+        r.eventDate,
+        r.location,
+        r.status,
+        r.estimatedAttendees,
+        r.notes,
+        r.createdAt,
+      ]);
+
+      const csv = generateCSV(headers, rows);
+      const date = new Date().toISOString().split('T')[0];
+      return { csv, filename: `events-${date}.csv`, rowCount: rows.length };
+    }),
+
+  // Bulk: Import events from CSV
+  importCsv: adminProcedure
+    .input(z.object({ csvData: z.string().max(1_500_000) }))
+    .mutation(async ({ ctx, input }) => {
+      const { db, session } = ctx;
+
+      const { headers, rows } = parseCSV(input.csvData);
+      if (rows.length === 0) {
+        return { imported: 0, errors: [] as ImportError[], total: 0 };
+      }
+
+      const requiredFields = ['eventName', 'clientName', 'eventDate'];
+      const optionalFields = ['location', 'estimatedAttendees', 'notes'];
+      const { mapping, errors: headerErrors } = buildFieldMapping(
+        headers,
+        requiredFields,
+        optionalFields
+      );
+
+      if (!mapping) {
+        return {
+          imported: 0,
+          errors: headerErrors.map((msg) => ({ row: 0, field: 'header', message: msg })),
+          total: rows.length,
+        };
+      }
+
+      // Row validation schema — inputs come as strings from CSV
+      const eventImportSchema = z.object({
+        eventName: z.string().min(1, 'Event name is required'),
+        clientName: z.string().min(1, 'Client name is required'),
+        eventDate: z.string().min(1, 'Event date is required'),
+        location: z.string().optional(),
+        estimatedAttendees: z.string().optional(),
+        notes: z.string().optional(),
+      });
+
+      const { valid, errors: validationErrors } = validateImportRows(
+        rows,
+        eventImportSchema,
+        mapping
+      );
+
+      // Resolve client names to IDs (batch lookup)
+      const clientNames = [...new Set(valid.map((v) => v.data.clientName))];
+      const allErrors: ImportError[] = [...validationErrors];
+
+      const clientLookup = new Map<string, number>();
+      if (clientNames.length > 0) {
+        const foundClients = await db
+          .select({ id: clients.id, companyName: clients.companyName })
+          .from(clients);
+
+        for (const c of foundClients) {
+          clientLookup.set(c.companyName.toLowerCase(), c.id);
+        }
+      }
+
+      // Filter valid rows by client resolution
+      const insertReady: {
+        eventName: string;
+        clientId: number;
+        eventDate: Date;
+        location?: string;
+        estimatedAttendees?: number;
+        notes?: string;
+        rowIndex: number;
+      }[] = [];
+
+      for (const { data, rowIndex } of valid) {
+        const clientId = clientLookup.get(data.clientName.toLowerCase());
+        if (!clientId) {
+          allErrors.push({
+            row: rowIndex,
+            field: 'clientName',
+            message: `Client "${data.clientName}" not found`,
+          });
+          continue;
+        }
+
+        const eventDate = new Date(data.eventDate);
+        if (Number.isNaN(eventDate.getTime())) {
+          allErrors.push({
+            row: rowIndex,
+            field: 'eventDate',
+            message: 'Invalid date format',
+          });
+          continue;
+        }
+
+        const attendees = data.estimatedAttendees
+          ? parseInt(data.estimatedAttendees, 10)
+          : undefined;
+        if (data.estimatedAttendees && (Number.isNaN(attendees) || (attendees && attendees < 1))) {
+          allErrors.push({
+            row: rowIndex,
+            field: 'estimatedAttendees',
+            message: 'Must be a positive number',
+          });
+          continue;
+        }
+
+        insertReady.push({
+          eventName: data.eventName,
+          clientId,
+          eventDate,
+          location: data.location || undefined,
+          estimatedAttendees: attendees,
+          notes: data.notes || undefined,
+          rowIndex,
+        });
+      }
+
+      if (insertReady.length === 0) {
+        return { imported: 0, errors: allErrors, total: rows.length };
+      }
+
+      // Insert all valid rows in a transaction
+      const userId = parseInt(session.user.id, 10);
+      let imported = 0;
+
+      await db.transaction(async (tx) => {
+        for (const row of insertReady) {
+          const [event] = await tx
+            .insert(events)
+            .values({
+              clientId: row.clientId,
+              eventName: row.eventName,
+              eventDate: row.eventDate,
+              location: row.location,
+              estimatedAttendees: row.estimatedAttendees,
+              notes: row.notes,
+              status: 'inquiry',
+              createdBy: userId,
+            })
+            .returning({ id: events.id });
+
+          await tx.insert(eventStatusLog).values({
+            eventId: event.id,
+            oldStatus: null,
+            newStatus: 'inquiry',
+            changedBy: userId,
+            notes: 'Imported from CSV',
+          });
+
+          imported++;
+        }
+      });
+
+      return { imported, errors: allErrors, total: rows.length };
+    }),
+
+  // Bulk: Batch update status for multiple events
+  batchUpdateStatus: adminProcedure
+    .input(
+      z.object({
+        ids: z.array(z.number().positive()).min(1).max(100),
+        newStatus: eventStatusEnum,
+        notes: z.string().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { db, session } = ctx;
+      const userId = parseInt(session.user.id, 10);
+
+      // Fetch all target events
+      const targetEvents = await db
+        .select({
+          id: events.id,
+          status: events.status,
+          isArchived: events.isArchived,
+          eventName: events.eventName,
+        })
+        .from(events)
+        .where(inArray(events.id, input.ids));
+
+      // Validate: all IDs must exist
+      if (targetEvents.length !== input.ids.length) {
+        const foundIds = new Set(targetEvents.map((e) => e.id));
+        const missing = input.ids.filter((id) => !foundIds.has(id));
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: `Events not found: ${missing.join(', ')}`,
+        });
+      }
+
+      // Validate: none archived
+      const archived = targetEvents.filter((e) => e.isArchived);
+      if (archived.length > 0) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: `Cannot update archived events: ${archived.map((e) => e.id).join(', ')}`,
+        });
+      }
+
+      // All-or-nothing transaction
+      await db.transaction(async (tx) => {
+        for (const event of targetEvents) {
+          await tx
+            .update(events)
+            .set({ status: input.newStatus, updatedAt: new Date() })
+            .where(eq(events.id, event.id));
+
+          await tx.insert(eventStatusLog).values({
+            eventId: event.id,
+            oldStatus: event.status,
+            newStatus: input.newStatus,
+            changedBy: userId,
+            notes: input.notes ?? 'Batch status update',
+          });
+        }
+      });
+
+      // Notify assigned users (batched)
+      const assignedUsers = await db
+        .selectDistinct({ userId: tasks.assignedTo, eventId: tasks.eventId })
+        .from(tasks)
+        .where(and(inArray(tasks.eventId, input.ids), isNotNull(tasks.assignedTo)));
+
+      const notifications = assignedUsers
+        .filter((u) => u.userId !== null)
+        .map((u) => {
+          const event = targetEvents.find((e) => e.id === u.eventId);
+          return {
+            userId: u.userId!,
+            type: 'status_changed' as const,
+            title: `"${event?.eventName}" status changed to ${input.newStatus}`,
+            entityType: 'event',
+            entityId: u.eventId,
+          };
+        });
+
+      if (notifications.length > 0) {
+        await createNotifications(db, notifications);
+      }
+
+      return { updated: targetEvents.length };
+    }),
 
   // FR-007: Archive event
   archive: adminProcedure

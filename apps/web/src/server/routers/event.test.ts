@@ -15,6 +15,7 @@ import {
 import {
   createArchivedEvent,
   createClient,
+  createEvent,
   createUser,
   resetFactoryCounter,
 } from '../../../test/helpers/factories';
@@ -1197,6 +1198,158 @@ describe('event router', () => {
       for (const task of createdTasks) {
         expect(task.status).toBe('pending');
       }
+    });
+  });
+
+  // ============================================
+  // Bulk Operations
+  // ============================================
+
+  describe('event.exportCsv', () => {
+    it('exports events as CSV', async () => {
+      const caller = createAdminCaller(db);
+      const client = await createClient(db, { companyName: 'Export Co' });
+      await createEvent(db, client.id, 1, { eventName: 'Gala Night' });
+      await createEvent(db, client.id, 1, { eventName: 'Corporate Lunch' });
+
+      const result = await caller.event.exportCsv({});
+
+      expect(result.rowCount).toBe(2);
+      expect(result.csv).toContain('Gala Night');
+      expect(result.csv).toContain('Corporate Lunch');
+      expect(result.csv).toContain('Export Co');
+      expect(result.filename).toMatch(/^events-\d{4}-\d{2}-\d{2}\.csv$/);
+    });
+
+    it('respects status filter', async () => {
+      const caller = createAdminCaller(db);
+      const client = await createClient(db);
+      await createEvent(db, client.id, 1, { status: 'planning' });
+      await createEvent(db, client.id, 1, { status: 'completed' });
+
+      const result = await caller.event.exportCsv({ status: 'planning' });
+
+      expect(result.rowCount).toBe(1);
+    });
+
+    it('rejects non-admin users', async () => {
+      const caller = createManagerCaller(db);
+
+      await expect(caller.event.exportCsv({})).rejects.toMatchObject({
+        code: 'FORBIDDEN',
+      });
+    });
+  });
+
+  describe('event.importCsv', () => {
+    it('imports events from CSV', async () => {
+      const caller = createAdminCaller(db);
+      await createClient(db, { companyName: 'Import Co' });
+
+      const csvData = 'eventName,clientName,eventDate\nNew Year Gala,Import Co,2026-12-31';
+      const result = await caller.event.importCsv({ csvData });
+
+      expect(result.imported).toBe(1);
+      expect(result.errors).toHaveLength(0);
+    });
+
+    it('reports errors for unknown clients', async () => {
+      const caller = createAdminCaller(db);
+
+      const csvData = 'eventName,clientName,eventDate\nGala,Nonexistent Corp,2026-12-31';
+      const result = await caller.event.importCsv({ csvData });
+
+      expect(result.imported).toBe(0);
+      expect(result.errors).toHaveLength(1);
+      expect(result.errors[0].field).toBe('clientName');
+    });
+
+    it('reports missing required columns', async () => {
+      const caller = createAdminCaller(db);
+
+      const csvData = 'eventName,eventDate\nGala,2026-12-31';
+      const result = await caller.event.importCsv({ csvData });
+
+      expect(result.imported).toBe(0);
+      expect(result.errors[0].message).toContain('Missing required column');
+    });
+
+    it('handles empty CSV', async () => {
+      const caller = createAdminCaller(db);
+
+      const csvData = 'eventName,clientName,eventDate';
+      const result = await caller.event.importCsv({ csvData });
+
+      expect(result.imported).toBe(0);
+      expect(result.total).toBe(0);
+    });
+
+    it('rejects non-admin users', async () => {
+      const caller = createManagerCaller(db);
+
+      await expect(
+        caller.event.importCsv({ csvData: 'eventName,clientName,eventDate\nX,Y,Z' })
+      ).rejects.toMatchObject({ code: 'FORBIDDEN' });
+    });
+  });
+
+  describe('event.batchUpdateStatus', () => {
+    it('updates status of multiple events', async () => {
+      const caller = createAdminCaller(db);
+      const client = await createClient(db);
+      const e1 = await createEvent(db, client.id, 1, { status: 'inquiry' });
+      const e2 = await createEvent(db, client.id, 1, { status: 'inquiry' });
+
+      const result = await caller.event.batchUpdateStatus({
+        ids: [e1.id, e2.id],
+        newStatus: 'planning',
+      });
+
+      expect(result.updated).toBe(2);
+
+      // Verify both updated
+      const ev1 = await caller.event.getById({ id: e1.id });
+      const ev2 = await caller.event.getById({ id: e2.id });
+      expect(ev1.status).toBe('planning');
+      expect(ev2.status).toBe('planning');
+    });
+
+    it('rejects if any event is archived', async () => {
+      const caller = createAdminCaller(db);
+      const client = await createClient(db);
+      const e1 = await createEvent(db, client.id, 1, { status: 'inquiry' });
+      const archived = await createArchivedEvent(db, client.id, 1);
+
+      await expect(
+        caller.event.batchUpdateStatus({
+          ids: [e1.id, archived.id],
+          newStatus: 'planning',
+        })
+      ).rejects.toMatchObject({ code: 'BAD_REQUEST' });
+    });
+
+    it('rejects if any event ID does not exist', async () => {
+      const caller = createAdminCaller(db);
+      const client = await createClient(db);
+      const e1 = await createEvent(db, client.id, 1);
+
+      await expect(
+        caller.event.batchUpdateStatus({
+          ids: [e1.id, 99999],
+          newStatus: 'planning',
+        })
+      ).rejects.toMatchObject({ code: 'NOT_FOUND' });
+    });
+
+    it('rejects non-admin users', async () => {
+      const caller = createManagerCaller(db);
+
+      await expect(
+        caller.event.batchUpdateStatus({
+          ids: [1],
+          newStatus: 'planning',
+        })
+      ).rejects.toMatchObject({ code: 'FORBIDDEN' });
     });
   });
 });

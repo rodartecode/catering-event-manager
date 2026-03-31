@@ -20,6 +20,7 @@ components/
 ├── payments/        # PaymentList
 ├── resources/       # ResourceCard, ResourceForm, ScheduleBuilder
 ├── search/          # GlobalSearch, SearchResults
+├── shared/          # ExportButton, ImportDialog, BulkActionBar, BatchStatusDialog
 └── tasks/           # TaskCard, TaskForm, TaskDependencyGraph, GanttChart
 ```
 

@@ -44,17 +44,11 @@ _(No items — all P1 features complete)_
   - Task assignment dialog suggests staff matching required skills + availability
 - Notes: Current `resources` table has `type: staff` but no concept of skills or shift availability. This extends the existing resource system. Feeds into Go scheduler's conflict detection.
 
-### bulk-operations
+### ~~bulk-operations~~ ✅ DONE (2026-03-31)
 **Import/export events, batch status updates**
 - Scope: M
 - Touches: api, ui
-- Depends on: none
-- Done when:
-  - CSV export for events, clients, tasks, resources (server-side generation)
-  - CSV import for events and clients with validation and error reporting
-  - Batch status update UI: select multiple events/tasks, apply status change
-  - tRPC: `event.exportCsv`, `event.importCsv`, `event.batchUpdateStatus`; same pattern for tasks
-- Notes: Essential for onboarding (importing existing client/event data) and reporting (export to Excel/Google Sheets).
+- Implemented: CSV export for events/clients/tasks/resources (server-side), CSV import for events/clients with row-level validation and error reporting, batch status updates for events/tasks with all-or-nothing transactions. Shared UI: ExportButton, ImportDialog, BulkActionBar, BatchStatusDialog, useMultiSelect hook. 8 new tRPC procedures, 80 new tests.
 
 ### ~~gantt-chart~~ ✅ DONE (2026-03-15)
 **Visual timeline of task dependencies**
