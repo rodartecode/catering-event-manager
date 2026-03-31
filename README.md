@@ -2,7 +2,7 @@
 
 **Production-ready event lifecycle management system** for catering companies - from initial inquiry to post-event follow-up.
 
-**Last updated**: March 30, 2026
+**Last updated**: March 31, 2026
 
 ## Architecture
 
@@ -296,7 +296,7 @@ go test -bench=. ./internal/scheduler
 - `errors_test.go` - 5 domain error tests
 - `testutil/` - Test infrastructure (containers + fixtures)
 
-### E2E Tests (Playwright 1.58.0)
+### E2E Tests (Playwright 1.58.2)
 
 ```bash
 cd apps/web
@@ -317,7 +317,7 @@ pnpm test:e2e:ui
 
 **Coverage achieved**:
 
-- **tRPC routers**: 600+ tests across 14 routers
+- **tRPC routers**: 600+ tests across 15 routers
 - **React components**: 232+ tests across 19+ component files
 - **Go scheduler**: 91.7% coverage (exceeds 80% target)
 - **Critical algorithms**: 100% tested (conflict detection, availability)
@@ -393,8 +393,8 @@ pnpm test:quality:update
 
 ### 📊 Current Implementation Metrics
 
-- **15 tRPC API routers** with 103 procedures (fully tested)
-- **23 database tables** with optimized indexes (PostgreSQL 17)
+- **15 tRPC API routers** with 108 procedures (fully tested)
+- **25 database tables** with optimized indexes and RLS (PostgreSQL 17)
 - **~100 React components** across 15 feature areas
 - **5 main dashboard sections** (Events, Tasks, Resources, Clients, Analytics)
 - **Complete testing infrastructure** (Vitest + TestContainers + Playwright)
@@ -595,7 +595,15 @@ Before production deployment:
 - [ ] Review CSP for any required external resources
 - [ ] Test security headers at [securityheaders.com](https://securityheaders.com/)
 
-## Recent Updates (March 19, 2026)
+## Recent Updates (March 31, 2026)
+
+### Notification System (March 30)
+
+- In-app notifications with bell icon, real-time badge (5s polling), click-to-navigate
+- User preferences: per-type in-app/email toggles (task assignment, status changes, overdue tasks, follow-ups)
+- Email digest cron via Resend, batched by user
+- 6 new tRPC procedures, notification service with fire-and-forget pattern
+- RLS enabled on notification tables (migration 0010)
 
 ### Menu Planning (March 19)
 
@@ -620,11 +628,11 @@ Before production deployment:
 - Profitability analytics: `financialSummary` and `eventProfitability` endpoints
 - 3 new routers (expense, invoice, payment) with 15 procedures
 
-### Security Hardening (March 15)
+### Security Hardening (March 15–30)
 
-- Row Level Security enabled on all public tables
+- Row Level Security enabled on all 25 tables (migrations 0005, 0008, 0010)
 - Advanced search with full-text ILIKE across all entities
-- Dependency updates: testcontainers-go v0.41.0, jsdom 28.0.0
+- Dependency updates: testcontainers-go v0.41.0, jsdom 29.0.1
 
 ### Infrastructure & DevOps Hardening (February 8-9)
 

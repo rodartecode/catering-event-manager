@@ -56,18 +56,11 @@ _(No items — all P1 features complete)_
   - tRPC: `event.exportCsv`, `event.importCsv`, `event.batchUpdateStatus`; same pattern for tasks
 - Notes: Essential for onboarding (importing existing client/event data) and reporting (export to Excel/Google Sheets).
 
-### gantt-chart
+### ~~gantt-chart~~ ✅ DONE (2026-03-15)
 **Visual timeline of task dependencies**
 - Scope: M
 - Touches: ui
-- Depends on: none
-- Done when:
-  - Gantt chart component on event detail page showing tasks on a timeline
-  - Task bars colored by status, connected by dependency arrows
-  - Critical path highlighted
-  - Click task bar to open task detail
-  - Responsive: horizontal scroll for long timelines
-- Notes: Tasks already have `due_date` and `depends_on_task_id`. This is purely a visualization layer. Consider using an existing library (e.g., frappe-gantt, dhtmlx-gantt) vs building custom.
+- Implemented: Gantt chart component on event detail page with task bars colored by status, dependency arrows, critical path highlighting, and horizontal scroll for long timelines.
 
 ### drag-drop-scheduling
 **Visual calendar-based resource assignment**
@@ -269,7 +262,7 @@ _(No items — all P1 features complete)_
 | Priority | Item | Description | Scope |
 |----------|------|-------------|-------|
 | High | **Automate Go service deployment** | Add Fly.io deployment to CI pipeline (currently manual) | M |
-| High | **Security scanning** | Integrate Snyk or Dependabot for vulnerability scanning | S |
+| ~~High~~ | ~~**Security scanning**~~ | ~~Integrate Snyk or Dependabot~~ — Dependabot configured (npm + gomod, weekly) | ✅ Done |
 | High | **Container registry** | Publish Docker images to GHCR for versioned deployments | M |
 | Medium | **Distributed Turbo caching** | Remote cache for faster CI builds | S |
 | Medium | **APM integration** | Sentry for error tracking and performance monitoring | M |
@@ -286,7 +279,10 @@ _(No items — all P1 features complete)_
 |------|------|-------|
 | 2026-03-18 | Document management | File uploads via Supabase Storage with presigned URLs, client portal sharing, drag-and-drop UI |
 | 2026-03-16 | Financial layer | Expenses, invoicing with PDF, payments with auto-status transitions, profitability analytics |
-| 2026-03-15 | Enable RLS on all public tables | Deny-all RLS on 13 tables; blocks Supabase REST API, app unaffected (postgres superuser bypasses RLS) |
+| 2026-03-30 | Notification system | In-app notifications (bell icon, preferences), email digests via Resend, 6 procedures, migrations 0009–0010 |
+| 2026-03-19 | Menu planning | Global catalog, per-event menus, dietary tracking, cost estimation, shopping lists, 15+1 procedures, migration 0007 |
+| 2026-03-15 | Enable RLS on all 25 tables | Deny-all RLS across all tables (migrations 0005, 0008, 0010); blocks Supabase REST API, app unaffected |
+| 2026-03-15 | Gantt chart | Visual task timeline with dependency arrows, critical path, status-colored bars |
 | 2026-02-28 | Advanced search | Full-text ILIKE search across events, clients, tasks, resources |
 | 2026-02-09 | Event cloning | Deep-copy events with task dependency remapping |
 | 2026-02-03 | Task templates | Auto-generate tasks from predefined templates |

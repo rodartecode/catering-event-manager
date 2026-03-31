@@ -26,8 +26,10 @@ Guidance for Claude Code when working with this repository.
 | `packages/database/` | `packages/database/CLAUDE.md` | Drizzle schemas, migrations, database patterns |
 | `packages/types/` | `packages/types/CLAUDE.md` | Shared TypeScript types |
 | `packages/config/` | `packages/config/CLAUDE.md` | Shared configurations |
+| `apps/web/src/components/` | `apps/web/src/components/CLAUDE.md` | Component patterns, domain organization |
+| `apps/web/src/lib/` | `apps/web/src/lib/CLAUDE.md` | Utilities, auth, storage, email |
+| `apps/web/test/helpers/` | `apps/web/test/helpers/CLAUDE.md` | Test infrastructure, factories, gotchas |
 | `docs/` | `docs/CLAUDE.md` | Documentation standards, ADRs |
-| `specs/001-*/` | `specs/001-event-lifecycle-management/CLAUDE.md` | Feature spec structure |
 | `apps/web/src/server/` | `apps/web/src/server/CLAUDE.md` | tRPC router patterns |
 
 ## Monorepo Structure

@@ -45,12 +45,18 @@ NEXT_PUBLIC_SUPABASE_URL="https://your-project.supabase.co"
 SUPABASE_SERVICE_ROLE_KEY="your-service-role-key"
 ```
 
+### Email (Resend)
+
+Required for client portal magic links and notification email digests:
+
+```bash
+RESEND_API_KEY="re_..."
+FROM_EMAIL="no-reply@example.com"
+```
+
 ## Optional Variables
 
 ```bash
-# Email (Resend)
-RESEND_API_KEY=""
-FROM_EMAIL="no-reply@example.com"
 
 # Redis (caching)
 REDIS_URL="redis://localhost:6379"

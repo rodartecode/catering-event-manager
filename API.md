@@ -1,10 +1,10 @@
 # API Documentation
 
-**Last updated**: 2026-03-29
-**Version**: 1.1
+**Last updated**: 2026-03-31
+**Version**: 1.2
 **Base URL**: `http://localhost:3000/api/trpc` (dev) | `https://catering-dev.vercel.app/api/trpc` (prod)
 
-This document describes the complete tRPC API for the production-ready Catering Event Manager system. 15 routers with 103 procedures implemented.
+This document describes the complete tRPC API for the production-ready Catering Event Manager system. 15 routers with 108 procedures implemented.
 
 ## Authentication
 
@@ -34,7 +34,7 @@ The API uses Next-Auth v5 session-based authentication with three roles:
 | `template` | Task template auto-generation | 2 procedures | admin | ✅ Complete |
 | `search` | Global search | 1 procedure | protected | ✅ Complete |
 
-**Total**: 103 procedures across 15 routers | **Test Coverage**: 1007 tests passing | **Production Status**: Live on Vercel
+**Total**: 108 procedures across 15 routers | **Test Coverage**: 1007 tests passing | **Production Status**: Live on Vercel
 
 ---
 
