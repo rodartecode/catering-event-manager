@@ -106,6 +106,118 @@ This link will expire in 15 minutes. If you didn't request this email, you can s
   }
 }
 
+interface NotificationDigestItem {
+  title: string;
+  body: string | null;
+  createdAt: Date;
+}
+
+interface SendNotificationDigestParams {
+  to: string;
+  userName: string;
+  notifications: NotificationDigestItem[];
+}
+
+export async function sendNotificationDigest({
+  to,
+  userName,
+  notifications,
+}: SendNotificationDigestParams) {
+  const fromEmail = process.env.EMAIL_FROM || 'noreply@example.com';
+
+  const notificationRows = notifications
+    .map(
+      (n) => `
+      <tr>
+        <td style="padding: 12px 16px; border-bottom: 1px solid #e5e7eb;">
+          <p style="margin: 0; font-size: 14px; font-weight: 600; color: #111827;">${n.title}</p>
+          ${n.body ? `<p style="margin: 4px 0 0; font-size: 13px; color: #6b7280;">${n.body}</p>` : ''}
+        </td>
+      </tr>`
+    )
+    .join('');
+
+  const notificationText = notifications
+    .map((n) => `- ${n.title}${n.body ? `: ${n.body}` : ''}`)
+    .join('\n');
+
+  try {
+    const { data, error } = await getResendClient().emails.send({
+      from: fromEmail,
+      to,
+      subject: `You have ${notifications.length} unread notification${notifications.length === 1 ? '' : 's'}`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          </head>
+          <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 10px 10px 0 0;">
+              <h1 style="color: white; margin: 0; font-size: 24px;">Notification Digest</h1>
+            </div>
+
+            <div style="background: #f9fafb; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 10px 10px;">
+              <p style="font-size: 16px; margin-bottom: 20px;">
+                Hi ${userName},
+              </p>
+
+              <p style="font-size: 16px; margin-bottom: 20px;">
+                You have ${notifications.length} unread notification${notifications.length === 1 ? '' : 's'}:
+              </p>
+
+              <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; border: 1px solid #e5e7eb;">
+                ${notificationRows}
+              </table>
+
+              <p style="font-size: 14px; color: #6b7280; margin-top: 20px;">
+                Sign in to your dashboard to view and manage all notifications.
+              </p>
+            </div>
+          </body>
+        </html>
+      `,
+      text: `
+Notification Digest
+
+Hi ${userName},
+
+You have ${notifications.length} unread notification${notifications.length === 1 ? '' : 's'}:
+
+${notificationText}
+
+Sign in to your dashboard to view and manage all notifications.
+      `.trim(),
+    });
+
+    if (error) {
+      logger.error('Notification digest email failed', new Error(error.message), {
+        context: 'sendNotificationDigest',
+        recipientDomain: to.split('@')[1],
+      });
+      throw new Error(`Failed to send email: ${error.message}`);
+    }
+
+    logger.info('Notification digest sent', {
+      messageId: data?.id,
+      notificationCount: notifications.length,
+      context: 'sendNotificationDigest',
+    });
+    return { success: true, messageId: data?.id };
+  } catch (error) {
+    logger.error(
+      'Notification digest email error',
+      error instanceof Error ? error : new Error(String(error)),
+      {
+        context: 'sendNotificationDigest',
+        recipientDomain: to.split('@')[1],
+      }
+    );
+    throw error;
+  }
+}
+
 interface SendWelcomeEmailParams {
   to: string;
   clientName: string;

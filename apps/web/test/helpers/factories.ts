@@ -753,6 +753,40 @@ export async function createNotification(
 }
 
 /**
+ * Create a notification preference.
+ */
+export async function createNotificationPreference(
+  db: TestDatabase,
+  userId: number,
+  overrides: Partial<{
+    notificationType: 'task_assigned' | 'status_changed' | 'overdue' | 'follow_up_due';
+    inAppEnabled: boolean;
+    emailEnabled: boolean;
+  }> = {}
+) {
+  const result = await db.execute(sql`
+    INSERT INTO notification_preferences (user_id, notification_type, in_app_enabled, email_enabled)
+    VALUES (
+      ${userId},
+      ${overrides.notificationType || 'task_assigned'},
+      ${overrides.inAppEnabled ?? true},
+      ${overrides.emailEnabled ?? true}
+    )
+    RETURNING id, user_id, notification_type, in_app_enabled, email_enabled, created_at, updated_at
+  `);
+
+  return result[0] as {
+    id: number;
+    user_id: number;
+    notification_type: string;
+    in_app_enabled: boolean;
+    email_enabled: boolean;
+    created_at: Date;
+    updated_at: Date;
+  };
+}
+
+/**
  * Convenience: Create a client with an event.
  * Creates a user automatically to satisfy the created_by requirement.
  */

@@ -1,4 +1,5 @@
 import {
+  boolean,
   index,
   integer,
   pgEnum,
@@ -30,6 +31,7 @@ export const notifications = pgTable(
     readAt: timestamp('read_at', { withTimezone: true }),
     entityType: varchar('entity_type', { length: 50 }),
     entityId: integer('entity_id'),
+    emailPending: boolean('email_pending').default(false).notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
   },

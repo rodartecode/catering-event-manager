@@ -64,6 +64,13 @@
       "when": 1774917729534,
       "tag": "0008_military_professor_monster",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1774919245344,
+      "tag": "0009_brainy_freak",
+      "breakpoints": true
     }
   ]
 }

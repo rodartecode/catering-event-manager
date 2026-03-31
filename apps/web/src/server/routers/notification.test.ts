@@ -7,6 +7,7 @@ import {
 } from '../../../test/helpers/db';
 import {
   createNotification,
+  createNotificationPreference,
   createUser,
   resetFactoryCounter,
 } from '../../../test/helpers/factories';
@@ -226,6 +227,136 @@ describe('notification router', () => {
     it('rejects unauthenticated requests', async () => {
       const caller = createUnauthenticatedCaller(db);
       await expect(caller.notification.getUnreadCount()).rejects.toMatchObject({
+        code: 'UNAUTHORIZED',
+      });
+    });
+  });
+
+  describe('notification.getPreferences', () => {
+    it('returns defaults for all types when no preferences saved', async () => {
+      const caller = createAdminCaller(db);
+
+      const result = await caller.notification.getPreferences();
+
+      expect(result).toHaveLength(4);
+      for (const pref of result) {
+        expect(pref.inAppEnabled).toBe(true);
+        expect(pref.emailEnabled).toBe(true);
+      }
+      expect(result.map((p) => p.notificationType)).toEqual([
+        'task_assigned',
+        'status_changed',
+        'overdue',
+        'follow_up_due',
+      ]);
+    });
+
+    it('returns saved preferences merged with defaults', async () => {
+      const caller = createAdminCaller(db);
+
+      await createNotificationPreference(db, 1, {
+        notificationType: 'task_assigned',
+        inAppEnabled: true,
+        emailEnabled: false,
+      });
+
+      const result = await caller.notification.getPreferences();
+
+      const taskAssigned = result.find((p) => p.notificationType === 'task_assigned');
+      expect(taskAssigned?.emailEnabled).toBe(false);
+      expect(taskAssigned?.inAppEnabled).toBe(true);
+
+      // Others should be defaults
+      const statusChanged = result.find((p) => p.notificationType === 'status_changed');
+      expect(statusChanged?.emailEnabled).toBe(true);
+      expect(statusChanged?.inAppEnabled).toBe(true);
+    });
+
+    it('only returns current user preferences', async () => {
+      const adminCaller = createAdminCaller(db);
+
+      // Set preference for manager (user 2)
+      await createNotificationPreference(db, 2, {
+        notificationType: 'overdue',
+        emailEnabled: false,
+      });
+
+      const result = await adminCaller.notification.getPreferences();
+      const overdue = result.find((p) => p.notificationType === 'overdue');
+      expect(overdue?.emailEnabled).toBe(true); // default, not manager's setting
+    });
+
+    it('rejects unauthenticated requests', async () => {
+      const caller = createUnauthenticatedCaller(db);
+      await expect(caller.notification.getPreferences()).rejects.toMatchObject({
+        code: 'UNAUTHORIZED',
+      });
+    });
+  });
+
+  describe('notification.updatePreference', () => {
+    it('creates a new preference when none exists', async () => {
+      const caller = createAdminCaller(db);
+
+      await caller.notification.updatePreference({
+        notificationType: 'task_assigned',
+        emailEnabled: false,
+      });
+
+      const prefs = await caller.notification.getPreferences();
+      const taskAssigned = prefs.find((p) => p.notificationType === 'task_assigned');
+      expect(taskAssigned?.emailEnabled).toBe(false);
+      expect(taskAssigned?.inAppEnabled).toBe(true); // default
+    });
+
+    it('updates an existing preference', async () => {
+      const caller = createAdminCaller(db);
+
+      await createNotificationPreference(db, 1, {
+        notificationType: 'overdue',
+        inAppEnabled: true,
+        emailEnabled: true,
+      });
+
+      await caller.notification.updatePreference({
+        notificationType: 'overdue',
+        inAppEnabled: false,
+      });
+
+      const prefs = await caller.notification.getPreferences();
+      const overdue = prefs.find((p) => p.notificationType === 'overdue');
+      expect(overdue?.inAppEnabled).toBe(false);
+      expect(overdue?.emailEnabled).toBe(true); // unchanged
+    });
+
+    it('only updates specified fields', async () => {
+      const caller = createAdminCaller(db);
+
+      await createNotificationPreference(db, 1, {
+        notificationType: 'status_changed',
+        inAppEnabled: false,
+        emailEnabled: false,
+      });
+
+      await caller.notification.updatePreference({
+        notificationType: 'status_changed',
+        emailEnabled: true,
+      });
+
+      const prefs = await caller.notification.getPreferences();
+      const statusChanged = prefs.find((p) => p.notificationType === 'status_changed');
+      expect(statusChanged?.inAppEnabled).toBe(false); // unchanged
+      expect(statusChanged?.emailEnabled).toBe(true); // updated
+    });
+
+    it('rejects unauthenticated requests', async () => {
+      const caller = createUnauthenticatedCaller(db);
+      await expect(
+        caller.notification.updatePreference({
+          notificationType: 'task_assigned',
+          emailEnabled: false,
+        })
+      ).rejects.toMatchObject({
         code: 'UNAUTHORIZED',
       });
     });

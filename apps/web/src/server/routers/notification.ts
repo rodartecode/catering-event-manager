@@ -1,4 +1,8 @@
-import { notifications } from '@catering-event-manager/database/schema';
+import {
+  notificationPreferences,
+  notifications,
+  notificationTypeEnum,
+} from '@catering-event-manager/database/schema';
 import { TRPCError } from '@trpc/server';
 import { and, desc, eq, isNull, lt, sql } from 'drizzle-orm';
 import { z } from 'zod';
@@ -103,4 +107,74 @@ export const notificationRouter = router({
 
     return { count: result?.count ?? 0 };
   }),
+
+  getPreferences: protectedProcedure.query(async ({ ctx }) => {
+    const { db, session } = ctx;
+    const userId = Number.parseInt(session.user.id, 10);
+
+    const saved = await db
+      .select()
+      .from(notificationPreferences)
+      .where(eq(notificationPreferences.userId, userId));
+
+    const savedMap = new Map(saved.map((p) => [p.notificationType, p]));
+
+    return notificationTypeEnum.enumValues.map((type) => {
+      const pref = savedMap.get(type);
+      return {
+        notificationType: type,
+        inAppEnabled: pref?.inAppEnabled ?? true,
+        emailEnabled: pref?.emailEnabled ?? true,
+      };
+    });
+  }),
+
+  updatePreference: protectedProcedure
+    .input(
+      z.object({
+        notificationType: z.enum(notificationTypeEnum.enumValues),
+        inAppEnabled: z.boolean().optional(),
+        emailEnabled: z.boolean().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { db, session } = ctx;
+      const userId = Number.parseInt(session.user.id, 10);
+
+      const [existing] = await db
+        .select()
+        .from(notificationPreferences)
+        .where(
+          and(
+            eq(notificationPreferences.userId, userId),
+            eq(notificationPreferences.notificationType, input.notificationType)
+          )
+        );
+
+      if (existing) {
+        const updates: Record<string, unknown> = { updatedAt: new Date() };
+        if (input.inAppEnabled !== undefined) updates.inAppEnabled = input.inAppEnabled;
+        if (input.emailEnabled !== undefined) updates.emailEnabled = input.emailEnabled;
+
+        await db
+          .update(notificationPreferences)
+          .set(updates)
+          .where(eq(notificationPreferences.id, existing.id));
+      } else {
+        await db.insert(notificationPreferences).values({
+          userId,
+          notificationType: input.notificationType,
+          inAppEnabled: input.inAppEnabled ?? true,
+          emailEnabled: input.emailEnabled ?? true,
+        });
+      }
+
+      logger.info('Notification preference updated', {
+        userId,
+        notificationType: input.notificationType,
+        context: 'notification.updatePreference',
+      });
+
+      return { success: true };
+    }),
 });

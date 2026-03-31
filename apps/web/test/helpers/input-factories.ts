@@ -380,6 +380,11 @@ export function getProcedureInput(
     'notification.markRead': { id: data.notification.id },
     'notification.markAllRead': undefined,
     'notification.getUnreadCount': undefined,
+    'notification.getPreferences': undefined,
+    'notification.updatePreference': {
+      notificationType: 'task_assigned',
+      inAppEnabled: false,
+    },
 
     // Analytics router
     'analytics.eventCompletion': { dateFrom, dateTo },
@@ -555,6 +560,8 @@ export const allProcedures: ProcedureDefinition[] = [
   { router: 'notification', procedure: 'markRead', access: 'protected', type: 'mutation' },
   { router: 'notification', procedure: 'markAllRead', access: 'protected', type: 'mutation' },
   { router: 'notification', procedure: 'getUnreadCount', access: 'protected', type: 'query' },
+  { router: 'notification', procedure: 'getPreferences', access: 'protected', type: 'query' },
+  { router: 'notification', procedure: 'updatePreference', access: 'protected', type: 'mutation' },
 
   // Analytics router - protectedProcedure
   { router: 'analytics', procedure: 'eventCompletion', access: 'protected', type: 'query' },

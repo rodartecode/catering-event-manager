@@ -221,7 +221,7 @@ export function NotificationDropdown({ onClose }: NotificationDropdownProps) {
       </div>
 
       {/* Content */}
-      <div className="max-h-[400px] overflow-y-auto">
+      <div className="max-h-[360px] overflow-y-auto">
         {isLoading ? (
           <div className="px-4 py-8 text-center text-sm text-gray-500">Loading...</div>
         ) : items.length === 0 ? (
@@ -267,6 +267,16 @@ export function NotificationDropdown({ onClose }: NotificationDropdownProps) {
             ))}
           </ul>
         )}
+      </div>
+
+      {/* Footer */}
+      <div className="border-t border-gray-200 px-4 py-2">
+        <a
+          href="/notifications/preferences"
+          className="block text-center text-xs text-gray-500 hover:text-gray-700 transition"
+        >
+          Notification settings
+        </a>
       </div>
     </div>
   );
