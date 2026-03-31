@@ -71,6 +71,13 @@
       "when": 1774919245344,
       "tag": "0009_brainy_freak",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1774919400000,
+      "tag": "0010_enable_notification_rls",
+      "breakpoints": true
     }
   ]
 }
