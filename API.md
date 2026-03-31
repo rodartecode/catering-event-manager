@@ -4,7 +4,7 @@
 **Version**: 1.2
 **Base URL**: `http://localhost:3000/api/trpc` (dev) | `https://catering-dev.vercel.app/api/trpc` (prod)
 
-This document describes the complete tRPC API for the production-ready Catering Event Manager system. 15 routers with 108 procedures implemented.
+This document describes the complete tRPC API for the production-ready Catering Event Manager system. 15 routers with 116 procedures implemented.
 
 ## Authentication
 
@@ -34,7 +34,7 @@ The API uses Next-Auth v5 session-based authentication with three roles:
 | `template` | Task template auto-generation | 2 procedures | admin | ✅ Complete |
 | `search` | Global search | 1 procedure | protected | ✅ Complete |
 
-**Total**: 108 procedures across 15 routers | **Test Coverage**: 1007 tests passing | **Production Status**: Live on Vercel
+**Total**: 116 procedures across 15 routers | **Test Coverage**: 1087 tests passing | **Production Status**: Live on Vercel
 
 ---
 
@@ -178,6 +178,46 @@ Manages the complete event lifecycle from inquiry to follow-up.
 }
 ```
 
+### `event.exportCsv`
+
+**Auth**: Administrator only
+**Purpose**: Export events as CSV (server-side generation)
+
+```typescript
+// Input
+{ status?: EventStatus, dateFrom?: Date, dateTo?: Date }
+
+// Response
+{ csv: string, filename: string, rowCount: number }
+```
+
+### `event.importCsv`
+
+**Auth**: Administrator only
+**Purpose**: Import events from CSV with validation and error reporting
+
+```typescript
+// Input
+{ csvData: string } // raw CSV text, max 1.5MB
+
+// Response
+{ imported: number, errors: ImportError[], total: number }
+// ImportError: { row: number, field: string, message: string }
+```
+
+### `event.batchUpdateStatus`
+
+**Auth**: Administrator only
+**Purpose**: Update status of multiple events atomically (all-or-nothing)
+
+```typescript
+// Input
+{ ids: number[], newStatus: EventStatus, notes?: string }
+
+// Response
+{ updated: number }
+```
+
 ### Real-Time Updates
 
 **Status**: Currently uses polling instead of subscriptions for reliability.
@@ -302,6 +342,32 @@ Manages task assignment, completion tracking, and resource allocation.
 }
 ```
 
+### `task.exportCsv`
+
+**Auth**: Administrator only
+**Purpose**: Export tasks as CSV (server-side generation)
+
+```typescript
+// Input
+{ eventId?: number, status?: TaskStatus }
+
+// Response
+{ csv: string, filename: string, rowCount: number }
+```
+
+### `task.batchUpdateStatus`
+
+**Auth**: Administrator only
+**Purpose**: Update status of multiple tasks atomically (all-or-nothing)
+
+```typescript
+// Input
+{ ids: number[], newStatus: TaskStatus }
+
+// Response
+{ updated: number }
+```
+
 ---
 
 ## Resource Router (`resource`)
@@ -419,6 +485,19 @@ Manages staff, equipment, and resource scheduling with conflict detection.
     notes: string | null;
   }>;
 }
+```
+
+### `resource.exportCsv`
+
+**Auth**: Administrator only
+**Purpose**: Export resources as CSV
+
+```typescript
+// Input
+{ type?: 'staff' | 'equipment' | 'materials' }
+
+// Response
+{ csv: string, filename: string, rowCount: number }
 ```
 
 ---
@@ -656,6 +735,29 @@ Manages client information and communication tracking.
     notes: string;
   }>;
 }
+```
+
+### `clients.exportCsv`
+
+**Auth**: Administrator only
+**Purpose**: Export all clients as CSV
+
+```typescript
+// Response
+{ csv: string, filename: string, rowCount: number }
+```
+
+### `clients.importCsv`
+
+**Auth**: Administrator only
+**Purpose**: Import clients from CSV with validation and duplicate email detection
+
+```typescript
+// Input
+{ csvData: string } // raw CSV text, max 1.5MB
+
+// Response
+{ imported: number, errors: ImportError[], total: number }
 ```
 
 ---
@@ -1108,7 +1210,7 @@ Example error response:
 
 ✅ **Comprehensive testing infrastructure implemented:**
 
-- **TypeScript Tests**: **1007 tests** across 56 test files (tRPC routers + React components)
+- **TypeScript Tests**: **1087 tests** across 58 test files (tRPC routers + React components)
 - **Go Service Tests**: **48 tests** with 91.7% scheduler coverage
 - **Integration Tests**: Real database testing for both TypeScript and Go services
 
