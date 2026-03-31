@@ -152,6 +152,14 @@ async function runMigrations(db: TestDatabase): Promise<void> {
     END $$;
   `);
 
+  await db.execute(sql`
+    DO $$ BEGIN
+      CREATE TYPE notification_type AS ENUM ('task_assigned', 'status_changed', 'overdue', 'follow_up_due');
+    EXCEPTION
+      WHEN duplicate_object THEN null;
+    END $$;
+  `);
+
   // Create tables (clients first for FK references)
   await db.execute(sql`
     CREATE TABLE IF NOT EXISTS clients (
@@ -443,6 +451,35 @@ async function runMigrations(db: TestDatabase): Promise<void> {
     )
   `);
 
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS notifications (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id),
+      type notification_type NOT NULL,
+      title VARCHAR(255) NOT NULL,
+      body TEXT,
+      read_at TIMESTAMP WITH TIME ZONE,
+      entity_type VARCHAR(50),
+      entity_id INTEGER,
+      email_pending BOOLEAN NOT NULL DEFAULT false,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+      updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+    )
+  `);
+
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS notification_preferences (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id),
+      notification_type notification_type NOT NULL,
+      in_app_enabled BOOLEAN NOT NULL DEFAULT true,
+      email_enabled BOOLEAN NOT NULL DEFAULT true,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+      updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+      UNIQUE(user_id, notification_type)
+    )
+  `);
+
   // Portal magic link tokens table
   await db.execute(sql`
     CREATE TABLE IF NOT EXISTS verification_tokens (
@@ -470,6 +507,8 @@ async function runMigrations(db: TestDatabase): Promise<void> {
     'event_menus',
     'menu_items',
     'expenses',
+    'notification_preferences',
+    'notifications',
     'payments',
     'invoice_line_items',
     'invoices',
@@ -489,7 +528,7 @@ async function runMigrations(db: TestDatabase): Promise<void> {
 export async function cleanDatabase(db: TestDatabase): Promise<void> {
   // Truncate tables in order (respecting foreign key constraints)
   await db.execute(
-    sql`TRUNCATE verification_tokens, documents, event_menu_items, event_menus, menu_items, communications, payments, invoice_line_items, invoices, expenses, resource_schedule, task_resources, tasks, event_status_log, events, resources, users, clients, task_template_items, task_templates RESTART IDENTITY CASCADE`
+    sql`TRUNCATE verification_tokens, notification_preferences, notifications, documents, event_menu_items, event_menus, menu_items, communications, payments, invoice_line_items, invoices, expenses, resource_schedule, task_resources, tasks, event_status_log, events, resources, users, clients, task_template_items, task_templates RESTART IDENTITY CASCADE`
   );
 }
 

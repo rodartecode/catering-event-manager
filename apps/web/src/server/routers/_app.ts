@@ -6,6 +6,7 @@ import { eventRouter } from './event';
 import { expenseRouter } from './expense';
 import { invoiceRouter } from './invoice';
 import { menuRouter } from './menu';
+import { notificationRouter } from './notification';
 import { paymentRouter } from './payment';
 import { portalRouter } from './portal';
 import { resourceRouter } from './resource';
@@ -22,6 +23,7 @@ export const appRouter = router({
   expense: expenseRouter,
   invoice: invoiceRouter,
   menu: menuRouter,
+  notification: notificationRouter,
   payment: paymentRouter,
   analytics: analyticsRouter,
   clients: clientsRouter,

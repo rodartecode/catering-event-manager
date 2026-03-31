@@ -708,6 +708,85 @@ export async function createEventMenuItem(
 }
 
 /**
+ * Create a test notification.
+ */
+export async function createNotification(
+  db: TestDatabase,
+  userId: number,
+  overrides: Partial<{
+    type: 'task_assigned' | 'status_changed' | 'overdue' | 'follow_up_due';
+    title: string;
+    body: string;
+    readAt: Date;
+    entityType: string;
+    entityId: number;
+  }> = {}
+) {
+  const id = nextId();
+
+  const result = await db.execute(sql`
+    INSERT INTO notifications (user_id, type, title, body, read_at, entity_type, entity_id)
+    VALUES (
+      ${userId},
+      ${overrides.type || 'task_assigned'},
+      ${overrides.title || `Notification ${id}`},
+      ${overrides.body || null},
+      ${overrides.readAt?.toISOString() || null},
+      ${overrides.entityType || null},
+      ${overrides.entityId || null}
+    )
+    RETURNING id, user_id, type, title, body, read_at, entity_type, entity_id, created_at, updated_at
+  `);
+
+  return result[0] as {
+    id: number;
+    user_id: number;
+    type: string;
+    title: string;
+    body: string | null;
+    read_at: Date | null;
+    entity_type: string | null;
+    entity_id: number | null;
+    created_at: Date;
+    updated_at: Date;
+  };
+}
+
+/**
+ * Create a notification preference.
+ */
+export async function createNotificationPreference(
+  db: TestDatabase,
+  userId: number,
+  overrides: Partial<{
+    notificationType: 'task_assigned' | 'status_changed' | 'overdue' | 'follow_up_due';
+    inAppEnabled: boolean;
+    emailEnabled: boolean;
+  }> = {}
+) {
+  const result = await db.execute(sql`
+    INSERT INTO notification_preferences (user_id, notification_type, in_app_enabled, email_enabled)
+    VALUES (
+      ${userId},
+      ${overrides.notificationType || 'task_assigned'},
+      ${overrides.inAppEnabled ?? true},
+      ${overrides.emailEnabled ?? true}
+    )
+    RETURNING id, user_id, notification_type, in_app_enabled, email_enabled, created_at, updated_at
+  `);
+
+  return result[0] as {
+    id: number;
+    user_id: number;
+    notification_type: string;
+    in_app_enabled: boolean;
+    email_enabled: boolean;
+    created_at: Date;
+    updated_at: Date;
+  };
+}
+
+/**
  * Convenience: Create a client with an event.
  * Creates a user automatically to satisfy the created_by requirement.
  */

@@ -9,8 +9,9 @@ import {
 } from '@catering-event-manager/database/schema';
 import { TRPCError } from '@trpc/server';
 import { addDays, differenceInMilliseconds } from 'date-fns';
-import { and, asc, desc, eq, gte, ilike, lte, or, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, ilike, isNotNull, lte, or, sql } from 'drizzle-orm';
 import { z } from 'zod';
+import { createNotifications } from '../services/notifications';
 import { adminProcedure, protectedProcedure, router } from '../trpc';
 
 // Event status enum for validation
@@ -339,6 +340,27 @@ export const eventRouter = router({
         notes: input.notes,
       });
     });
+
+    // Notify all assigned users on this event
+    const assignedUsers = await db
+      .selectDistinct({ userId: tasks.assignedTo })
+      .from(tasks)
+      .where(and(eq(tasks.eventId, input.id), isNotNull(tasks.assignedTo)));
+
+    const userIds = assignedUsers.map((u) => u.userId).filter((id): id is number => id !== null);
+
+    if (userIds.length > 0) {
+      await createNotifications(
+        db,
+        userIds.map((userId) => ({
+          userId,
+          type: 'status_changed' as const,
+          title: `"${currentEvent.eventName}" status changed to ${input.newStatus}`,
+          entityType: 'event',
+          entityId: input.id,
+        }))
+      );
+    }
 
     return { success: true };
   }),

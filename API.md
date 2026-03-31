@@ -4,7 +4,7 @@
 **Version**: 1.1
 **Base URL**: `http://localhost:3000/api/trpc` (dev) | `https://catering-dev.vercel.app/api/trpc` (prod)
 
-This document describes the complete tRPC API for the production-ready Catering Event Manager system. 14 routers with 97 procedures implemented.
+This document describes the complete tRPC API for the production-ready Catering Event Manager system. 15 routers with 103 procedures implemented.
 
 ## Authentication
 
@@ -30,10 +30,11 @@ The API uses Next-Auth v5 session-based authentication with three roles:
 | `clients` | Client & communication management | 13 procedures | admin/protected | ✅ Complete |
 | `user` | User management | 1 procedure | public | ✅ Complete |
 | `portal` | Client portal (read-only access) | 11 procedures | client/public | ✅ Complete |
+| `notification` | In-app notifications & preferences | 6 procedures | protected | ✅ Complete |
 | `template` | Task template auto-generation | 2 procedures | admin | ✅ Complete |
 | `search` | Global search | 1 procedure | protected | ✅ Complete |
 
-**Total**: 97 procedures across 14 routers | **Test Coverage**: 943 tests passing | **Production Status**: Live on Vercel
+**Total**: 103 procedures across 15 routers | **Test Coverage**: 1007 tests passing | **Production Status**: Live on Vercel
 
 ---
 
@@ -962,6 +963,111 @@ Array<{
 
 ---
 
+## Notification Router (`notification`)
+
+Manages in-app notifications and user notification preferences.
+
+### `notification.list`
+
+**Auth**: Protected (any authenticated user)
+**Purpose**: List notifications for the current user with cursor pagination
+
+```typescript
+// Input
+{
+  limit?: number;         // 1-100, default 50
+  cursor?: number;        // Notification ID for cursor pagination
+  unreadOnly?: boolean;   // Filter to unread only, default false
+}
+
+// Response
+{
+  items: Array<{
+    id: number;
+    type: 'task_assigned' | 'status_changed' | 'overdue' | 'follow_up_due';
+    title: string;
+    body: string | null;
+    readAt: Date | null;
+    entityType: string | null;
+    entityId: number | null;
+    createdAt: Date;
+  }>;
+  nextCursor: number | undefined;
+}
+```
+
+### `notification.markRead`
+
+**Auth**: Protected
+**Purpose**: Mark a single notification as read (ownership enforced)
+
+```typescript
+// Input
+{ id: number }
+
+// Response
+{ success: true }
+```
+
+### `notification.markAllRead`
+
+**Auth**: Protected
+**Purpose**: Mark all unread notifications as read for the current user
+
+```typescript
+// Input: none
+
+// Response
+{ count: number }  // Number of notifications marked read
+```
+
+### `notification.getUnreadCount`
+
+**Auth**: Protected
+**Purpose**: Get unread notification count (polled by bell icon)
+
+```typescript
+// Input: none
+
+// Response
+{ count: number }
+```
+
+### `notification.getPreferences`
+
+**Auth**: Protected
+**Purpose**: Get notification preferences for all types (fills defaults for missing rows)
+
+```typescript
+// Input: none
+
+// Response
+Array<{
+  notificationType: 'task_assigned' | 'status_changed' | 'overdue' | 'follow_up_due';
+  inAppEnabled: boolean;
+  emailEnabled: boolean;
+}>
+```
+
+### `notification.updatePreference`
+
+**Auth**: Protected
+**Purpose**: Update notification preference for a specific type (upsert)
+
+```typescript
+// Input
+{
+  notificationType: 'task_assigned' | 'status_changed' | 'overdue' | 'follow_up_due';
+  inAppEnabled?: boolean;
+  emailEnabled?: boolean;
+}
+
+// Response
+{ success: true }
+```
+
+---
+
 ## Error Handling
 
 All tRPC endpoints use standard error codes:
@@ -1002,8 +1108,8 @@ Example error response:
 
 ✅ **Comprehensive testing infrastructure implemented:**
 
-- **TypeScript Tests**: **866 tests** across 52 test files (tRPC routers + React components)
-- **Go Service Tests**: **46 tests** with 91.7% scheduler coverage
+- **TypeScript Tests**: **1007 tests** across 56 test files (tRPC routers + React components)
+- **Go Service Tests**: **48 tests** with 91.7% scheduler coverage
 - **Integration Tests**: Real database testing for both TypeScript and Go services
 
 ### API Testing Commands
@@ -1032,6 +1138,9 @@ curl http://localhost:3000/api/trpc/user.me
 
 # Follow-up cron endpoint
 curl http://localhost:3000/api/cron/follow-ups
+
+# Notification digest cron endpoint
+curl http://localhost:3000/api/cron/notifications-digest
 
 # Go service conflict detection (requires JSON)
 curl -X POST http://localhost:8080/api/v1/scheduling/check-conflicts \

@@ -3,6 +3,7 @@ import { clients, communications, events } from '@catering-event-manager/databas
 import { and, eq, lte } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
 import { logger } from '@/lib/logger';
+import { createNotifications } from '@/server/services/notifications';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,6 +17,7 @@ export async function GET() {
         communicationId: communications.id,
         followUpDate: communications.followUpDate,
         subject: communications.subject,
+        contactedBy: communications.contactedBy,
         clientId: clients.id,
         companyName: clients.companyName,
         contactName: clients.contactName,
@@ -59,6 +61,22 @@ export async function GET() {
 
     const overdueCount = summary.filter((s) => s.status === 'overdue').length;
     const dueTodayCount = summary.filter((s) => s.status === 'due_today').length;
+
+    // Create follow_up_due notifications for contacted users
+    const followUpNotifications = dueFollowUps
+      .filter((item) => item.contactedBy !== null)
+      .map((item) => ({
+        userId: item.contactedBy!,
+        type: 'follow_up_due' as const,
+        title: `Follow-up due: ${item.subject || item.companyName}`,
+        body: `Follow-up for ${item.eventName} with ${item.companyName}`,
+        entityType: 'communication',
+        entityId: item.communicationId,
+      }));
+
+    if (followUpNotifications.length > 0) {
+      await createNotifications(db, followUpNotifications);
+    }
 
     logger.info('Follow-up cron completed', {
       context: 'follow-ups-cron',

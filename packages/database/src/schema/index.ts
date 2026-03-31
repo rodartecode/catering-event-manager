@@ -9,6 +9,8 @@ export * from './expenses';
 export * from './invoice-line-items';
 export * from './invoices';
 export * from './menu-items';
+export * from './notification-preferences';
+export * from './notifications';
 export * from './payments';
 export * from './portal-access-log';
 export * from './resource-schedule';
