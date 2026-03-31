@@ -30,6 +30,7 @@ describe('Sidebar', () => {
     expect(screen.getByText('Events')).toBeInTheDocument();
     expect(screen.getByText('Clients')).toBeInTheDocument();
     expect(screen.getByText('Resources')).toBeInTheDocument();
+    expect(screen.getByText('Menu Items')).toBeInTheDocument();
     expect(screen.getByText('Analytics')).toBeInTheDocument();
   });
 
@@ -47,6 +48,9 @@ describe('Sidebar', () => {
 
     const resourcesLink = screen.getByRole('link', { name: /resources/i });
     expect(resourcesLink).toHaveAttribute('href', '/resources');
+
+    const menusLink = screen.getByRole('link', { name: /menu items/i });
+    expect(menusLink).toHaveAttribute('href', '/menus');
 
     const analyticsLink = screen.getByRole('link', { name: /analytics/i });
     expect(analyticsLink).toHaveAttribute('href', '/analytics');
@@ -137,8 +141,8 @@ describe('Sidebar', () => {
   it('renders navigation icons', () => {
     render(<Sidebar />);
 
-    // Should have multiple SVG icons (5 nav items + potentially close button)
+    // Should have multiple SVG icons (6 nav items + potentially close button)
     const icons = document.querySelectorAll('svg[stroke="currentColor"]');
-    expect(icons.length).toBeGreaterThanOrEqual(5);
+    expect(icons.length).toBeGreaterThanOrEqual(6);
   });
 });
