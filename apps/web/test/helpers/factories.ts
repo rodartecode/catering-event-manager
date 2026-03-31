@@ -708,6 +708,51 @@ export async function createEventMenuItem(
 }
 
 /**
+ * Create a test notification.
+ */
+export async function createNotification(
+  db: TestDatabase,
+  userId: number,
+  overrides: Partial<{
+    type: 'task_assigned' | 'status_changed' | 'overdue' | 'follow_up_due';
+    title: string;
+    body: string;
+    readAt: Date;
+    entityType: string;
+    entityId: number;
+  }> = {}
+) {
+  const id = nextId();
+
+  const result = await db.execute(sql`
+    INSERT INTO notifications (user_id, type, title, body, read_at, entity_type, entity_id)
+    VALUES (
+      ${userId},
+      ${overrides.type || 'task_assigned'},
+      ${overrides.title || `Notification ${id}`},
+      ${overrides.body || null},
+      ${overrides.readAt?.toISOString() || null},
+      ${overrides.entityType || null},
+      ${overrides.entityId || null}
+    )
+    RETURNING id, user_id, type, title, body, read_at, entity_type, entity_id, created_at, updated_at
+  `);
+
+  return result[0] as {
+    id: number;
+    user_id: number;
+    type: string;
+    title: string;
+    body: string | null;
+    read_at: Date | null;
+    entity_type: string | null;
+    entity_id: number | null;
+    created_at: Date;
+    updated_at: Date;
+  };
+}
+
+/**
  * Convenience: Create a client with an event.
  * Creates a user automatically to satisfy the created_by requirement.
  */

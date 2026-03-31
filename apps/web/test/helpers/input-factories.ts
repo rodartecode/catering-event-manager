@@ -9,6 +9,7 @@ import {
   createExpense,
   createInvoice,
   createMenuItem,
+  createNotification,
   createPayment,
   createResource,
   createResourceSchedule,
@@ -37,6 +38,7 @@ export interface AuthMatrixData {
   menuItem: { id: number };
   eventMenu: { id: number; event_id: number };
   eventMenuItem: { id: number };
+  notification: { id: number };
 }
 
 /**
@@ -153,6 +155,13 @@ export async function setupAuthMatrixData(db: TestDatabase): Promise<AuthMatrixD
 
   const eventMenuItem = await createEventMenuItem(db, eventMenu.id, menuItem.id);
 
+  const notification = await createNotification(db, adminUser.id, {
+    type: 'task_assigned',
+    title: 'Auth Matrix Notification',
+    entityType: 'task',
+    entityId: task.id,
+  });
+
   return {
     adminUser: { id: adminUser.id, email: adminUser.email },
     managerUser: { id: managerUser.id, email: managerUser.email },
@@ -171,6 +180,7 @@ export async function setupAuthMatrixData(db: TestDatabase): Promise<AuthMatrixD
     menuItem: { id: menuItem.id },
     eventMenu: { id: eventMenu.id, event_id: event.id },
     eventMenuItem: { id: eventMenuItem.id },
+    notification: { id: notification.id },
   };
 }
 
@@ -365,6 +375,12 @@ export function getProcedureInput(
     'menu.getEventDietarySummary': { eventId: data.event.id },
     'menu.getShoppingList': { dateFrom, dateTo },
 
+    // Notification router
+    'notification.list': { limit: 50 },
+    'notification.markRead': { id: data.notification.id },
+    'notification.markAllRead': undefined,
+    'notification.getUnreadCount': undefined,
+
     // Analytics router
     'analytics.eventCompletion': { dateFrom, dateTo },
     'analytics.resourceUtilization': { dateFrom, dateTo },
@@ -533,6 +549,12 @@ export const allProcedures: ProcedureDefinition[] = [
   { router: 'clients', procedure: 'completeFollowUp', access: 'protected', type: 'mutation' },
   { router: 'clients', procedure: 'getDueFollowUps', access: 'protected', type: 'query' },
   { router: 'clients', procedure: 'getPortalUser', access: 'protected', type: 'query' },
+
+  // Notification router - protectedProcedure
+  { router: 'notification', procedure: 'list', access: 'protected', type: 'query' },
+  { router: 'notification', procedure: 'markRead', access: 'protected', type: 'mutation' },
+  { router: 'notification', procedure: 'markAllRead', access: 'protected', type: 'mutation' },
+  { router: 'notification', procedure: 'getUnreadCount', access: 'protected', type: 'query' },
 
   // Analytics router - protectedProcedure
   { router: 'analytics', procedure: 'eventCompletion', access: 'protected', type: 'query' },

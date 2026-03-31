@@ -57,6 +57,13 @@
       "when": 1773947747092,
       "tag": "0007_foamy_roughhouse",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1774917729534,
+      "tag": "0008_military_professor_monster",
+      "breakpoints": true
     }
   ]
 }

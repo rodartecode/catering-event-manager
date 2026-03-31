@@ -11,6 +11,7 @@ import { TRPCError } from '@trpc/server';
 import { and, eq, ilike, inArray, lt, ne, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { logger } from '@/lib/logger';
+import { createNotification, createNotifications } from '../services/notifications';
 import { SchedulingClientError, schedulingClient } from '../services/scheduling-client';
 import { adminProcedure, protectedProcedure, router } from '../trpc';
 
@@ -250,6 +251,17 @@ export const taskRouter = router({
       })
       .where(eq(tasks.id, input.taskId))
       .returning();
+
+    // Notify assigned user
+    if (input.userId) {
+      await createNotification(db, {
+        userId: input.userId,
+        type: 'task_assigned',
+        title: `You were assigned to "${task.title}"`,
+        entityType: 'task',
+        entityId: task.id,
+      });
+    }
 
     return updatedTask;
   }),
@@ -861,7 +873,22 @@ export const taskRouter = router({
         updatedAt: new Date(),
       })
       .where(and(lt(tasks.dueDate, now), ne(tasks.status, 'completed'), eq(tasks.isOverdue, false)))
-      .returning({ id: tasks.id });
+      .returning({ id: tasks.id, assignedTo: tasks.assignedTo, title: tasks.title });
+
+    // Notify assigned users about overdue tasks
+    const overdueNotifications = result
+      .filter((t) => t.assignedTo !== null)
+      .map((t) => ({
+        userId: t.assignedTo!,
+        type: 'overdue' as const,
+        title: `Task "${t.title}" is overdue`,
+        entityType: 'task',
+        entityId: t.id,
+      }));
+
+    if (overdueNotifications.length > 0) {
+      await createNotifications(db, overdueNotifications);
+    }
 
     return { markedCount: result.length };
   }),
