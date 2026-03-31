@@ -1,6 +1,6 @@
 # Production Deployment Guide
 
-**Last updated**: 2026-02-09
+**Last updated**: 2026-03-31
 
 Complete guide for deploying the catering event management system to production environments including cloud platforms, containerization, monitoring, and maintenance procedures.
 
@@ -226,7 +226,7 @@ psql "postgresql://postgres:[PASSWORD]@db.[PROJECT].supabase.co:5432/postgres" -
 |---------|----------|------------------|-----|
 | Web App | Vercel | `catering-event-manager-staging` | `https://catering-event-manager-staging.vercel.app` |
 | Scheduler | Fly.io | `catering-scheduler-staging` | `https://catering-scheduler-staging.fly.dev` |
-| Database | Supabase | Reusing production (free tier — branching requires Pro plan) | Same as production |
+| Database | Supabase | Pro plan with direct IPv4; shared with production | Same as production |
 
 ### Setting Up Staging
 

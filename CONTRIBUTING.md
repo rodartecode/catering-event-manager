@@ -278,9 +278,10 @@ This project stays on the cutting edge with the latest stable packages. When upg
 3. **Update Types**: Regenerate database types after ORM upgrades
 4. **Document Changes**: Update README.md with new versions
 
-**Recent Major Upgrades Completed (January 2026)**:
+**Recent Major Upgrades Completed (January–March 2026)**:
 
-- Next.js 15→16, React 18→19, Tailwind 3→4, Zod 3→4, ESLint 8→9
+- Next.js 15→16, React 18→19, Tailwind 3→4, Zod 3→4
+- ESLint removed entirely — linting migrated to Biome (March 2026)
 - All breaking changes resolved and validated
 
 ### Security Practices
