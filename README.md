@@ -255,10 +255,10 @@ pnpm test:ui
 pnpm test:coverage
 ```
 
-**Test Results** (as of March 18, 2026):
+**Test Results** (as of March 30, 2026):
 
-- ✅ **976 tests passing** across 55 test files
-- ✅ **14 tRPC routers fully tested** (event, task, resource, document, expense, invoice, payment, menu, clients, analytics, user, portal, template, search)
+- ✅ **1007 tests passing** across 56 test files
+- ✅ **15 tRPC routers fully tested** (event, task, resource, document, expense, invoice, payment, menu, notification, clients, analytics, user, portal, template, search)
 - ✅ **19 React component test suites** covering auth, events, tasks, resources, clients, analytics, dashboard
 - ✅ Complete test infrastructure with PostgreSQL TestContainers
 - ✅ Zero breaking changes after Zod 4 upgrade (all error handling updated)
@@ -360,6 +360,7 @@ pnpm test:quality:update
 - **👥 Resource Scheduling** - Staff/equipment scheduling with automated conflict detection (sub-100ms)
 - **📊 Analytics & Reporting** - Event completion rates, resource utilization, task performance with CSV export capability
 - **💬 Client Communication** - Communication history, follow-up scheduling, overdue notifications
+- **🔔 Notification System** - In-app notifications with bell icon, user preferences (in-app/email toggles per type), email digests via cron
 - **💰 Financial Management** - Expenses, invoicing with PDF export, payments with auto-status transitions, profitability analytics
 - **🍽️ Menu Planning** - Global menu item catalog, per-event menus with dietary tracking, cost estimation, cross-event shopping lists
 - **📎 Document Management** - File uploads via Supabase Storage (contracts, menus, floor plans, permits, photos) with client portal sharing
@@ -392,9 +393,9 @@ pnpm test:quality:update
 
 ### 📊 Current Implementation Metrics
 
-- **14 tRPC API routers** with 97 procedures (fully tested)
-- **21 database tables** with optimized indexes (PostgreSQL 17)
-- **~100 React components** across 14 feature areas
+- **15 tRPC API routers** with 103 procedures (fully tested)
+- **23 database tables** with optimized indexes (PostgreSQL 17)
+- **~100 React components** across 15 feature areas
 - **5 main dashboard sections** (Events, Tasks, Resources, Clients, Analytics)
 - **Complete testing infrastructure** (Vitest + TestContainers + Playwright)
 - **Full CRUD operations** for all entities

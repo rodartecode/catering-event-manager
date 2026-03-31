@@ -1,8 +1,8 @@
 # Component Architecture Guide
 
-**Last updated**: 2026-03-18
+**Last updated**: 2026-03-30
 
-A comprehensive guide to the 86 React components that make up the production-ready catering event management system's user interface.
+A comprehensive guide to the ~100 React components that make up the production-ready catering event management system's user interface.
 
 ## Table of Contents
 
@@ -28,6 +28,7 @@ src/components/
 ├── expenses/               # Expense tracking (3 components)
 ├── invoices/               # Invoicing & PDF (4 components)
 ├── menus/                  # Menu planning & dietary tracking (6 components)
+├── notifications/          # Notification bell, dropdown, preferences (2 components + barrel)
 ├── payments/               # Payment recording (1 component)
 ├── resources/              # Resource scheduling (7 components)
 ├── search/                 # Global search (2 components)
@@ -179,7 +180,26 @@ src/components/
 
 **Pages**: `/menus` (catalog management), `/menus/shopping-list` (cross-event aggregation)
 
-### 9. UI Primitives (15 components)
+### 9. Notification Components (2 components)
+
+**Location**: `src/components/notifications/`
+
+| Component | Purpose | Props | Tests |
+|-----------|---------|-------|-------|
+| `NotificationBell` | Bell icon button with unread count badge, toggles dropdown | None (self-contained) | Via router |
+| `NotificationDropdown` | Scrollable notification list with mark-read actions | `onClose: () => void` | Via router |
+
+**Features**:
+- Polls `notification.getUnreadCount` every 5 seconds
+- Red badge (shows "9+" if > 9)
+- Click-outside and Escape to dismiss dropdown
+- Type-specific icons (task assigned, status changed, overdue, follow-up due)
+- "Mark all read" bulk action
+- Links to notification preferences page
+
+**Pages**: `/notifications/preferences` (per-type in-app/email toggle grid)
+
+### 10. UI Primitives (15 components)
 
 **Location**: `src/components/ui/`
 

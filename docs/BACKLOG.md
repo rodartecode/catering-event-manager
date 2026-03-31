@@ -13,23 +13,17 @@ Curated backlog for the catering event manager. Each item includes structured me
 
 ## P1 — Build Next
 
-### notification-system
-**In-app notifications and email digests**
-- Scope: L
-- Touches: schema, api, ui
-- Depends on: none
-- Done when:
-  - `notifications` table with user_id, type, title, body, read_at, entity_type, entity_id
-  - tRPC: `notification.list`, `notification.markRead`, `notification.markAllRead`, `notification.getUnreadCount`
-  - Bell icon in header with unread count badge
-  - Notification dropdown with grouped items (task assigned, status changed, overdue, follow-up due)
-  - User preferences page: toggle per notification type (in-app, email)
-  - Daily email digest cron for unread notifications
-- Notes: The follow-up cron (`/api/cron/follow-ups`) already exists. This generalizes notifications beyond follow-ups. Start with in-app only, add email digest second.
+_(No items — all P1 features complete)_
 
 ---
 
 ## P2 — High Value
+
+### ~~notification-system~~ ✅ DONE (2026-03-30)
+**In-app notifications and email digests**
+- Scope: L
+- Touches: schema, api, ui
+- Implemented: Two-phase implementation. Phase 1: `notifications` table, `notification` tRPC router (6 procedures: list, markRead, markAllRead, getUnreadCount, getPreferences, updatePreference), notification service with fire-and-forget pattern, trigger wiring (task assignment, status changes, overdue tasks, follow-ups), bell icon + dropdown UI. Phase 2: `notification_preferences` table, preferences-aware notification service, email digest cron via Resend, preferences UI page with per-type in-app/email toggles. Migration 0009.
 
 ### ~~menu-planning~~ ✅ DONE (2026-03-19)
 **Menu items, dietary management, and quantity calculation**

@@ -30,6 +30,8 @@ src/schema/
 ├── invoices.ts          # References events, users
 ├── invoice-line-items.ts # References invoices
 ├── payments.ts          # References invoices, users
+├── notifications.ts     # User notifications (notification_type enum)
+├── notification-preferences.ts # Per-user per-type in-app/email toggles
 ├── task-templates.ts    # Independent entity
 ├── task-template-items.ts # References task-templates
 └── verification-tokens.ts # Portal magic link tokens
@@ -52,6 +54,9 @@ menuItemCategoryEnum: ['appetizer', 'main', 'side', 'dessert', 'beverage']
 
 // Dietary Tags
 dietaryTagEnum: ['vegan', 'vegetarian', 'gluten_free', 'halal', 'kosher', 'dairy_free', 'nut_free']
+
+// Notification Types
+notificationTypeEnum: ['task_assigned', 'status_changed', 'overdue', 'follow_up_due']
 ```
 
 ## Schema Patterns
