@@ -828,4 +828,82 @@ describe('clients router', () => {
       expect(result?.isActive).toBe(true);
     });
   });
+
+  // ============================================
+  // Bulk Operations
+  // ============================================
+
+  describe('clients.exportCsv', () => {
+    it('exports all clients as CSV', async () => {
+      const caller = createAdminCaller(db);
+      await createClient(db, { companyName: 'Alpha Corp' });
+      await createClient(db, { companyName: 'Beta Inc' });
+
+      const result = await caller.clients.exportCsv();
+
+      expect(result.rowCount).toBe(2);
+      expect(result.csv).toContain('Alpha Corp');
+      expect(result.csv).toContain('Beta Inc');
+      expect(result.filename).toMatch(/^clients-\d{4}-\d{2}-\d{2}\.csv$/);
+    });
+
+    it('rejects non-admin users', async () => {
+      const caller = createManagerCaller(db);
+      await expect(caller.clients.exportCsv()).rejects.toMatchObject({
+        code: 'FORBIDDEN',
+      });
+    });
+  });
+
+  describe('clients.importCsv', () => {
+    it('imports clients from CSV', async () => {
+      const caller = createAdminCaller(db);
+
+      const csvData =
+        'companyName,contactName,email\nNew Corp,John,john@new.com\nAnother Co,Jane,jane@another.com';
+      const result = await caller.clients.importCsv({ csvData });
+
+      expect(result.imported).toBe(2);
+      expect(result.errors).toHaveLength(0);
+    });
+
+    it('rejects duplicate emails', async () => {
+      const caller = createAdminCaller(db);
+      await createClient(db, { email: 'existing@test.com' });
+
+      const csvData = 'companyName,contactName,email\nDup Corp,John,existing@test.com';
+      const result = await caller.clients.importCsv({ csvData });
+
+      expect(result.imported).toBe(0);
+      expect(result.errors).toHaveLength(1);
+      expect(result.errors[0].field).toBe('email');
+    });
+
+    it('detects duplicate emails within import batch', async () => {
+      const caller = createAdminCaller(db);
+
+      const csvData = 'companyName,contactName,email\nCorp A,A,dup@test.com\nCorp B,B,dup@test.com';
+      const result = await caller.clients.importCsv({ csvData });
+
+      expect(result.imported).toBe(1);
+      expect(result.errors).toHaveLength(1);
+    });
+
+    it('reports missing required columns', async () => {
+      const caller = createAdminCaller(db);
+
+      const csvData = 'companyName,contactName\nCorp,John';
+      const result = await caller.clients.importCsv({ csvData });
+
+      expect(result.imported).toBe(0);
+      expect(result.errors[0].message).toContain('Missing required column');
+    });
+
+    it('rejects non-admin users', async () => {
+      const caller = createManagerCaller(db);
+      await expect(
+        caller.clients.importCsv({ csvData: 'companyName,contactName,email\nX,Y,z@z.com' })
+      ).rejects.toMatchObject({ code: 'FORBIDDEN' });
+    });
+  });
 });

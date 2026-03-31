@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { EventCard } from '@/components/events/EventCard';
 import { EventListSkeleton } from '@/components/events/EventListSkeleton';
+import { BatchStatusDialog, BulkActionBar, ExportButton, ImportDialog } from '@/components/shared';
+import { useMultiSelect } from '@/hooks/use-multi-select';
 import { trpc } from '@/lib/trpc';
 import { useIsAdmin } from '@/lib/use-auth';
 
@@ -16,12 +18,24 @@ type EventStatus =
   | 'follow_up'
   | 'all';
 
+const eventStatusOptions = [
+  { value: 'inquiry', label: 'Inquiry' },
+  { value: 'planning', label: 'Planning' },
+  { value: 'preparation', label: 'Preparation' },
+  { value: 'in_progress', label: 'In Progress' },
+  { value: 'completed', label: 'Completed' },
+  { value: 'follow_up', label: 'Follow Up' },
+];
+
 export default function EventsPage() {
   const { isAdmin } = useIsAdmin();
   const [status, setStatus] = useState<EventStatus>('all');
   const [clientId, setClientId] = useState<number | undefined>();
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
   const [dateTo, setDateTo] = useState<Date | undefined>();
+  const [selectMode, setSelectMode] = useState(false);
+  const [showBatchDialog, setShowBatchDialog] = useState(false);
+  const [showImportDialog, setShowImportDialog] = useState(false);
 
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
     trpc.event.list.useInfiniteQuery(
@@ -38,20 +52,88 @@ export default function EventsPage() {
     );
 
   const events = data?.pages.flatMap((page) => page.items) ?? [];
+  const { selectedIds, toggle, toggleAll, clear, isAllSelected, isSelected, count } =
+    useMultiSelect(events);
+
+  const utils = trpc.useUtils();
+  const exportMutation = trpc.event.exportCsv.useMutation();
+  const importMutation = trpc.event.importCsv.useMutation();
+  const batchUpdateMutation = trpc.event.batchUpdateStatus.useMutation();
+
+  const handleExport = async () => {
+    return exportMutation.mutateAsync({
+      status: status !== 'all' ? (status as Exclude<EventStatus, 'all'>) : undefined,
+      dateFrom,
+      dateTo,
+    });
+  };
+
+  const handleImport = async (csvData: string) => {
+    return importMutation.mutateAsync({ csvData });
+  };
+
+  const handleBatchUpdate = async (newStatus: string, notes?: string) => {
+    await batchUpdateMutation.mutateAsync({
+      ids: [...selectedIds],
+      newStatus: newStatus as Exclude<EventStatus, 'all'>,
+      notes,
+    });
+    clear();
+    setSelectMode(false);
+    utils.event.list.invalidate();
+  };
+
+  const handleExitSelectMode = () => {
+    setSelectMode(false);
+    clear();
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Events</h1>
         {isAdmin && (
-          <Link
-            href="/events/new"
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-          >
-            Create Event
-          </Link>
+          <div className="flex items-center gap-2">
+            <ExportButton onExport={handleExport} />
+            <button
+              onClick={() => setShowImportDialog(true)}
+              className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition text-sm"
+            >
+              Import CSV
+            </button>
+            <button
+              onClick={selectMode ? handleExitSelectMode : () => setSelectMode(true)}
+              className={`px-4 py-2 border rounded-lg transition text-sm ${
+                selectMode
+                  ? 'border-blue-600 bg-blue-50 text-blue-700'
+                  : 'border-gray-300 hover:bg-gray-50'
+              }`}
+            >
+              {selectMode ? 'Exit Select' : 'Select'}
+            </button>
+            <Link
+              href="/events/new"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+            >
+              Create Event
+            </Link>
+          </div>
         )}
       </div>
+
+      {/* Select All toggle */}
+      {selectMode && events.length > 0 && (
+        <div className="mb-4 flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={isAllSelected}
+            onChange={toggleAll}
+            aria-label="Select all events"
+            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+          />
+          <span className="text-sm text-gray-600">Select all</span>
+        </div>
+      )}
 
       {/* Filters */}
       <div className="bg-white rounded-lg shadow p-6 mb-6">
@@ -130,7 +212,13 @@ export default function EventsPage() {
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {events.map((event) => (
-              <EventCard key={event.id} event={event} />
+              <EventCard
+                key={event.id}
+                event={event}
+                selectable={selectMode}
+                selected={isSelected(event.id)}
+                onToggleSelect={() => toggle(event.id)}
+              />
             ))}
           </div>
 
@@ -147,6 +235,35 @@ export default function EventsPage() {
             </div>
           )}
         </>
+      )}
+
+      {/* Bulk Action Bar */}
+      <BulkActionBar
+        count={count}
+        entityLabel="event"
+        onUpdateStatus={() => setShowBatchDialog(true)}
+        onClear={clear}
+      />
+
+      {/* Batch Status Dialog */}
+      {showBatchDialog && (
+        <BatchStatusDialog
+          count={count}
+          entityLabel="event"
+          statusOptions={eventStatusOptions}
+          onSubmit={handleBatchUpdate}
+          onClose={() => setShowBatchDialog(false)}
+        />
+      )}
+
+      {/* Import Dialog */}
+      {showImportDialog && (
+        <ImportDialog
+          entityLabel="event"
+          onImport={handleImport}
+          onClose={() => setShowImportDialog(false)}
+          onSuccess={() => utils.event.list.invalidate()}
+        />
       )}
     </div>
   );

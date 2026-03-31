@@ -4,6 +4,8 @@ import { and, desc, eq, ilike, lte, or, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { sendWelcomeEmail } from '@/lib/email';
 import { logger } from '@/lib/logger';
+import type { ImportError } from '../services/csv';
+import { buildFieldMapping, generateCSV, parseCSV, validateImportRows } from '../services/csv';
 import { adminProcedure, protectedProcedure, router } from '../trpc';
 
 export const clientsRouter = router({
@@ -73,6 +75,157 @@ export const clientsRouter = router({
         .where(eq(clients.id, id))
         .returning();
       return client;
+    }),
+
+  // ============================================
+  // Bulk: Export clients as CSV
+  // ============================================
+
+  exportCsv: adminProcedure.mutation(async ({ ctx }) => {
+    const results = await ctx.db
+      .select({
+        id: clients.id,
+        companyName: clients.companyName,
+        contactName: clients.contactName,
+        email: clients.email,
+        phone: clients.phone,
+        address: clients.address,
+        notes: clients.notes,
+        createdAt: clients.createdAt,
+      })
+      .from(clients)
+      .orderBy(desc(clients.createdAt));
+
+    const headers = [
+      'ID',
+      'Company Name',
+      'Contact Name',
+      'Email',
+      'Phone',
+      'Address',
+      'Notes',
+      'Created At',
+    ];
+
+    const rows = results.map((r) => [
+      r.id,
+      r.companyName,
+      r.contactName,
+      r.email,
+      r.phone,
+      r.address,
+      r.notes,
+      r.createdAt,
+    ]);
+
+    const csv = generateCSV(headers, rows);
+    const date = new Date().toISOString().split('T')[0];
+    return { csv, filename: `clients-${date}.csv`, rowCount: rows.length };
+  }),
+
+  // ============================================
+  // Bulk: Import clients from CSV
+  // ============================================
+
+  importCsv: adminProcedure
+    .input(z.object({ csvData: z.string().max(1_500_000) }))
+    .mutation(async ({ ctx, input }) => {
+      const { db } = ctx;
+
+      const { headers, rows } = parseCSV(input.csvData);
+      if (rows.length === 0) {
+        return { imported: 0, errors: [] as ImportError[], total: 0 };
+      }
+
+      const requiredFields = ['companyName', 'contactName', 'email'];
+      const optionalFields = ['phone', 'address', 'notes'];
+      const { mapping, errors: headerErrors } = buildFieldMapping(
+        headers,
+        requiredFields,
+        optionalFields
+      );
+
+      if (!mapping) {
+        return {
+          imported: 0,
+          errors: headerErrors.map((msg) => ({ row: 0, field: 'header', message: msg })),
+          total: rows.length,
+        };
+      }
+
+      const clientImportSchema = z.object({
+        companyName: z.string().min(1, 'Company name is required'),
+        contactName: z.string().min(1, 'Contact name is required'),
+        email: z.string().min(1, 'Email is required').email('Invalid email format'),
+        phone: z.string().optional(),
+        address: z.string().optional(),
+        notes: z.string().optional(),
+      });
+
+      const { valid, errors: validationErrors } = validateImportRows(
+        rows,
+        clientImportSchema,
+        mapping
+      );
+
+      const allErrors: ImportError[] = [...validationErrors];
+
+      // Check for duplicate emails
+      const existingClients = await db.select({ email: clients.email }).from(clients);
+      const existingEmails = new Set(existingClients.map((c) => c.email.toLowerCase()));
+
+      const insertReady: {
+        companyName: string;
+        contactName: string;
+        email: string;
+        phone?: string;
+        address?: string;
+        notes?: string;
+      }[] = [];
+
+      for (const { data, rowIndex } of valid) {
+        if (existingEmails.has(data.email.toLowerCase())) {
+          allErrors.push({
+            row: rowIndex,
+            field: 'email',
+            message: `Client with email "${data.email}" already exists`,
+          });
+          continue;
+        }
+
+        // Also check within the import batch for duplicates
+        if (insertReady.some((r) => r.email.toLowerCase() === data.email.toLowerCase())) {
+          allErrors.push({
+            row: rowIndex,
+            field: 'email',
+            message: `Duplicate email "${data.email}" in import`,
+          });
+          continue;
+        }
+
+        insertReady.push({
+          companyName: data.companyName,
+          contactName: data.contactName,
+          email: data.email.toLowerCase(),
+          phone: data.phone || undefined,
+          address: data.address || undefined,
+          notes: data.notes || undefined,
+        });
+      }
+
+      if (insertReady.length === 0) {
+        return { imported: 0, errors: allErrors, total: rows.length };
+      }
+
+      let imported = 0;
+      await db.transaction(async (tx) => {
+        for (const row of insertReady) {
+          await tx.insert(clients).values(row);
+          imported++;
+        }
+      });
+
+      return { imported, errors: allErrors, total: rows.length };
     }),
 
   // ============================================

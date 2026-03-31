@@ -996,4 +996,125 @@ describe('task router', () => {
       expect(cResult.status).toBe('in_progress');
     });
   });
+
+  // ============================================
+  // Bulk Operations
+  // ============================================
+
+  describe('task.exportCsv', () => {
+    it('exports tasks as CSV', async () => {
+      const caller = createAdminCaller(db);
+      const client = await createClient(db);
+      const event = await createEvent(db, client.id, 1);
+      await createTask(db, event.id, { title: 'Setup tables' });
+      await createTask(db, event.id, { title: 'Prepare menu' });
+
+      const result = await caller.task.exportCsv({});
+
+      expect(result.rowCount).toBe(2);
+      expect(result.csv).toContain('Setup tables');
+      expect(result.csv).toContain('Prepare menu');
+    });
+
+    it('filters by eventId', async () => {
+      const caller = createAdminCaller(db);
+      const client = await createClient(db);
+      const e1 = await createEvent(db, client.id, 1);
+      const e2 = await createEvent(db, client.id, 1);
+      await createTask(db, e1.id, { title: 'Task A' });
+      await createTask(db, e2.id, { title: 'Task B' });
+
+      const result = await caller.task.exportCsv({ eventId: e1.id });
+
+      expect(result.rowCount).toBe(1);
+      expect(result.csv).toContain('Task A');
+      expect(result.csv).not.toContain('Task B');
+    });
+
+    it('rejects non-admin users', async () => {
+      const caller = createManagerCaller(db);
+      await expect(caller.task.exportCsv({})).rejects.toMatchObject({
+        code: 'FORBIDDEN',
+      });
+    });
+  });
+
+  describe('task.batchUpdateStatus', () => {
+    it('updates status of multiple tasks', async () => {
+      const caller = createAdminCaller(db);
+      const client = await createClient(db);
+      const event = await createEvent(db, client.id, 1);
+      const t1 = await createTask(db, event.id);
+      const t2 = await createTask(db, event.id);
+
+      const result = await caller.task.batchUpdateStatus({
+        ids: [t1.id, t2.id],
+        newStatus: 'in_progress',
+      });
+
+      expect(result.updated).toBe(2);
+
+      const task1 = await caller.task.getById({ id: t1.id });
+      const task2 = await caller.task.getById({ id: t2.id });
+      expect(task1.status).toBe('in_progress');
+      expect(task2.status).toBe('in_progress');
+    });
+
+    it('sets completedAt when marking as completed', async () => {
+      const caller = createAdminCaller(db);
+      const client = await createClient(db);
+      const event = await createEvent(db, client.id, 1);
+      const t1 = await createTask(db, event.id);
+
+      await caller.task.batchUpdateStatus({
+        ids: [t1.id],
+        newStatus: 'completed',
+      });
+
+      const updated = await caller.task.getById({ id: t1.id });
+      expect(updated.completedAt).not.toBeNull();
+    });
+
+    it('rejects if dependency is not completed', async () => {
+      const caller = createAdminCaller(db);
+      const client = await createClient(db);
+      const event = await createEvent(db, client.id, 1);
+      const dep = await createTask(db, event.id, { title: 'Dependency' });
+      const t1 = await createTask(db, event.id, {
+        title: 'Blocked Task',
+        dependsOnTaskId: dep.id,
+      });
+
+      await expect(
+        caller.task.batchUpdateStatus({
+          ids: [t1.id],
+          newStatus: 'in_progress',
+        })
+      ).rejects.toMatchObject({ code: 'BAD_REQUEST' });
+    });
+
+    it('rejects if any task ID does not exist', async () => {
+      const caller = createAdminCaller(db);
+      const client = await createClient(db);
+      const event = await createEvent(db, client.id, 1);
+      const t1 = await createTask(db, event.id);
+
+      await expect(
+        caller.task.batchUpdateStatus({
+          ids: [t1.id, 99999],
+          newStatus: 'completed',
+        })
+      ).rejects.toMatchObject({ code: 'NOT_FOUND' });
+    });
+
+    it('rejects non-admin users', async () => {
+      const caller = createManagerCaller(db);
+      await expect(
+        caller.task.batchUpdateStatus({
+          ids: [1],
+          newStatus: 'completed',
+        })
+      ).rejects.toMatchObject({ code: 'FORBIDDEN' });
+    });
+  });
 });

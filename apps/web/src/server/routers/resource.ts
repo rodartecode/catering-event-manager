@@ -3,6 +3,7 @@ import { TRPCError } from '@trpc/server';
 import { and, eq, gt, ilike, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { logger } from '@/lib/logger';
+import { generateCSV } from '../services/csv';
 import { SchedulingClientError, schedulingClient } from '../services/scheduling-client';
 import { adminProcedure, protectedProcedure, router } from '../trpc';
 
@@ -356,6 +357,48 @@ export const resourceRouter = router({
       await db.delete(resources).where(eq(resources.id, input.id));
 
       return { success: true };
+    }),
+
+  // Bulk: Export resources as CSV
+  exportCsv: adminProcedure
+    .input(z.object({ type: resourceTypeEnum.optional() }))
+    .mutation(async ({ ctx, input }) => {
+      const { db } = ctx;
+
+      const conditions = [];
+      if (input.type) {
+        conditions.push(eq(resources.type, input.type));
+      }
+
+      const results = await db
+        .select({
+          id: resources.id,
+          name: resources.name,
+          type: resources.type,
+          hourlyRate: resources.hourlyRate,
+          isAvailable: resources.isAvailable,
+          notes: resources.notes,
+          createdAt: resources.createdAt,
+        })
+        .from(resources)
+        .where(conditions.length > 0 ? and(...conditions) : undefined)
+        .orderBy(resources.name);
+
+      const headers = ['ID', 'Name', 'Type', 'Hourly Rate', 'Available', 'Notes', 'Created At'];
+
+      const rows = results.map((r) => [
+        r.id,
+        r.name,
+        r.type,
+        r.hourlyRate,
+        r.isAvailable,
+        r.notes,
+        r.createdAt,
+      ]);
+
+      const csv = generateCSV(headers, rows);
+      const date = new Date().toISOString().split('T')[0];
+      return { csv, filename: `resources-${date}.csv`, rowCount: rows.length };
     }),
 
   // Get resources available for assignment

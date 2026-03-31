@@ -11,6 +11,7 @@ import { TRPCError } from '@trpc/server';
 import { and, eq, ilike, inArray, lt, ne, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { logger } from '@/lib/logger';
+import { generateCSV } from '../services/csv';
 import { createNotification, createNotifications } from '../services/notifications';
 import { SchedulingClientError, schedulingClient } from '../services/scheduling-client';
 import { adminProcedure, protectedProcedure, router } from '../trpc';
@@ -806,6 +807,143 @@ export const taskRouter = router({
       await db.delete(tasks).where(eq(tasks.id, input.id));
 
       return { success: true, clearedDependencies: dependentTasks.length };
+    }),
+
+  // Bulk: Batch update status for multiple tasks
+  batchUpdateStatus: adminProcedure
+    .input(
+      z.object({
+        ids: z.array(z.number().positive()).min(1).max(100),
+        newStatus: taskStatusEnum,
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { db } = ctx;
+
+      // Fetch all target tasks
+      const targetTasks = await db
+        .select({
+          id: tasks.id,
+          status: tasks.status,
+          title: tasks.title,
+          eventId: tasks.eventId,
+          assignedTo: tasks.assignedTo,
+          dependsOnTaskId: tasks.dependsOnTaskId,
+        })
+        .from(tasks)
+        .where(inArray(tasks.id, input.ids));
+
+      // Validate: all IDs must exist
+      if (targetTasks.length !== input.ids.length) {
+        const foundIds = new Set(targetTasks.map((t) => t.id));
+        const missing = input.ids.filter((id) => !foundIds.has(id));
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: `Tasks not found: ${missing.join(', ')}`,
+        });
+      }
+
+      // Validate dependencies for non-pending status
+      if (input.newStatus !== 'pending') {
+        for (const task of targetTasks) {
+          const blockingTask = await checkDependencyCompletion(db, task.id);
+          if (blockingTask) {
+            throw new TRPCError({
+              code: 'BAD_REQUEST',
+              message: `Task "${task.title}" blocked by incomplete dependency "${blockingTask.title}"`,
+            });
+          }
+        }
+      }
+
+      // All-or-nothing transaction
+      await db.transaction(async (tx) => {
+        for (const task of targetTasks) {
+          const updateData: Partial<typeof tasks.$inferInsert> = {
+            status: input.newStatus,
+            updatedAt: new Date(),
+          };
+
+          if (input.newStatus === 'completed') {
+            updateData.completedAt = new Date();
+            updateData.isOverdue = false;
+          } else if (task.status === 'completed') {
+            updateData.completedAt = null;
+          }
+
+          await tx.update(tasks).set(updateData).where(eq(tasks.id, task.id));
+        }
+      });
+
+      return { updated: targetTasks.length };
+    }),
+
+  // Bulk: Export tasks as CSV
+  exportCsv: adminProcedure
+    .input(
+      z.object({
+        eventId: z.number().positive().optional(),
+        status: taskStatusEnum.optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { db } = ctx;
+
+      const conditions: ReturnType<typeof eq>[] = [];
+      if (input.eventId) {
+        conditions.push(eq(tasks.eventId, input.eventId));
+      }
+      if (input.status) {
+        conditions.push(eq(tasks.status, input.status));
+      }
+
+      const results = await db
+        .select({
+          id: tasks.id,
+          eventId: tasks.eventId,
+          title: tasks.title,
+          description: tasks.description,
+          category: tasks.category,
+          status: tasks.status,
+          assigneeName: users.name,
+          dueDate: tasks.dueDate,
+          completedAt: tasks.completedAt,
+          createdAt: tasks.createdAt,
+        })
+        .from(tasks)
+        .leftJoin(users, eq(tasks.assignedTo, users.id))
+        .where(conditions.length > 0 ? and(...conditions) : undefined)
+        .orderBy(tasks.eventId, tasks.dueDate);
+
+      const headers = [
+        'ID',
+        'Event ID',
+        'Title',
+        'Description',
+        'Category',
+        'Status',
+        'Assignee',
+        'Due Date',
+        'Completed At',
+        'Created At',
+      ];
+
+      const rows = results.map((r) => [
+        r.id,
+        r.eventId,
+        r.title,
+        r.description,
+        r.category,
+        r.status,
+        r.assigneeName,
+        r.dueDate,
+        r.completedAt,
+        r.createdAt,
+      ]);
+
+      const csv = generateCSV(headers, rows);
+      const date = new Date().toISOString().split('T')[0];
+      return { csv, filename: `tasks-${date}.csv`, rowCount: rows.length };
     }),
 
   // Get users for task assignment (staff only, not clients)
