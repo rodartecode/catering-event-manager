@@ -197,3 +197,15 @@ Example:
 **Problem**: Uploading files through tRPC requires base64 encoding, which adds ~33% overhead for large files
 **Solution**: Two-step presigned URL flow: `createUploadUrl` (tRPC mutation) → client PUTs file directly to Supabase Storage → `confirmUpload` (tRPC mutation) records metadata in DB
 **Context**: Use this pattern for any file upload feature. The storage client (`@/lib/storage`) is server-only. Mock `@/lib/storage` in tests with `vi.mock`. Storage key format: `events/{eventId}/{uuid}/{sanitizedFileName}`
+
+### [2026-03-30] Drizzle migration journal backfill for production
+
+**Problem**: `pnpm db:migrate` failed against production Supabase — Drizzle tried to re-run all migrations because `drizzle.__drizzle_migrations` was empty (earlier migrations were applied via SQL Editor, not drizzle-kit)
+**Solution**: Backfill the journal with SHA1 hashes of each migration's SQL content. Drizzle stores `crypto.createHash('sha1').update(sqlFileContent).digest('hex')` in the `hash` column — NOT the migration tag name. After inserting correct hashes for already-applied migrations, `db:migrate` correctly skipped them and only applied new ones.
+**Context**: When migrating from manual SQL Editor to automated `db:migrate`, you must seed the journal. Generate hashes with: `node -e "const {createHash}=require('crypto'),fs=require('fs'); console.log(createHash('sha1').update(fs.readFileSync('migration.sql','utf8')).digest('hex'))"`
+
+### [2026-03-30] lint-staged fails when all staged files are Biome-ignored
+
+**Problem**: Committing only migration meta JSON files (in `migrations/meta/`) caused lint-staged to fail — Biome matched them via `*.json` glob but they're in an ignored path, so Biome exited with "No files were processed" error
+**Solution**: Added `--no-errors-on-unmatched` flag to the Biome command in `package.json` lint-staged config. This tells Biome to exit 0 when all matched files are ignored.
+**Context**: This affects any commit that only touches files in Biome-ignored directories (e.g. migration snapshots, `.next/`, `.vercel/`)
