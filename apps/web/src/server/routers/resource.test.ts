@@ -5,7 +5,14 @@ import {
   type TestDatabase,
   teardownTestDatabase,
 } from '../../../test/helpers/db';
-import { createResource, createUser, resetFactoryCounter } from '../../../test/helpers/factories';
+import {
+  createClient,
+  createEvent,
+  createResource,
+  createResourceSchedule,
+  createUser,
+  resetFactoryCounter,
+} from '../../../test/helpers/factories';
 import {
   createAdminCaller,
   createManagerCaller,
@@ -575,6 +582,440 @@ describe('resource router', () => {
   // ============================================
   // Deepened Tests: Schedule Edge Cases
   // ============================================
+
+  // ============================================
+  // Scheduling Calendar Procedures
+  // ============================================
+
+  describe('resource.getMultiResourceSchedule', () => {
+    it('returns entries for multiple resources', async () => {
+      const caller = createManagerCaller(db);
+
+      const client = await createClient(db);
+      const admin = await createUser(db, {
+        email: 'schedule-admin@test.com',
+        name: 'Schedule Admin',
+        role: 'administrator',
+      });
+      const event = await createEvent(db, client.id, admin.id, {
+        eventName: 'Multi-Resource Event',
+      });
+
+      const resource1 = await createResource(db, { name: 'Chef A', type: 'staff' });
+      const resource2 = await createResource(db, { name: 'Oven B', type: 'equipment' });
+
+      const tomorrow = new Date('2026-06-15T09:00:00Z');
+      const tomorrowEnd = new Date('2026-06-15T17:00:00Z');
+
+      await createResourceSchedule(db, resource1.id, event.id, tomorrow, tomorrowEnd);
+      await createResourceSchedule(db, resource2.id, event.id, tomorrow, tomorrowEnd);
+
+      const result = await caller.resource.getMultiResourceSchedule({
+        resourceIds: [resource1.id, resource2.id],
+        startDate: new Date('2026-06-01'),
+        endDate: new Date('2026-06-30'),
+      });
+
+      expect(result.entries).toHaveLength(2);
+      expect(result.entries[0].eventName).toBe('Multi-Resource Event');
+    });
+
+    it('filters entries by date range', async () => {
+      const caller = createManagerCaller(db);
+
+      const client = await createClient(db);
+      const admin = await createUser(db, {
+        email: 'date-admin@test.com',
+        name: 'Date Admin',
+        role: 'administrator',
+      });
+      const event = await createEvent(db, client.id, admin.id, { eventName: 'Date Test Event' });
+      const resource = await createResource(db, { name: 'Date Resource' });
+
+      // Create two entries in different months
+      await createResourceSchedule(
+        db,
+        resource.id,
+        event.id,
+        new Date('2026-06-15T09:00:00Z'),
+        new Date('2026-06-15T17:00:00Z')
+      );
+      await createResourceSchedule(
+        db,
+        resource.id,
+        event.id,
+        new Date('2026-07-15T09:00:00Z'),
+        new Date('2026-07-15T17:00:00Z')
+      );
+
+      const result = await caller.resource.getMultiResourceSchedule({
+        resourceIds: [resource.id],
+        startDate: new Date('2026-06-01'),
+        endDate: new Date('2026-06-30'),
+      });
+
+      expect(result.entries).toHaveLength(1);
+    });
+
+    it('returns empty for resources with no entries', async () => {
+      const caller = createManagerCaller(db);
+      const resource = await createResource(db, { name: 'Empty Resource' });
+
+      const result = await caller.resource.getMultiResourceSchedule({
+        resourceIds: [resource.id],
+        startDate: new Date('2026-06-01'),
+        endDate: new Date('2026-06-30'),
+      });
+
+      expect(result.entries).toEqual([]);
+    });
+  });
+
+  describe('resource.createScheduleEntry', () => {
+    it('creates a schedule entry for a resource', async () => {
+      const caller = createAdminCaller(db);
+
+      const client = await createClient(db);
+      const event = await createEvent(db, client.id, 1, { eventName: 'Create Entry Event' });
+      const resource = await createResource(db, { name: 'Create Resource' });
+
+      const result = await caller.resource.createScheduleEntry({
+        resourceId: resource.id,
+        eventId: event.id,
+        startTime: new Date('2026-06-15T09:00:00Z'),
+        endTime: new Date('2026-06-15T17:00:00Z'),
+        notes: 'Full day shift',
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.entry).toBeDefined();
+      expect(result.entry!.resourceId).toBe(resource.id);
+      expect(result.entry!.eventId).toBe(event.id);
+    });
+
+    it('rejects when end time is before start time', async () => {
+      const caller = createAdminCaller(db);
+
+      const client = await createClient(db);
+      const event = await createEvent(db, client.id, 1, { eventName: 'Bad Time Event' });
+      const resource = await createResource(db, { name: 'Bad Time Resource' });
+
+      await expect(
+        caller.resource.createScheduleEntry({
+          resourceId: resource.id,
+          eventId: event.id,
+          startTime: new Date('2026-06-15T17:00:00Z'),
+          endTime: new Date('2026-06-15T09:00:00Z'),
+        })
+      ).rejects.toThrow('End time must be after start time');
+    });
+
+    it('rejects non-existent resource', async () => {
+      const caller = createAdminCaller(db);
+
+      const client = await createClient(db);
+      const event = await createEvent(db, client.id, 1, { eventName: 'No Resource Event' });
+
+      await expect(
+        caller.resource.createScheduleEntry({
+          resourceId: 9999,
+          eventId: event.id,
+          startTime: new Date('2026-06-15T09:00:00Z'),
+          endTime: new Date('2026-06-15T17:00:00Z'),
+        })
+      ).rejects.toThrow('Resource not found');
+    });
+
+    it('rejects non-existent event', async () => {
+      const caller = createAdminCaller(db);
+      const resource = await createResource(db, { name: 'No Event Resource' });
+
+      await expect(
+        caller.resource.createScheduleEntry({
+          resourceId: resource.id,
+          eventId: 9999,
+          startTime: new Date('2026-06-15T09:00:00Z'),
+          endTime: new Date('2026-06-15T17:00:00Z'),
+        })
+      ).rejects.toThrow('Event not found');
+    });
+
+    it('returns conflicts when detected and force is false', async () => {
+      const { schedulingClient } = await import('../services/scheduling-client');
+      (schedulingClient.checkConflicts as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        has_conflicts: true,
+        conflicts: [
+          {
+            resource_id: 1,
+            resource_name: 'Chef',
+            conflicting_event_id: 10,
+            conflicting_event_name: 'Wedding',
+            existing_start_time: '2026-06-15T08:00:00Z',
+            existing_end_time: '2026-06-15T18:00:00Z',
+            requested_start_time: '2026-06-15T09:00:00Z',
+            requested_end_time: '2026-06-15T17:00:00Z',
+            message: 'Chef already assigned',
+          },
+        ],
+      });
+
+      const caller = createAdminCaller(db);
+      const client = await createClient(db);
+      const event = await createEvent(db, client.id, 1, { eventName: 'Conflict Event' });
+      const resource = await createResource(db, { name: 'Conflict Resource' });
+
+      const result = await caller.resource.createScheduleEntry({
+        resourceId: resource.id,
+        eventId: event.id,
+        startTime: new Date('2026-06-15T09:00:00Z'),
+        endTime: new Date('2026-06-15T17:00:00Z'),
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.conflicts).toHaveLength(1);
+    });
+
+    it('creates entry despite conflicts when force is true', async () => {
+      const { schedulingClient } = await import('../services/scheduling-client');
+      (schedulingClient.checkConflicts as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        has_conflicts: true,
+        conflicts: [
+          {
+            resource_id: 1,
+            resource_name: 'Chef',
+            conflicting_event_id: 10,
+            conflicting_event_name: 'Wedding',
+            existing_start_time: '2026-06-15T08:00:00Z',
+            existing_end_time: '2026-06-15T18:00:00Z',
+            requested_start_time: '2026-06-15T09:00:00Z',
+            requested_end_time: '2026-06-15T17:00:00Z',
+            message: 'Chef already assigned',
+          },
+        ],
+      });
+
+      const caller = createAdminCaller(db);
+      const client = await createClient(db);
+      const event = await createEvent(db, client.id, 1, { eventName: 'Force Event' });
+      const resource = await createResource(db, { name: 'Force Resource' });
+
+      const result = await caller.resource.createScheduleEntry({
+        resourceId: resource.id,
+        eventId: event.id,
+        startTime: new Date('2026-06-15T09:00:00Z'),
+        endTime: new Date('2026-06-15T17:00:00Z'),
+        force: true,
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.entry).toBeDefined();
+    });
+
+    it('rejects manager users (admin only)', async () => {
+      const caller = createManagerCaller(db);
+
+      await expect(
+        caller.resource.createScheduleEntry({
+          resourceId: 1,
+          eventId: 1,
+          startTime: new Date('2026-06-15T09:00:00Z'),
+          endTime: new Date('2026-06-15T17:00:00Z'),
+        })
+      ).rejects.toThrow('FORBIDDEN');
+    });
+  });
+
+  describe('resource.updateScheduleEntry', () => {
+    it('updates schedule entry times', async () => {
+      const caller = createAdminCaller(db);
+
+      const client = await createClient(db);
+      const event = await createEvent(db, client.id, 1, { eventName: 'Update Entry Event' });
+      const resource = await createResource(db, { name: 'Update Resource' });
+
+      const entry = await createResourceSchedule(
+        db,
+        resource.id,
+        event.id,
+        new Date('2026-06-15T09:00:00Z'),
+        new Date('2026-06-15T17:00:00Z')
+      );
+
+      const result = await caller.resource.updateScheduleEntry({
+        scheduleId: entry.id,
+        startTime: new Date('2026-06-15T10:00:00Z'),
+        endTime: new Date('2026-06-15T18:00:00Z'),
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.entry).toBeDefined();
+    });
+
+    it('rejects when end time is before start time', async () => {
+      const caller = createAdminCaller(db);
+
+      const client = await createClient(db);
+      const event = await createEvent(db, client.id, 1, { eventName: 'Bad Update Event' });
+      const resource = await createResource(db, { name: 'Bad Update Resource' });
+
+      const entry = await createResourceSchedule(
+        db,
+        resource.id,
+        event.id,
+        new Date('2026-06-15T09:00:00Z'),
+        new Date('2026-06-15T17:00:00Z')
+      );
+
+      await expect(
+        caller.resource.updateScheduleEntry({
+          scheduleId: entry.id,
+          startTime: new Date('2026-06-15T17:00:00Z'),
+          endTime: new Date('2026-06-15T09:00:00Z'),
+        })
+      ).rejects.toThrow('End time must be after start time');
+    });
+
+    it('rejects non-existent schedule entry', async () => {
+      const caller = createAdminCaller(db);
+
+      await expect(
+        caller.resource.updateScheduleEntry({
+          scheduleId: 9999,
+          startTime: new Date('2026-06-15T10:00:00Z'),
+          endTime: new Date('2026-06-15T18:00:00Z'),
+        })
+      ).rejects.toThrow('Schedule entry not found');
+    });
+
+    it('returns conflicts when detected and force is false', async () => {
+      const { schedulingClient } = await import('../services/scheduling-client');
+      (schedulingClient.checkConflicts as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        has_conflicts: true,
+        conflicts: [
+          {
+            resource_id: 1,
+            resource_name: 'Chef',
+            conflicting_event_id: 10,
+            conflicting_event_name: 'Gala',
+            existing_start_time: '2026-06-15T08:00:00Z',
+            existing_end_time: '2026-06-15T18:00:00Z',
+            requested_start_time: '2026-06-15T10:00:00Z',
+            requested_end_time: '2026-06-15T18:00:00Z',
+            message: 'Chef already assigned to Gala',
+          },
+        ],
+      });
+
+      const caller = createAdminCaller(db);
+      const client = await createClient(db);
+      const event = await createEvent(db, client.id, 1, { eventName: 'Conflict Update Event' });
+      const resource = await createResource(db, { name: 'Conflict Update Resource' });
+
+      const entry = await createResourceSchedule(
+        db,
+        resource.id,
+        event.id,
+        new Date('2026-06-15T09:00:00Z'),
+        new Date('2026-06-15T17:00:00Z')
+      );
+
+      const result = await caller.resource.updateScheduleEntry({
+        scheduleId: entry.id,
+        startTime: new Date('2026-06-15T10:00:00Z'),
+        endTime: new Date('2026-06-15T18:00:00Z'),
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.conflicts).toHaveLength(1);
+    });
+
+    it('passes exclude_schedule_id for self-exclusion', async () => {
+      const { schedulingClient } = await import('../services/scheduling-client');
+
+      const caller = createAdminCaller(db);
+      const client = await createClient(db);
+      const event = await createEvent(db, client.id, 1, { eventName: 'Self Exclude Event' });
+      const resource = await createResource(db, { name: 'Self Exclude Resource' });
+
+      const entry = await createResourceSchedule(
+        db,
+        resource.id,
+        event.id,
+        new Date('2026-06-15T09:00:00Z'),
+        new Date('2026-06-15T17:00:00Z')
+      );
+
+      await caller.resource.updateScheduleEntry({
+        scheduleId: entry.id,
+        startTime: new Date('2026-06-15T10:00:00Z'),
+        endTime: new Date('2026-06-15T18:00:00Z'),
+      });
+
+      expect(schedulingClient.checkConflicts).toHaveBeenCalledWith(
+        expect.objectContaining({
+          exclude_schedule_id: entry.id,
+        })
+      );
+    });
+
+    it('rejects manager users (admin only)', async () => {
+      const caller = createManagerCaller(db);
+
+      await expect(
+        caller.resource.updateScheduleEntry({
+          scheduleId: 1,
+          startTime: new Date('2026-06-15T10:00:00Z'),
+          endTime: new Date('2026-06-15T18:00:00Z'),
+        })
+      ).rejects.toThrow('FORBIDDEN');
+    });
+  });
+
+  describe('resource.deleteScheduleEntry', () => {
+    it('deletes a schedule entry', async () => {
+      const caller = createAdminCaller(db);
+
+      const client = await createClient(db);
+      const event = await createEvent(db, client.id, 1, { eventName: 'Delete Entry Event' });
+      const resource = await createResource(db, { name: 'Delete Resource' });
+
+      const entry = await createResourceSchedule(
+        db,
+        resource.id,
+        event.id,
+        new Date('2026-06-15T09:00:00Z'),
+        new Date('2026-06-15T17:00:00Z')
+      );
+
+      const result = await caller.resource.deleteScheduleEntry({ scheduleId: entry.id });
+
+      expect(result.success).toBe(true);
+
+      // Verify deletion via getMultiResourceSchedule
+      const schedule = await caller.resource.getMultiResourceSchedule({
+        resourceIds: [resource.id],
+        startDate: new Date('2026-06-01'),
+        endDate: new Date('2026-06-30'),
+      });
+      expect(schedule.entries).toHaveLength(0);
+    });
+
+    it('rejects non-existent schedule entry', async () => {
+      const caller = createAdminCaller(db);
+
+      await expect(caller.resource.deleteScheduleEntry({ scheduleId: 9999 })).rejects.toThrow(
+        'Schedule entry not found'
+      );
+    });
+
+    it('rejects manager users (admin only)', async () => {
+      const caller = createManagerCaller(db);
+
+      await expect(caller.resource.deleteScheduleEntry({ scheduleId: 1 })).rejects.toThrow(
+        'FORBIDDEN'
+      );
+    });
+  });
 
   describe('resource.getSchedule - edge cases', () => {
     it('returns empty entries for unscheduled resource', async () => {
