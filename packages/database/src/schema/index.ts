@@ -15,6 +15,8 @@ export * from './payments';
 export * from './portal-access-log';
 export * from './resource-schedule';
 export * from './resources';
+export * from './staff-availability';
+export * from './staff-skills';
 export * from './task-resources';
 export * from './task-template-items';
 export * from './task-templates'; // Must be before events due to FK reference

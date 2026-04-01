@@ -170,20 +170,22 @@ export async function createResource(
     hourlyRate: number;
     isAvailable: boolean;
     notes: string;
+    userId: number;
   }> = {}
 ) {
   const id = nextId();
 
   const result = await db.execute(sql`
-    INSERT INTO resources (name, type, hourly_rate, is_available, notes)
+    INSERT INTO resources (name, type, hourly_rate, is_available, notes, user_id)
     VALUES (
       ${overrides.name || `Resource ${id}`},
       ${overrides.type || 'staff'},
       ${overrides.hourlyRate || null},
       ${overrides.isAvailable !== undefined ? overrides.isAvailable : true},
-      ${overrides.notes || null}
+      ${overrides.notes || null},
+      ${overrides.userId || null}
     )
-    RETURNING id, name, type, hourly_rate, is_available, notes, created_at, updated_at
+    RETURNING id, name, type, hourly_rate, is_available, notes, user_id, created_at, updated_at
   `);
 
   return result[0] as {
@@ -193,6 +195,7 @@ export async function createResource(
     hourly_rate: number | null;
     is_available: boolean;
     notes: string | null;
+    user_id: number | null;
     created_at: Date;
     updated_at: Date;
   };
@@ -781,6 +784,85 @@ export async function createNotificationPreference(
     notification_type: string;
     in_app_enabled: boolean;
     email_enabled: boolean;
+    created_at: Date;
+    updated_at: Date;
+  };
+}
+
+/**
+ * Create a staff skill entry.
+ */
+export async function createStaffSkill(
+  db: TestDatabase,
+  userId: number,
+  overrides: Partial<{
+    skill:
+      | 'food_safety_cert'
+      | 'bartender'
+      | 'sommelier'
+      | 'lead_chef'
+      | 'sous_chef'
+      | 'prep_cook'
+      | 'pastry_chef'
+      | 'server'
+      | 'event_coordinator'
+      | 'barista';
+    certifiedAt: Date;
+    expiresAt: Date;
+  }> = {}
+) {
+  const result = await db.execute(sql`
+    INSERT INTO staff_skills (user_id, skill, certified_at, expires_at)
+    VALUES (
+      ${userId},
+      ${overrides.skill || 'server'},
+      ${overrides.certifiedAt?.toISOString() || null},
+      ${overrides.expiresAt?.toISOString() || null}
+    )
+    RETURNING user_id, skill, certified_at, expires_at, created_at
+  `);
+
+  return result[0] as {
+    user_id: number;
+    skill: string;
+    certified_at: Date | null;
+    expires_at: Date | null;
+    created_at: Date;
+  };
+}
+
+/**
+ * Create a staff availability entry.
+ */
+export async function createStaffAvailability(
+  db: TestDatabase,
+  userId: number,
+  overrides: Partial<{
+    dayOfWeek: number;
+    startTime: string;
+    endTime: string;
+    isRecurring: boolean;
+  }> = {}
+) {
+  const result = await db.execute(sql`
+    INSERT INTO staff_availability (user_id, day_of_week, start_time, end_time, is_recurring)
+    VALUES (
+      ${userId},
+      ${overrides.dayOfWeek ?? 1},
+      ${overrides.startTime || '09:00'},
+      ${overrides.endTime || '17:00'},
+      ${overrides.isRecurring ?? true}
+    )
+    RETURNING id, user_id, day_of_week, start_time, end_time, is_recurring, created_at, updated_at
+  `);
+
+  return result[0] as {
+    id: number;
+    user_id: number;
+    day_of_week: number;
+    start_time: string;
+    end_time: string;
+    is_recurring: boolean;
     created_at: Date;
     updated_at: Date;
   };
