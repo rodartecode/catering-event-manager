@@ -226,7 +226,7 @@ export const eventRouter = router({
     let nextCursor: number | null = null;
     if (results.length > limit) {
       const nextItem = results.pop();
-      nextCursor = nextItem!.id;
+      nextCursor = nextItem?.id ?? null;
     }
 
     return {
@@ -808,11 +808,11 @@ export const eventRouter = router({
         .where(and(inArray(tasks.eventId, input.ids), isNotNull(tasks.assignedTo)));
 
       const notifications = assignedUsers
-        .filter((u) => u.userId !== null)
+        .filter((u): u is typeof u & { userId: number } => u.userId !== null)
         .map((u) => {
           const event = targetEvents.find((e) => e.id === u.eventId);
           return {
-            userId: u.userId!,
+            userId: u.userId,
             type: 'status_changed' as const,
             title: `"${event?.eventName}" status changed to ${input.newStatus}`,
             entityType: 'event',

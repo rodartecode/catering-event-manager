@@ -7,7 +7,12 @@ import { createNotifications } from '@/server/services/notifications';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(request: Request) {
+  const authHeader = request.headers.get('authorization');
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
     const today = new Date();
     today.setHours(23, 59, 59, 999);
@@ -64,9 +69,9 @@ export async function GET() {
 
     // Create follow_up_due notifications for contacted users
     const followUpNotifications = dueFollowUps
-      .filter((item) => item.contactedBy !== null)
+      .filter((item): item is typeof item & { contactedBy: number } => item.contactedBy !== null)
       .map((item) => ({
-        userId: item.contactedBy!,
+        userId: item.contactedBy,
         type: 'follow_up_due' as const,
         title: `Follow-up due: ${item.subject || item.companyName}`,
         body: `Follow-up for ${item.eventName} with ${item.companyName}`,

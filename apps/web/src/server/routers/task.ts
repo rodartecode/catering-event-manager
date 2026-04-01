@@ -592,7 +592,7 @@ export const taskRouter = router({
     let nextCursor: number | null = null;
     if (results.length > limit) {
       const nextItem = results.pop();
-      nextCursor = nextItem!.id;
+      nextCursor = nextItem?.id ?? null;
     }
 
     // Transform results to handle null assignees
@@ -1015,9 +1015,9 @@ export const taskRouter = router({
 
     // Notify assigned users about overdue tasks
     const overdueNotifications = result
-      .filter((t) => t.assignedTo !== null)
+      .filter((t): t is typeof t & { assignedTo: number } => t.assignedTo !== null)
       .map((t) => ({
-        userId: t.assignedTo!,
+        userId: t.assignedTo,
         type: 'overdue' as const,
         title: `Task "${t.title}" is overdue`,
         entityType: 'task',

@@ -156,7 +156,7 @@ export const resourceRouter = router({
     let nextCursor: number | null = null;
     if (results.length > limit) {
       const nextItem = results.pop();
-      nextCursor = nextItem!.id;
+      nextCursor = nextItem?.id ?? null;
     }
 
     return {
