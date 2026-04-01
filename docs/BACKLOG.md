@@ -237,6 +237,158 @@ _(No items — all P1 features complete)_
 
 ---
 
+## Tech Debt & Code Hygiene
+
+### secure-cron-endpoints
+**Add authentication to `/api/cron/*` routes**
+- Priority: P1
+- Scope: S
+- Touches: api
+- Depends on: none
+- Done when:
+  - All cron routes (`/api/cron/follow-ups`, `/api/cron/notifications-digest`) verify a `CRON_SECRET` bearer token
+  - Unauthenticated requests return 401
+  - `CRON_SECRET` env var added to ENV.md, Vercel, and GitHub Actions
+  - Vercel Cron config passes the secret header
+
+### fix-non-null-assertions
+**Replace unsafe `!` assertions with proper guards in production code**
+- Priority: P1
+- Scope: S
+- Touches: api
+- Depends on: none
+- Done when:
+  - Pagination cursors in `event.ts:229`, `task.ts:595`, `resource.ts:159` use `nextItem?.id ?? undefined`
+  - Nullable FK accesses in `follow-ups/route.ts:69`, `task.ts:1020`, `event.ts:815` have null guards
+  - Zero non-null assertions remain in production code (test files exempt)
+
+### optimize-analytics-queries
+**Replace N+1 patterns in analytics router with JOINs/batch queries**
+- Priority: P2
+- Scope: S
+- Touches: api
+- Depends on: none
+- Done when:
+  - `analytics.ts:150` resource utilization uses a single JOIN query instead of per-resource `Promise.all`
+  - `analytics.ts:354` event profitability uses batch invoice/expense queries grouped by event_id
+  - Analytics response times measurably improved under load
+
+### eliminate-raw-sql-type-casts
+**Replace `as unknown as` casts with typed Drizzle queries**
+- Priority: P2
+- Scope: S
+- Touches: api
+- Depends on: none
+- Done when:
+  - `payment.ts:68,165` and `invoice-number.ts:17` use Drizzle's typed `db.select()` or `sql<type>` tagged templates
+  - Zero `as unknown as` casts remain in production code
+
+### component-test-coverage
+**Add unit tests for critical untested components**
+- Priority: P2
+- Scope: L
+- Touches: ui
+- Depends on: none
+- Done when:
+  - Tests exist for top-priority components: `EventForm`, `TaskForm`, `InvoiceForm`, `ResourceAssignmentDialog`, `SchedulingCalendar`
+  - Component test coverage rises from 34% to >60%
+  - Each test covers rendering, user interactions, and accessibility basics
+- Notes: 57/86 components currently untested. Focus on forms and dialogs first (highest risk). Use existing test helpers in `test/helpers/`.
+
+### add-updated-at-triggers
+**Create database triggers to auto-update `updated_at` on all mutable tables**
+- Priority: P2
+- Scope: S
+- Touches: schema
+- Depends on: none
+- Done when:
+  - Generic `update_updated_at_column()` PL/pgSQL function created
+  - BEFORE UPDATE triggers attached to all tables with `updated_at` columns (communications, resources, tasks, resource_schedule, notifications, etc.)
+  - Existing `events` trigger also updates `updated_at` on status change
+  - New migration added and tested
+
+### add-missing-fk-indexes
+**Add database indexes on unindexed foreign key columns**
+- Priority: P2
+- Scope: S
+- Touches: schema
+- Depends on: none
+- Done when:
+  - Indexes added for `communications.contacted_by` and any other unindexed FKs identified by query plan analysis
+  - New migration added and applied to staging
+- Notes: Missing FK indexes cause full table scans on JOINs. Run `EXPLAIN ANALYZE` on key queries to confirm.
+
+### ci-pipeline-optimization
+**Reduce CI build time by eliminating redundant work**
+- Priority: P2
+- Scope: M
+- Touches: infra
+- Depends on: none
+- Done when:
+  - Schema push runs once as a shared job dependency (currently runs 3 times)
+  - Go binary built once and shared as artifact across e2e/quality-gates jobs
+  - Playwright browsers cached between runs
+  - pnpm store properly cached across all jobs
+  - CI wall time reduced by >30%
+- Notes: Current CI has 11 duplicate `pnpm install` calls, 3 schema pushes, 3 Go builds, and 2 Playwright installs.
+
+### lazy-load-heavy-dependencies
+**Dynamic import chart.js, @dnd-kit, and @supabase/supabase-js**
+- Priority: P3
+- Scope: S
+- Touches: ui
+- Depends on: none
+- Done when:
+  - `chart.js` + `react-chartjs-2` loaded via `next/dynamic` only on dashboard/analytics pages
+  - `@dnd-kit/*` loaded via `next/dynamic` only on scheduling page
+  - Client bundle size measurably reduced for non-dashboard routes
+
+### extract-large-components
+**Break down components >300 LOC into focused sub-components**
+- Priority: P3
+- Scope: M
+- Touches: ui
+- Depends on: none
+- Done when:
+  - `ResourceAssignmentDialog` (424 LOC), `EventForm` (347 LOC), `UploadDocumentDialog` (318 LOC), `TaskForm` (299 LOC), `SchedulingCalendar` (299 LOC) each decomposed into <200 LOC sub-components
+  - Existing tests (if any) still pass, new sub-components are independently testable
+- Notes: Improves testability and readability. Pairs well with `component-test-coverage`.
+
+### env-documentation-sync
+**Document undocumented env vars and wire up missing config**
+- Priority: P3
+- Scope: S
+- Touches: docs, api, go-service
+- Depends on: none
+- Done when:
+  - `ALLOWED_ORIGINS` documented in ENV.md with usage notes for both Next.js and Go service
+  - Go service loads `LOG_LEVEL` from env and applies to structured logger
+  - Go service rate limit aligned with Next.js (100/min) or documented why different
+
+### go-structured-logging
+**Replace `log.Printf` with structured logger in Go service**
+- Priority: P4
+- Scope: S
+- Touches: go-service
+- Depends on: none
+- Done when:
+  - `cmd/scheduler/main.go` and `internal/api/middleware.go` use the existing `internal/logger` package
+  - All Go log output is structured JSON matching the Next.js logger format
+
+### enable-biome-a11y
+**Enable Biome accessibility linting rules**
+- Priority: P4
+- Scope: S
+- Touches: ui
+- Depends on: none
+- Done when:
+  - `biome.json` sets `a11y.recommended: true` (currently `false`)
+  - All existing a11y violations either fixed or explicitly suppressed with justification
+  - Developers catch a11y issues locally instead of only in CI via axe-core
+- Notes: Currently a11y is only enforced by Playwright quality gates in CI. Local Biome rules would catch issues earlier.
+
+---
+
 ## Infrastructure
 
 | Priority | Item | Description | Scope |
@@ -257,6 +409,7 @@ _(No items — all P1 features complete)_
 
 | Date | Item | Notes |
 |------|------|-------|
+| 2026-04-01 | Dependency upgrades | TypeScript 6, batch minor/patch npm updates, Go module security updates, remove deprecated @types/bcryptjs |
 | 2026-04-01 | Staff skills | Skills matrix (10 types), weekly availability, user↔resource bridge, findAvailable query, staff pages |
 | 2026-03-18 | Document management | File uploads via Supabase Storage with presigned URLs, client portal sharing, drag-and-drop UI |
 | 2026-03-16 | Financial layer | Expenses, invoicing with PDF, payments with auto-status transitions, profitability analytics |

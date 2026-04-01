@@ -7,7 +7,12 @@ import { logger } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(request: Request) {
+  const authHeader = request.headers.get('authorization');
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
     // Find all notifications pending email delivery that are still unread
     const pendingNotifications = await db
@@ -47,7 +52,7 @@ export async function GET() {
       if (!byUser.has(n.userId)) {
         byUser.set(n.userId, { email: n.userEmail, name: n.userName, items: [] });
       }
-      byUser.get(n.userId)!.items.push({
+      byUser.get(n.userId)?.items.push({
         id: n.id,
         title: n.title,
         body: n.body,

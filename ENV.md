@@ -54,6 +54,14 @@ RESEND_API_KEY="re_..."
 FROM_EMAIL="no-reply@example.com"
 ```
 
+### Cron Jobs
+
+```bash
+CRON_SECRET="$(openssl rand -base64 32)"  # Authenticates Vercel Cron requests
+```
+
+Required for `/api/cron/*` endpoints. Vercel sends this as a `Bearer` token in the `Authorization` header.
+
 ## Optional Variables
 
 ```bash
@@ -86,6 +94,7 @@ ENABLE_QUERY_LOGGING=true   # Log SQL queries (dev only)
 | `STAGING_SUPABASE_DIRECT_URL` | Staging Supabase direct connection string |
 | `STAGING_VERCEL_PROJECT_ID` | Staging Vercel project ID |
 | `STAGING_FLY_API_TOKEN` | Staging Fly.io API token |
+| `CRON_SECRET` | Bearer token for cron endpoint authentication |
 
 ## Security
 
