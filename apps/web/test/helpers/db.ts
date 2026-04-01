@@ -160,6 +160,14 @@ async function runMigrations(db: TestDatabase): Promise<void> {
     END $$;
   `);
 
+  await db.execute(sql`
+    DO $$ BEGIN
+      CREATE TYPE staff_skill AS ENUM ('food_safety_cert', 'bartender', 'sommelier', 'lead_chef', 'sous_chef', 'prep_cook', 'pastry_chef', 'server', 'event_coordinator', 'barista');
+    EXCEPTION
+      WHEN duplicate_object THEN null;
+    END $$;
+  `);
+
   // Create tables (clients first for FK references)
   await db.execute(sql`
     CREATE TABLE IF NOT EXISTS clients (
@@ -284,9 +292,14 @@ async function runMigrations(db: TestDatabase): Promise<void> {
       hourly_rate DECIMAL(10,2),
       is_available BOOLEAN NOT NULL DEFAULT true,
       notes TEXT,
+      user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
       created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
     )
+  `);
+
+  await db.execute(sql`
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_resources_user_id ON resources(user_id) WHERE user_id IS NOT NULL
   `);
 
   await db.execute(sql`
@@ -468,6 +481,46 @@ async function runMigrations(db: TestDatabase): Promise<void> {
   `);
 
   await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS staff_skills (
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      skill staff_skill NOT NULL,
+      certified_at TIMESTAMP WITH TIME ZONE,
+      expires_at TIMESTAMP WITH TIME ZONE,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+      PRIMARY KEY (user_id, skill)
+    )
+  `);
+
+  await db.execute(sql`
+    CREATE INDEX IF NOT EXISTS idx_staff_skills_user_id ON staff_skills(user_id)
+  `);
+
+  await db.execute(sql`
+    CREATE INDEX IF NOT EXISTS idx_staff_skills_skill ON staff_skills(skill)
+  `);
+
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS staff_availability (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      day_of_week INTEGER NOT NULL,
+      start_time VARCHAR(5) NOT NULL,
+      end_time VARCHAR(5) NOT NULL,
+      is_recurring BOOLEAN NOT NULL DEFAULT true,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+      updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+    )
+  `);
+
+  await db.execute(sql`
+    CREATE INDEX IF NOT EXISTS idx_staff_availability_user_id ON staff_availability(user_id)
+  `);
+
+  await db.execute(sql`
+    CREATE INDEX IF NOT EXISTS idx_staff_availability_composite ON staff_availability(user_id, day_of_week)
+  `);
+
+  await db.execute(sql`
     CREATE TABLE IF NOT EXISTS notification_preferences (
       id SERIAL PRIMARY KEY,
       user_id INTEGER NOT NULL REFERENCES users(id),
@@ -499,6 +552,8 @@ async function runMigrations(db: TestDatabase): Promise<void> {
     'event_status_log',
     'tasks',
     'resources',
+    'staff_skills',
+    'staff_availability',
     'task_resources',
     'resource_schedule',
     'communications',
@@ -528,7 +583,7 @@ async function runMigrations(db: TestDatabase): Promise<void> {
 export async function cleanDatabase(db: TestDatabase): Promise<void> {
   // Truncate tables in order (respecting foreign key constraints)
   await db.execute(
-    sql`TRUNCATE verification_tokens, notification_preferences, notifications, documents, event_menu_items, event_menus, menu_items, communications, payments, invoice_line_items, invoices, expenses, resource_schedule, task_resources, tasks, event_status_log, events, resources, users, clients, task_template_items, task_templates RESTART IDENTITY CASCADE`
+    sql`TRUNCATE verification_tokens, notification_preferences, notifications, documents, event_menu_items, event_menus, menu_items, communications, payments, invoice_line_items, invoices, expenses, resource_schedule, task_resources, staff_skills, staff_availability, tasks, event_status_log, events, resources, users, clients, task_template_items, task_templates RESTART IDENTITY CASCADE`
   );
 }
 

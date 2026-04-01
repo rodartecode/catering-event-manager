@@ -11,6 +11,7 @@ import { paymentRouter } from './payment';
 import { portalRouter } from './portal';
 import { resourceRouter } from './resource';
 import { searchRouter } from './search';
+import { staffRouter } from './staff';
 import { taskRouter } from './task';
 import { templateRouter } from './template';
 import { userRouter } from './user';
@@ -19,6 +20,7 @@ export const appRouter = router({
   event: eventRouter,
   task: taskRouter,
   resource: resourceRouter,
+  staff: staffRouter,
   document: documentRouter,
   expense: expenseRouter,
   invoice: invoiceRouter,

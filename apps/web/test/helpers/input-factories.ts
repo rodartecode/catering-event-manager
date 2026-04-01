@@ -13,6 +13,8 @@ import {
   createPayment,
   createResource,
   createResourceSchedule,
+  createStaffAvailability,
+  createStaffSkill,
   createTask,
   createUser,
 } from './factories';
@@ -39,6 +41,7 @@ export interface AuthMatrixData {
   eventMenu: { id: number; event_id: number };
   eventMenuItem: { id: number };
   notification: { id: number };
+  staffResource: { id: number; userId: number };
 }
 
 /**
@@ -162,6 +165,20 @@ export async function setupAuthMatrixData(db: TestDatabase): Promise<AuthMatrixD
     entityId: task.id,
   });
 
+  // Staff skills data: link managerUser to a staff resource
+  const staffResource = await createResource(db, {
+    name: 'Auth Matrix Staff',
+    type: 'staff',
+    userId: managerUser.id,
+  });
+
+  await createStaffSkill(db, managerUser.id, { skill: 'server' });
+  await createStaffAvailability(db, managerUser.id, {
+    dayOfWeek: 1,
+    startTime: '09:00',
+    endTime: '17:00',
+  });
+
   return {
     adminUser: { id: adminUser.id, email: adminUser.email },
     managerUser: { id: managerUser.id, email: managerUser.email },
@@ -181,6 +198,7 @@ export async function setupAuthMatrixData(db: TestDatabase): Promise<AuthMatrixD
     eventMenu: { id: eventMenu.id, event_id: event.id },
     eventMenuItem: { id: eventMenuItem.id },
     notification: { id: notification.id },
+    staffResource: { id: staffResource.id, userId: managerUser.id },
   };
 }
 
@@ -415,6 +433,25 @@ export function getProcedureInput(
       inAppEnabled: false,
     },
 
+    // Staff router
+    'staff.getSkills': { userId: data.staffResource.userId },
+    'staff.updateSkills': {
+      userId: data.staffResource.userId,
+      skills: [{ skill: 'bartender' }],
+    },
+    'staff.getAvailability': { userId: data.staffResource.userId },
+    'staff.setAvailability': {
+      userId: data.staffResource.userId,
+      slots: [{ dayOfWeek: 1, startTime: '09:00', endTime: '17:00' }],
+    },
+    'staff.findAvailable': { skills: ['server'] },
+    'staff.linkUserToResource': {
+      userId: data.adminUser.id,
+      resourceId: data.resource.id,
+    },
+    'staff.getStaffList': {},
+    'staff.getStaffProfile': { resourceId: data.staffResource.id },
+
     // Analytics router
     'analytics.eventCompletion': { dateFrom, dateTo },
     'analytics.resourceUtilization': { dateFrom, dateTo },
@@ -603,6 +640,17 @@ export const allProcedures: ProcedureDefinition[] = [
   { router: 'notification', procedure: 'getUnreadCount', access: 'protected', type: 'query' },
   { router: 'notification', procedure: 'getPreferences', access: 'protected', type: 'query' },
   { router: 'notification', procedure: 'updatePreference', access: 'protected', type: 'mutation' },
+
+  // Staff router - adminProcedure
+  { router: 'staff', procedure: 'updateSkills', access: 'admin', type: 'mutation' },
+  { router: 'staff', procedure: 'setAvailability', access: 'admin', type: 'mutation' },
+  { router: 'staff', procedure: 'linkUserToResource', access: 'admin', type: 'mutation' },
+  // Staff router - protectedProcedure
+  { router: 'staff', procedure: 'getSkills', access: 'protected', type: 'query' },
+  { router: 'staff', procedure: 'getAvailability', access: 'protected', type: 'query' },
+  { router: 'staff', procedure: 'findAvailable', access: 'protected', type: 'query' },
+  { router: 'staff', procedure: 'getStaffList', access: 'protected', type: 'query' },
+  { router: 'staff', procedure: 'getStaffProfile', access: 'protected', type: 'query' },
 
   // Analytics router - protectedProcedure
   { router: 'analytics', procedure: 'eventCompletion', access: 'protected', type: 'query' },
