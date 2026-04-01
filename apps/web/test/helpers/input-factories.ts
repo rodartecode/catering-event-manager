@@ -265,6 +265,27 @@ export function getProcedureInput(
     'resource.exportCsv': {},
     'resource.getAvailable': {},
     'resource.schedulingServiceHealth': undefined,
+    'resource.getMultiResourceSchedule': {
+      resourceIds: [data.resource.id],
+      startDate: dateFrom,
+      endDate: dateTo,
+    },
+    'resource.createScheduleEntry': {
+      resourceId: data.resource.id,
+      eventId: data.event.id,
+      startTime: tomorrow,
+      endTime: tomorrowEnd,
+      force: true,
+    },
+    'resource.updateScheduleEntry': {
+      scheduleId: data.scheduleEntry.id,
+      startTime: tomorrow,
+      endTime: tomorrowEnd,
+      force: true,
+    },
+    'resource.deleteScheduleEntry': {
+      scheduleId: data.scheduleEntry.id,
+    },
 
     // Clients router
     'clients.list': undefined,
@@ -494,6 +515,9 @@ export const allProcedures: ProcedureDefinition[] = [
   { router: 'resource', procedure: 'update', access: 'admin', type: 'mutation' },
   { router: 'resource', procedure: 'delete', access: 'admin', type: 'mutation' },
   { router: 'resource', procedure: 'exportCsv', access: 'admin', type: 'mutation' },
+  { router: 'resource', procedure: 'createScheduleEntry', access: 'admin', type: 'mutation' },
+  { router: 'resource', procedure: 'updateScheduleEntry', access: 'admin', type: 'mutation' },
+  { router: 'resource', procedure: 'deleteScheduleEntry', access: 'admin', type: 'mutation' },
   // Resource router - protectedProcedure
   { router: 'resource', procedure: 'list', access: 'protected', type: 'query' },
   { router: 'resource', procedure: 'getById', access: 'protected', type: 'query' },
@@ -501,6 +525,7 @@ export const allProcedures: ProcedureDefinition[] = [
   { router: 'resource', procedure: 'checkConflicts', access: 'protected', type: 'query' },
   { router: 'resource', procedure: 'getAvailable', access: 'protected', type: 'query' },
   { router: 'resource', procedure: 'schedulingServiceHealth', access: 'protected', type: 'query' },
+  { router: 'resource', procedure: 'getMultiResourceSchedule', access: 'protected', type: 'query' },
 
   // Document router - adminProcedure
   { router: 'document', procedure: 'createUploadUrl', access: 'admin', type: 'mutation' },

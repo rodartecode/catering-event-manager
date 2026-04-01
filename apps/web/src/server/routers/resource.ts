@@ -1,6 +1,11 @@
-import { resourceSchedule, resources } from '@catering-event-manager/database/schema';
+import {
+  events,
+  resourceSchedule,
+  resources,
+  tasks,
+} from '@catering-event-manager/database/schema';
 import { TRPCError } from '@trpc/server';
-import { and, eq, gt, ilike, sql } from 'drizzle-orm';
+import { and, eq, gt, gte, ilike, inArray, lte, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { logger } from '@/lib/logger';
 import { generateCSV } from '../services/csv';
@@ -40,6 +45,37 @@ const checkConflictsInput = z.object({
   startTime: z.coerce.date(),
   endTime: z.coerce.date(),
   excludeScheduleId: z.number().positive().optional(),
+});
+
+// Multi-resource schedule query input
+const getMultiResourceScheduleInput = z.object({
+  resourceIds: z.array(z.number().positive()).min(1).max(50),
+  startDate: z.coerce.date(),
+  endDate: z.coerce.date(),
+});
+
+// Create schedule entry input
+const createScheduleEntryInput = z.object({
+  resourceId: z.number().positive(),
+  eventId: z.number().positive(),
+  taskId: z.number().positive().optional(),
+  startTime: z.coerce.date(),
+  endTime: z.coerce.date(),
+  notes: z.string().optional(),
+  force: z.boolean().optional().default(false),
+});
+
+// Update schedule entry input
+const updateScheduleEntryInput = z.object({
+  scheduleId: z.number().positive(),
+  startTime: z.coerce.date(),
+  endTime: z.coerce.date(),
+  force: z.boolean().optional().default(false),
+});
+
+// Delete schedule entry input
+const deleteScheduleEntryInput = z.object({
+  scheduleId: z.number().positive(),
 });
 
 // Update resource input
@@ -431,4 +467,261 @@ export const resourceRouter = router({
     const isHealthy = await schedulingClient.healthCheck();
     return { isHealthy };
   }),
+
+  // Get schedule entries for multiple resources (for scheduling calendar)
+  getMultiResourceSchedule: protectedProcedure
+    .input(getMultiResourceScheduleInput)
+    .query(async ({ ctx, input }) => {
+      const { db } = ctx;
+      const { resourceIds, startDate, endDate } = input;
+
+      const entries = await db
+        .select({
+          id: resourceSchedule.id,
+          resourceId: resourceSchedule.resourceId,
+          eventId: resourceSchedule.eventId,
+          eventName: events.eventName,
+          taskId: resourceSchedule.taskId,
+          taskTitle: tasks.title,
+          startTime: resourceSchedule.startTime,
+          endTime: resourceSchedule.endTime,
+          notes: resourceSchedule.notes,
+          createdAt: resourceSchedule.createdAt,
+          updatedAt: resourceSchedule.updatedAt,
+        })
+        .from(resourceSchedule)
+        .leftJoin(events, eq(resourceSchedule.eventId, events.id))
+        .leftJoin(tasks, eq(resourceSchedule.taskId, tasks.id))
+        .where(
+          and(
+            inArray(resourceSchedule.resourceId, resourceIds),
+            gte(resourceSchedule.endTime, startDate),
+            lte(resourceSchedule.startTime, endDate)
+          )
+        )
+        .orderBy(resourceSchedule.startTime);
+
+      return { entries };
+    }),
+
+  // Create a single schedule entry (drag-to-create on calendar)
+  createScheduleEntry: adminProcedure
+    .input(createScheduleEntryInput)
+    .mutation(async ({ ctx, input }) => {
+      const { db } = ctx;
+      const { resourceId, eventId, taskId, startTime, endTime, notes, force } = input;
+
+      // Validate time range
+      if (endTime <= startTime) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'End time must be after start time',
+        });
+      }
+
+      // Verify resource exists
+      const [resource] = await db
+        .select({ id: resources.id })
+        .from(resources)
+        .where(eq(resources.id, resourceId))
+        .limit(1);
+
+      if (!resource) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Resource not found' });
+      }
+
+      // Verify event exists
+      const [event] = await db
+        .select({ id: events.id })
+        .from(events)
+        .where(eq(events.id, eventId))
+        .limit(1);
+
+      if (!event) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Event not found' });
+      }
+
+      // Check conflicts via Go service
+      let hasConflicts = false;
+      let conflicts: Array<{
+        resourceId: number;
+        resourceName: string;
+        conflictingEventName: string;
+        message: string;
+      }> = [];
+
+      try {
+        const result = await schedulingClient.checkConflicts({
+          resource_ids: [resourceId],
+          start_time: startTime,
+          end_time: endTime,
+        });
+
+        hasConflicts = result.has_conflicts;
+        conflicts = result.conflicts.map((c) => ({
+          resourceId: c.resource_id,
+          resourceName: c.resource_name,
+          conflictingEventName: c.conflicting_event_name,
+          message: c.message,
+        }));
+      } catch (error) {
+        logger.error(
+          'Conflict check failed during schedule entry creation',
+          error instanceof Error ? error : new Error(String(error)),
+          { context: 'createScheduleEntry', resourceId, eventId }
+        );
+
+        if (error instanceof SchedulingClientError) {
+          if (error.code === 'TIMEOUT' || error.code === 'CONNECTION_ERROR') {
+            if (!force) {
+              return {
+                success: false,
+                conflicts: [],
+                warning: 'Unable to verify conflicts - scheduling service unavailable',
+              };
+            }
+          }
+        }
+        if (!force) {
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: 'Failed to check resource conflicts',
+          });
+        }
+      }
+
+      if (hasConflicts && !force) {
+        return { success: false, conflicts, message: 'Resource scheduling conflicts detected' };
+      }
+
+      // Create the schedule entry
+      const [entry] = await db
+        .insert(resourceSchedule)
+        .values({
+          resourceId,
+          eventId,
+          taskId: taskId ?? null,
+          startTime,
+          endTime,
+          notes: notes ?? null,
+        })
+        .returning();
+
+      return { success: true, entry };
+    }),
+
+  // Update schedule entry times (drag-to-move / resize on calendar)
+  updateScheduleEntry: adminProcedure
+    .input(updateScheduleEntryInput)
+    .mutation(async ({ ctx, input }) => {
+      const { db } = ctx;
+      const { scheduleId, startTime, endTime, force } = input;
+
+      // Validate time range
+      if (endTime <= startTime) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'End time must be after start time',
+        });
+      }
+
+      // Verify entry exists
+      const [existing] = await db
+        .select({
+          id: resourceSchedule.id,
+          resourceId: resourceSchedule.resourceId,
+        })
+        .from(resourceSchedule)
+        .where(eq(resourceSchedule.id, scheduleId))
+        .limit(1);
+
+      if (!existing) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Schedule entry not found' });
+      }
+
+      // Check conflicts (exclude current entry so it doesn't conflict with itself)
+      let hasConflicts = false;
+      let conflicts: Array<{
+        resourceId: number;
+        resourceName: string;
+        conflictingEventName: string;
+        message: string;
+      }> = [];
+
+      try {
+        const result = await schedulingClient.checkConflicts({
+          resource_ids: [existing.resourceId],
+          start_time: startTime,
+          end_time: endTime,
+          exclude_schedule_id: scheduleId,
+        });
+
+        hasConflicts = result.has_conflicts;
+        conflicts = result.conflicts.map((c) => ({
+          resourceId: c.resource_id,
+          resourceName: c.resource_name,
+          conflictingEventName: c.conflicting_event_name,
+          message: c.message,
+        }));
+      } catch (error) {
+        logger.error(
+          'Conflict check failed during schedule entry update',
+          error instanceof Error ? error : new Error(String(error)),
+          { context: 'updateScheduleEntry', scheduleId }
+        );
+
+        if (error instanceof SchedulingClientError) {
+          if (error.code === 'TIMEOUT' || error.code === 'CONNECTION_ERROR') {
+            if (!force) {
+              return {
+                success: false,
+                conflicts: [],
+                warning: 'Unable to verify conflicts - scheduling service unavailable',
+              };
+            }
+          }
+        }
+        if (!force) {
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: 'Failed to check resource conflicts',
+          });
+        }
+      }
+
+      if (hasConflicts && !force) {
+        return { success: false, conflicts, message: 'Resource scheduling conflicts detected' };
+      }
+
+      // Update the entry
+      const [updated] = await db
+        .update(resourceSchedule)
+        .set({ startTime, endTime, updatedAt: new Date() })
+        .where(eq(resourceSchedule.id, scheduleId))
+        .returning();
+
+      return { success: true, entry: updated };
+    }),
+
+  // Delete a schedule entry
+  deleteScheduleEntry: adminProcedure
+    .input(deleteScheduleEntryInput)
+    .mutation(async ({ ctx, input }) => {
+      const { db } = ctx;
+
+      // Verify entry exists
+      const [existing] = await db
+        .select({ id: resourceSchedule.id })
+        .from(resourceSchedule)
+        .where(eq(resourceSchedule.id, input.scheduleId))
+        .limit(1);
+
+      if (!existing) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Schedule entry not found' });
+      }
+
+      await db.delete(resourceSchedule).where(eq(resourceSchedule.id, input.scheduleId));
+
+      return { success: true };
+    }),
 });
