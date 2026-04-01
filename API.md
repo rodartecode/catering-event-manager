@@ -1,10 +1,10 @@
 # API Documentation
 
-**Last updated**: 2026-03-31
-**Version**: 1.2
+**Last updated**: 2026-04-01
+**Version**: 1.3
 **Base URL**: `http://localhost:3000/api/trpc` (dev) | `https://catering-dev.vercel.app/api/trpc` (prod)
 
-This document describes the complete tRPC API for the production-ready Catering Event Manager system. 15 routers with 116 procedures implemented.
+This document describes the complete tRPC API for the production-ready Catering Event Manager system. 16 routers with 122 procedures implemented.
 
 ## Authentication
 
@@ -32,9 +32,10 @@ The API uses Next-Auth v5 session-based authentication with three roles:
 | `portal` | Client portal (read-only access) | 11 procedures | client/public | ✅ Complete |
 | `notification` | In-app notifications & preferences | 6 procedures | protected | ✅ Complete |
 | `template` | Task template auto-generation | 2 procedures | admin | ✅ Complete |
+| `staff` | Staff skills & availability | 8 procedures | admin/protected | ✅ Complete |
 | `search` | Global search | 1 procedure | protected | ✅ Complete |
 
-**Total**: 116 procedures across 15 routers | **Test Coverage**: 1087 tests passing | **Production Status**: Live on Vercel
+**Total**: 122 procedures across 16 routers | **Test Coverage**: 1189 tests passing | **Production Status**: Live on Vercel
 
 ---
 
@@ -1210,7 +1211,7 @@ Example error response:
 
 ✅ **Comprehensive testing infrastructure implemented:**
 
-- **TypeScript Tests**: **1087 tests** across 58 test files (tRPC routers + React components)
+- **TypeScript Tests**: **1189 tests** across 61 test files (tRPC routers + React components)
 - **Go Service Tests**: **48 tests** with 91.7% scheduler coverage
 - **Integration Tests**: Real database testing for both TypeScript and Go services
 

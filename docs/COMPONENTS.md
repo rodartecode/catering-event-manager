@@ -1,8 +1,8 @@
 # Component Architecture Guide
 
-**Last updated**: 2026-03-30
+**Last updated**: 2026-04-01
 
-A comprehensive guide to the ~100 React components that make up the production-ready catering event management system's user interface.
+A comprehensive guide to the ~112 React components that make up the production-ready catering event management system's user interface.
 
 ## Table of Contents
 
@@ -32,6 +32,9 @@ src/components/
 ├── payments/               # Payment recording (1 component)
 ├── resources/              # Resource scheduling (7 components)
 ├── search/                 # Global search (2 components)
+├── shared/                 # Export, import, bulk actions (4 components)
+├── scheduling/             # Drag-drop calendar scheduling (7 components)
+├── staff/                  # Staff skills & availability (5 components)
 └── tasks/                  # Task management & assignment (9 components)
 ```
 

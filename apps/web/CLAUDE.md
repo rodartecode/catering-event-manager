@@ -17,7 +17,7 @@ Next.js 16 + React 19 full-stack application with tRPC v11 API, Next-Auth v5 aut
 ```
 src/
 ├── server/routers/           # tRPC API (→ src/server/CLAUDE.md)
-│   ├── _app.ts              # Root router (15 routers)
+│   ├── _app.ts              # Root router (16 routers)
 │   ├── event.ts             # Event management
 │   ├── task.ts              # Task management
 │   ├── resource.ts          # Resource scheduling
@@ -27,6 +27,7 @@ src/
 │   ├── menu.ts              # Menu planning
 │   ├── notification.ts      # Notifications & preferences
 │   ├── payment.ts           # Payments
+│   ├── staff.ts             # Staff skills & availability
 │   ├── analytics.ts         # Reporting
 │   ├── clients.ts           # Client management
 │   └── ...                  # portal, user, search, template
@@ -39,6 +40,7 @@ src/
 │   ├── invoices/           # Invoice management
 │   ├── menus/              # Menu planning
 │   ├── notifications/      # Bell icon, dropdown, preferences
+│   ├── staff/              # Staff skills, availability, profiles
 │   ├── dashboard/          # Layout components
 │   └── auth/               # Auth forms
 │
@@ -130,7 +132,7 @@ test/
 ├── integration/          # Cross-service tests
 ├── e2e/                  # Playwright tests
 │   └── quality-gates/   # Visual/a11y/performance
-└── auth-matrix.test.ts  # Authorization matrix (~97 cases)
+└── auth-matrix.test.ts  # Authorization matrix (~248 cases)
 ```
 
 ### Test Callers

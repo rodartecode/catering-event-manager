@@ -51,6 +51,7 @@ src/server/routers/
 ├── user.ts        # User management
 ├── portal.ts      # Client portal (read-only)
 ├── notification.ts # In-app notifications & preferences
+├── staff.ts       # Staff skills & availability
 ├── search.ts      # Global search
 └── template.ts    # Task templates
 ```
