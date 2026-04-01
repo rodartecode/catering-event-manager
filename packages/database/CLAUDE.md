@@ -18,7 +18,9 @@ src/schema/
 ├── events.ts            # References clients, users
 ├── event-status-log.ts  # References events, users
 ├── tasks.ts             # References events, users
-├── resources.ts         # Independent entity
+├── resources.ts         # Staff/equipment/materials (optional user_id FK for staff)
+├── staff-skills.ts      # Staff skill certifications (staff_skill enum)
+├── staff-availability.ts # Weekly recurring availability (HH:MM slots)
 ├── task-resources.ts    # Junction table
 ├── resource-schedule.ts # References resources, events, tasks
 ├── communications.ts    # References events, clients, users
@@ -57,6 +59,9 @@ dietaryTagEnum: ['vegan', 'vegetarian', 'gluten_free', 'halal', 'kosher', 'dairy
 
 // Notification Types
 notificationTypeEnum: ['task_assigned', 'status_changed', 'overdue', 'follow_up_due']
+
+// Staff Skills
+staffSkillEnum: ['food_safety_cert', 'bartender', 'sommelier', 'lead_chef', 'sous_chef', 'prep_cook', 'pastry_chef', 'server', 'event_coordinator', 'barista']
 ```
 
 ## Schema Patterns

@@ -31,18 +31,11 @@ _(No items — all P1 features complete)_
 - Touches: schema, api, ui
 - Implemented: Three-table design (menu_items + event_menus + event_menu_items), 15 menu router procedures + 1 portal procedure, catalog UI, event menu builder, cost estimation, dietary summary, shopping list, client portal view. Migration 0007.
 
-### staff-skills
+### ~~staff-skills~~ ✅ DONE (2026-04-01)
 **Staff skills matrix and shift availability**
 - Scope: M
 - Touches: schema, api, ui
-- Depends on: none
-- Done when:
-  - `staff_skills` junction: user_id, skill (food_safety_cert/bartender/sommelier/lead_chef/etc)
-  - `staff_availability` table: user_id, day_of_week, start_time, end_time, is_recurring
-  - tRPC: `staff.updateSkills`, `staff.getAvailability`, `staff.setAvailability`, `staff.findAvailable` (filters by skill + time range)
-  - Staff profile page shows skills and weekly availability
-  - Task assignment dialog suggests staff matching required skills + availability
-- Notes: Current `resources` table has `type: staff` but no concept of skills or shift availability. This extends the existing resource system. Feeds into Go scheduler's conflict detection.
+- Implemented: `staff_skills` junction (10-value enum) + `staff_availability` (weekly HH:MM slots) + `resources.user_id` FK bridge. Staff tRPC router (8 procedures: skills CRUD, availability CRUD, findAvailable with skill+time filtering, linkUserToResource, staff list/profile). Staff list page + profile page with inline editing. 5 components. Migration 0011 + 0012 (RLS). 39 router tests + 14 auth matrix tests.
 
 ### ~~bulk-operations~~ ✅ DONE (2026-03-31)
 **Import/export events, batch status updates**
@@ -56,18 +49,11 @@ _(No items — all P1 features complete)_
 - Touches: ui
 - Implemented: Gantt chart component on event detail page with task bars colored by status, dependency arrows, critical path highlighting, and horizontal scroll for long timelines.
 
-### drag-drop-scheduling
+### ~~drag-drop-scheduling~~ ✅ DONE (2026-04-01)
 **Visual calendar-based resource assignment**
 - Scope: L
 - Touches: ui, api
-- Depends on: none
-- Done when:
-  - Calendar view showing resource schedules (day/week/month)
-  - Drag to create new schedule blocks
-  - Drag to move/resize existing blocks
-  - Conflict detection on drop (calls Go service)
-  - Resource filter sidebar (by type, availability)
-- Notes: High UX impact. The Go scheduler already handles conflict detection — this adds the visual interaction layer. Consider react-big-calendar or @dnd-kit.
+- Implemented: Calendar view with day/week toggle using @dnd-kit. Drag-to-create, drag-to-move, resize schedule blocks. Go service conflict detection with force override. Resource filter sidebar. 7 components, 2 hooks, 4 new resource procedures. PR #41.
 
 ---
 
@@ -271,6 +257,7 @@ _(No items — all P1 features complete)_
 
 | Date | Item | Notes |
 |------|------|-------|
+| 2026-04-01 | Staff skills | Skills matrix (10 types), weekly availability, user↔resource bridge, findAvailable query, staff pages |
 | 2026-03-18 | Document management | File uploads via Supabase Storage with presigned URLs, client portal sharing, drag-and-drop UI |
 | 2026-03-16 | Financial layer | Expenses, invoicing with PDF, payments with auto-status transitions, profitability analytics |
 | 2026-03-30 | Notification system | In-app notifications (bell icon, preferences), email digests via Resend, 6 procedures, migrations 0009–0010 |

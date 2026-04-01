@@ -21,6 +21,7 @@ components/
 ├── resources/       # ResourceCard, ResourceForm, ScheduleBuilder
 ├── search/          # GlobalSearch, SearchResults
 ├── shared/          # ExportButton, ImportDialog, BulkActionBar, BatchStatusDialog
+├── staff/           # SkillBadge, SkillsEditor, AvailabilityGrid, StaffCard
 └── tasks/           # TaskCard, TaskForm, TaskDependencyGraph, GanttChart
 ```
 
