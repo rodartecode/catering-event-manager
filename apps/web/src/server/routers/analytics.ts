@@ -8,7 +8,7 @@ import {
   taskCategoryEnum,
   tasks,
 } from '@catering-event-manager/database/schema';
-import { and, eq, gte, lte } from 'drizzle-orm';
+import { and, eq, gte, lte, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { protectedProcedure, router } from '../trpc';
 
@@ -41,6 +41,7 @@ type ResourceRow = {
 };
 
 type ScheduleEntry = {
+  resourceId?: number;
   startTime: Date;
   endTime: Date;
 };
@@ -145,52 +146,60 @@ export const analyticsRouter = router({
       const businessDays = Math.max(1, Math.round(daysDiff * 0.71));
       const availableHours = businessDays * 8;
 
-      // Get schedule entries for each resource in date range
-      const utilizationData = await Promise.all(
-        allResources.map(async (resource: ResourceRow) => {
-          // Get all schedule entries for this resource that overlap with date range
-          const scheduleEntries: ScheduleEntry[] = await db
-            .select({
-              startTime: resourceSchedule.startTime,
-              endTime: resourceSchedule.endTime,
-            })
-            .from(resourceSchedule)
-            .where(
-              and(
-                eq(resourceSchedule.resourceId, resource.id),
-                lte(resourceSchedule.startTime, dateTo),
-                gte(resourceSchedule.endTime, dateFrom)
-              )
-            );
+      // Get utilization data in a single JOIN query (replaces N+1 per-resource queries)
+      const resourceIds = allResources.map((r: ResourceRow) => r.id);
 
-          // Calculate total hours allocated
-          const totalHoursAllocated = scheduleEntries.reduce(
-            (acc: number, entry: ScheduleEntry) => {
-              const start = new Date(Math.max(entry.startTime.getTime(), dateFrom.getTime()));
-              const end = new Date(Math.min(entry.endTime.getTime(), dateTo.getTime()));
-              const hours = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
-              return acc + Math.max(0, hours);
-            },
-            0
+      // Batch fetch all schedule entries for matching resources in one query
+      const scheduleByResource = new Map<number, ScheduleEntry[]>();
+      if (resourceIds.length > 0) {
+        const allEntries = await db
+          .select({
+            resourceId: resourceSchedule.resourceId,
+            startTime: resourceSchedule.startTime,
+            endTime: resourceSchedule.endTime,
+          })
+          .from(resourceSchedule)
+          .where(
+            and(
+              sql`${resourceSchedule.resourceId} IN ${resourceIds}`,
+              lte(resourceSchedule.startTime, dateTo),
+              gte(resourceSchedule.endTime, dateFrom)
+            )
           );
 
-          // Count assigned tasks
-          const assignedTasks = scheduleEntries.length;
+        for (const entry of allEntries) {
+          const existing = scheduleByResource.get(entry.resourceId);
+          if (existing) {
+            existing.push(entry);
+          } else {
+            scheduleByResource.set(entry.resourceId, [entry]);
+          }
+        }
+      }
 
-          // Calculate utilization percentage
-          const utilizationPercentage =
-            availableHours > 0 ? (totalHoursAllocated / availableHours) * 100 : 0;
+      const utilizationData = allResources.map((resource: ResourceRow) => {
+        const scheduleEntries = scheduleByResource.get(resource.id) ?? [];
 
-          return {
-            resourceId: resource.id,
-            resourceName: resource.name,
-            resourceType: resource.type,
-            assignedTasks,
-            totalHoursAllocated: Math.round(totalHoursAllocated * 100) / 100,
-            utilizationPercentage: Math.round(utilizationPercentage * 100) / 100,
-          };
-        })
-      );
+        const totalHoursAllocated = scheduleEntries.reduce((acc: number, entry: ScheduleEntry) => {
+          const start = new Date(Math.max(entry.startTime.getTime(), dateFrom.getTime()));
+          const end = new Date(Math.min(entry.endTime.getTime(), dateTo.getTime()));
+          const hours = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
+          return acc + Math.max(0, hours);
+        }, 0);
+
+        const assignedTasks = scheduleEntries.length;
+        const utilizationPercentage =
+          availableHours > 0 ? (totalHoursAllocated / availableHours) * 100 : 0;
+
+        return {
+          resourceId: resource.id,
+          resourceName: resource.name,
+          resourceType: resource.type,
+          assignedTasks,
+          totalHoursAllocated: Math.round(totalHoursAllocated * 100) / 100,
+          utilizationPercentage: Math.round(utilizationPercentage * 100) / 100,
+        };
+      });
 
       // Sort by utilization percentage descending
       type UtilizationItem = { utilizationPercentage: number };
@@ -350,51 +359,62 @@ export const analyticsRouter = router({
         )
       );
 
-    const profitabilityData = await Promise.all(
-      eventList.map(async (event) => {
-        // Get invoice totals for this event (only paid)
-        const eventInvoices = await db
-          .select({ total: invoices.total, status: invoices.status })
-          .from(invoices)
-          .where(eq(invoices.eventId, event.id));
+    // Batch fetch invoice and expense totals (replaces 2N queries with 2 queries)
+    const eventIds = eventList.map((e) => e.id);
 
-        let quotedTotal = 0;
-        let paidTotal = 0;
-        for (const inv of eventInvoices) {
-          const total = parseFloat(inv.total ?? '0');
-          quotedTotal += total;
-          if (inv.status === 'paid') {
-            paidTotal += total;
-          }
-        }
+    const invoiceTotalsByEvent = new Map<number, { quoted: number; paid: number }>();
+    const expenseTotalsByEvent = new Map<number, number>();
 
-        // Get expense totals for this event
-        const eventExpenses = await db
-          .select({ amount: expenses.amount })
-          .from(expenses)
-          .where(eq(expenses.eventId, event.id));
+    if (eventIds.length > 0) {
+      const invoiceAggs = await db
+        .select({
+          eventId: invoices.eventId,
+          quotedTotal: sql<string>`COALESCE(SUM(${invoices.total}), 0)`,
+          paidTotal: sql<string>`COALESCE(SUM(CASE WHEN ${invoices.status} = 'paid' THEN ${invoices.total} ELSE 0 END), 0)`,
+        })
+        .from(invoices)
+        .where(sql`${invoices.eventId} IN ${eventIds}`)
+        .groupBy(invoices.eventId);
 
-        let actualCost = 0;
-        for (const exp of eventExpenses) {
-          actualCost += parseFloat(exp.amount ?? '0');
-        }
+      for (const row of invoiceAggs) {
+        invoiceTotalsByEvent.set(row.eventId, {
+          quoted: parseFloat(row.quotedTotal ?? '0'),
+          paid: parseFloat(row.paidTotal ?? '0'),
+        });
+      }
 
-        const profit = Math.round((paidTotal - actualCost) * 100) / 100;
-        const margin = paidTotal > 0 ? Math.round((profit / paidTotal) * 10000) / 100 : 0;
+      const expenseAggs = await db
+        .select({
+          eventId: expenses.eventId,
+          total: sql<string>`COALESCE(SUM(${expenses.amount}), 0)`,
+        })
+        .from(expenses)
+        .where(sql`${expenses.eventId} IN ${eventIds}`)
+        .groupBy(expenses.eventId);
 
-        return {
-          eventId: event.id,
-          eventName: event.eventName,
-          eventDate: event.eventDate,
-          status: event.status,
-          quotedTotal: Math.round(quotedTotal * 100) / 100,
-          paidTotal: Math.round(paidTotal * 100) / 100,
-          actualCost: Math.round(actualCost * 100) / 100,
-          profit,
-          margin,
-        };
-      })
-    );
+      for (const row of expenseAggs) {
+        expenseTotalsByEvent.set(row.eventId, parseFloat(row.total ?? '0'));
+      }
+    }
+
+    const profitabilityData = eventList.map((event) => {
+      const inv = invoiceTotalsByEvent.get(event.id) ?? { quoted: 0, paid: 0 };
+      const actualCost = expenseTotalsByEvent.get(event.id) ?? 0;
+      const profit = Math.round((inv.paid - actualCost) * 100) / 100;
+      const margin = inv.paid > 0 ? Math.round((profit / inv.paid) * 10000) / 100 : 0;
+
+      return {
+        eventId: event.id,
+        eventName: event.eventName,
+        eventDate: event.eventDate,
+        status: event.status,
+        quotedTotal: Math.round(inv.quoted * 100) / 100,
+        paidTotal: Math.round(inv.paid * 100) / 100,
+        actualCost: Math.round(actualCost * 100) / 100,
+        profit,
+        margin,
+      };
+    });
 
     // Sort by profit descending
     return profitabilityData.sort((a, b) => b.profit - a.profit);

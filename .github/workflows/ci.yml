@@ -135,10 +135,32 @@ jobs:
           flags: gotests
           fail_ci_if_error: false
 
+  build-go:
+    name: Build Go Binary
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: apps/scheduling-service/go.sum
+
+      - name: Build Go scheduling service
+        working-directory: apps/scheduling-service
+        run: go build -o bin/scheduler cmd/scheduler/main.go
+
+      - name: Upload Go binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: go-scheduler-binary
+          path: apps/scheduling-service/bin/scheduler
+          retention-days: 1
+
   e2e-tests:
     name: E2E Tests (Playwright)
     runs-on: ubuntu-latest
-    needs: [unit-tests, go-tests]
+    needs: [unit-tests, go-tests, build-go]
     services:
       postgres:
         image: postgres:17
@@ -164,25 +186,41 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
 
-      - uses: actions/setup-go@v5
-        with:
-          go-version: ${{ env.GO_VERSION }}
-          cache-dependency-path: apps/scheduling-service/go.sum
-
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Get Playwright version
+        id: playwright-version
+        run: echo "version=$(pnpm --filter @catering/web exec playwright --version | head -1)" >> $GITHUB_OUTPUT
+
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
+
       - name: Install Playwright browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: pnpm --filter @catering/web exec playwright install chromium --with-deps
+
+      - name: Install Playwright system deps
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: pnpm --filter @catering/web exec playwright install-deps chromium
 
       - name: Push database schema
         run: pnpm --filter @catering/database db:push
         env:
           DATABASE_URL: postgresql://admin:changeme@localhost:5432/catering_events_test
 
-      - name: Build Go scheduling service
-        working-directory: apps/scheduling-service
-        run: go build -o bin/scheduler cmd/scheduler/main.go
+      - name: Download Go binary
+        uses: actions/download-artifact@v4
+        with:
+          name: go-scheduler-binary
+          path: apps/scheduling-service/bin
+
+      - name: Make Go binary executable
+        run: chmod +x apps/scheduling-service/bin/scheduler
 
       - name: Run E2E tests
         run: pnpm --filter @catering/web test:e2e
@@ -211,7 +249,7 @@ jobs:
   quality-gates:
     name: Quality Gates (Visual/A11y/Perf)
     runs-on: ubuntu-latest
-    needs: [unit-tests, go-tests]
+    needs: [unit-tests, go-tests, build-go]
     continue-on-error: true  # Advisory only - don't block PR merges
 
     services:
@@ -239,25 +277,41 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
 
-      - uses: actions/setup-go@v5
-        with:
-          go-version: ${{ env.GO_VERSION }}
-          cache-dependency-path: apps/scheduling-service/go.sum
-
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Get Playwright version
+        id: playwright-version
+        run: echo "version=$(pnpm --filter @catering/web exec playwright --version | head -1)" >> $GITHUB_OUTPUT
+
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
+
       - name: Install Playwright browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: pnpm --filter @catering/web exec playwright install chromium --with-deps
+
+      - name: Install Playwright system deps
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: pnpm --filter @catering/web exec playwright install-deps chromium
 
       - name: Push database schema
         run: pnpm --filter @catering/database db:push
         env:
           DATABASE_URL: postgresql://admin:changeme@localhost:5432/catering_events_test
 
-      - name: Build Go scheduling service
-        working-directory: apps/scheduling-service
-        run: go build -o bin/scheduler cmd/scheduler/main.go
+      - name: Download Go binary
+        uses: actions/download-artifact@v4
+        with:
+          name: go-scheduler-binary
+          path: apps/scheduling-service/bin
+
+      - name: Make Go binary executable
+        run: chmod +x apps/scheduling-service/bin/scheduler
 
       - name: Run Quality Gate Tests
         run: pnpm --filter @catering/web test:quality
@@ -280,7 +334,7 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
-    needs: [lint, unit-tests]
+    needs: [lint, unit-tests, build-go]
     steps:
       - uses: actions/checkout@v4
 
@@ -291,20 +345,11 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
 
-      - uses: actions/setup-go@v5
-        with:
-          go-version: ${{ env.GO_VERSION }}
-          cache-dependency-path: apps/scheduling-service/go.sum
-
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Build all packages
         run: pnpm build
-
-      - name: Build Go service
-        working-directory: apps/scheduling-service
-        run: go build -o bin/scheduler cmd/scheduler/main.go
 
   security-audit:
     name: Security Audit
