@@ -34,6 +34,7 @@ src/schema/
 ├── payments.ts          # References invoices, users
 ├── notifications.ts     # User notifications (notification_type enum)
 ├── notification-preferences.ts # Per-user per-type in-app/email toggles
+├── portal-access-log.ts # Client portal access audit log
 ├── task-templates.ts    # Independent entity
 ├── task-template-items.ts # References task-templates
 └── verification-tokens.ts # Portal magic link tokens
