@@ -1,14 +1,34 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { useState } from 'react';
 import {
   AnalyticsCard,
   AnalyticsPageSkeleton,
+  ChartSkeleton,
   DateRangePicker,
-  EventCompletionChart,
-  ResourceUtilizationChart,
-  TaskPerformanceChart,
 } from '@/components/analytics';
+
+const EventCompletionChart = dynamic(
+  () =>
+    import('@/components/analytics/EventCompletionChart').then((mod) => mod.EventCompletionChart),
+  { ssr: false, loading: () => <ChartSkeleton height="h-80" /> }
+);
+
+const ResourceUtilizationChart = dynamic(
+  () =>
+    import('@/components/analytics/ResourceUtilizationChart').then(
+      (mod) => mod.ResourceUtilizationChart
+    ),
+  { ssr: false, loading: () => <ChartSkeleton height="h-80" /> }
+);
+
+const TaskPerformanceChart = dynamic(
+  () =>
+    import('@/components/analytics/TaskPerformanceChart').then((mod) => mod.TaskPerformanceChart),
+  { ssr: false, loading: () => <ChartSkeleton height="h-80" /> }
+);
+
 import {
   exportEventCompletionReport,
   exportResourceUtilizationReport,

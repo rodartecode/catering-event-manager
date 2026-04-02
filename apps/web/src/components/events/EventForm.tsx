@@ -4,8 +4,8 @@ import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { z } from 'zod';
 import { useFormDirty } from '@/hooks/use-form-dirty';
-import { getErrorProps, getInputA11yProps } from '@/lib/form-a11y';
 import { type RouterOutput, trpc } from '@/lib/trpc';
+import { EventFormFields } from './EventFormFields';
 
 // Form validation schema
 const eventFormSchema = z.object({
@@ -109,214 +109,17 @@ export function EventForm({ onSuccess, onCancel }: EventFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Client Selection */}
-      <div>
-        <label htmlFor="clientId" className="block text-sm font-medium text-gray-700 mb-2">
-          Client{' '}
-          <span className="text-red-500" aria-hidden="true">
-            *
-          </span>
-          <span className="sr-only">(required)</span>
-        </label>
-        <select
-          id="clientId"
-          required
-          aria-required="true"
-          {...getInputA11yProps('clientId', !!errors.clientId)}
-          value={formData.clientId || ''}
-          onChange={(e) => updateField('clientId', Number(e.target.value))}
-          className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-            errors.clientId ? 'border-red-500' : 'border-gray-300'
-          }`}
-          disabled={clientsLoading}
-        >
-          <option value="">Select a client...</option>
-          {clientsList?.map((client) => (
-            <option key={client.id} value={client.id}>
-              {client.companyName} - {client.contactName}
-            </option>
-          ))}
-        </select>
-        {errors.clientId && (
-          <p {...getErrorProps('clientId')} className="mt-1 text-sm text-red-600">
-            {errors.clientId}
-          </p>
-        )}
-        {clientsList?.length === 0 && !clientsLoading && (
-          <p className="mt-1 text-sm text-yellow-600">
-            No clients available. You&apos;ll need to create a client first.
-          </p>
-        )}
-      </div>
-
-      {/* Task Template Selection */}
-      <div>
-        <label htmlFor="templateId" className="block text-sm font-medium text-gray-700 mb-2">
-          Task Template
-          <span className="text-gray-400 text-xs ml-2">(optional)</span>
-        </label>
-        <select
-          id="templateId"
-          {...getInputA11yProps('templateId', !!errors.templateId)}
-          value={formData.templateId || ''}
-          onChange={(e) =>
-            updateField('templateId', e.target.value ? Number(e.target.value) : undefined)
-          }
-          className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-            errors.templateId ? 'border-red-500' : 'border-gray-300'
-          }`}
-          disabled={templatesLoading}
-        >
-          <option value="">None - start with no tasks</option>
-          {templatesList?.map((template) => (
-            <option key={template.id} value={template.id}>
-              {template.name} ({template.itemCount} tasks)
-            </option>
-          ))}
-        </select>
-        {errors.templateId && (
-          <p {...getErrorProps('templateId')} className="mt-1 text-sm text-red-600">
-            {errors.templateId}
-          </p>
-        )}
-        <p className="mt-1 text-xs text-gray-500">
-          Select a template to auto-generate tasks with due dates based on the event date.
-        </p>
-      </div>
-
-      {/* Event Name */}
-      <div>
-        <label htmlFor="eventName" className="block text-sm font-medium text-gray-700 mb-2">
-          Event Name{' '}
-          <span className="text-red-500" aria-hidden="true">
-            *
-          </span>
-          <span className="sr-only">(required)</span>
-        </label>
-        <input
-          id="eventName"
-          type="text"
-          required
-          aria-required="true"
-          {...getInputA11yProps('eventName', !!errors.eventName)}
-          value={formData.eventName || ''}
-          onChange={(e) => updateField('eventName', e.target.value)}
-          placeholder="e.g., Annual Company Gala"
-          className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-            errors.eventName ? 'border-red-500' : 'border-gray-300'
-          }`}
-        />
-        {errors.eventName && (
-          <p {...getErrorProps('eventName')} className="mt-1 text-sm text-red-600">
-            {errors.eventName}
-          </p>
-        )}
-      </div>
-
-      {/* Event Date */}
-      <div>
-        <label htmlFor="eventDate" className="block text-sm font-medium text-gray-700 mb-2">
-          Event Date{' '}
-          <span className="text-red-500" aria-hidden="true">
-            *
-          </span>
-          <span className="sr-only">(required)</span>
-        </label>
-        <input
-          id="eventDate"
-          type="date"
-          required
-          aria-required="true"
-          {...getInputA11yProps('eventDate', !!errors.eventDate)}
-          value={formData.eventDate ? new Date(formData.eventDate).toISOString().split('T')[0] : ''}
-          onChange={(e) =>
-            updateField('eventDate', e.target.value ? new Date(e.target.value) : undefined)
-          }
-          className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-            errors.eventDate ? 'border-red-500' : 'border-gray-300'
-          }`}
-        />
-        {errors.eventDate && (
-          <p {...getErrorProps('eventDate')} className="mt-1 text-sm text-red-600">
-            {errors.eventDate}
-          </p>
-        )}
-      </div>
-
-      {/* Location */}
-      <div>
-        <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
-          Location
-        </label>
-        <input
-          id="location"
-          type="text"
-          {...getInputA11yProps('location', !!errors.location)}
-          value={formData.location || ''}
-          onChange={(e) => updateField('location', e.target.value)}
-          placeholder="e.g., Grand Ballroom, 123 Main St"
-          className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-            errors.location ? 'border-red-500' : 'border-gray-300'
-          }`}
-        />
-        {errors.location && (
-          <p {...getErrorProps('location')} className="mt-1 text-sm text-red-600">
-            {errors.location}
-          </p>
-        )}
-      </div>
-
-      {/* Estimated Attendees */}
-      <div>
-        <label
-          htmlFor="estimatedAttendees"
-          className="block text-sm font-medium text-gray-700 mb-2"
-        >
-          Estimated Attendees
-        </label>
-        <input
-          id="estimatedAttendees"
-          type="number"
-          min="1"
-          {...getInputA11yProps('estimatedAttendees', !!errors.estimatedAttendees)}
-          value={formData.estimatedAttendees || ''}
-          onChange={(e) =>
-            updateField('estimatedAttendees', e.target.value ? Number(e.target.value) : undefined)
-          }
-          placeholder="e.g., 150"
-          className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-            errors.estimatedAttendees ? 'border-red-500' : 'border-gray-300'
-          }`}
-        />
-        {errors.estimatedAttendees && (
-          <p {...getErrorProps('estimatedAttendees')} className="mt-1 text-sm text-red-600">
-            {errors.estimatedAttendees}
-          </p>
-        )}
-      </div>
-
-      {/* Notes */}
-      <div>
-        <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-2">
-          Notes
-        </label>
-        <textarea
-          id="notes"
-          rows={4}
-          {...getInputA11yProps('notes', !!errors.notes)}
-          value={formData.notes || ''}
-          onChange={(e) => updateField('notes', e.target.value)}
-          placeholder="Any additional notes or special requirements..."
-          className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-            errors.notes ? 'border-red-500' : 'border-gray-300'
-          }`}
-        />
-        {errors.notes && (
-          <p {...getErrorProps('notes')} className="mt-1 text-sm text-red-600">
-            {errors.notes}
-          </p>
-        )}
-      </div>
+      <EventFormFields
+        formData={formData as Record<string, unknown>}
+        errors={errors}
+        clientsList={clientsList}
+        clientsLoading={clientsLoading}
+        templatesList={templatesList}
+        templatesLoading={templatesLoading}
+        onFieldChange={(field, value) =>
+          updateField(field as keyof EventFormData, value as EventFormData[keyof EventFormData])
+        }
+      />
 
       {/* Submit Error */}
       {errors.submit && (

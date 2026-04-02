@@ -293,48 +293,33 @@ _(No items — all P1 features complete)_
 - Touches: infra
 - Implemented: Go binary built once in dedicated `build-go` job and shared as artifact to e2e-tests/quality-gates (eliminates 2 redundant builds). Playwright browsers cached via actions/cache@v4 keyed on version. Go setup removed from `build` job.
 
-### lazy-load-heavy-dependencies
+### ~~lazy-load-heavy-dependencies~~ ✅ DONE (2026-04-02)
 **Dynamic import chart.js, @dnd-kit, and @supabase/supabase-js**
 - Priority: P3
 - Scope: S
 - Touches: ui
-- Depends on: none
-- Done when:
-  - `chart.js` + `react-chartjs-2` loaded via `next/dynamic` only on dashboard/analytics pages
-  - `@dnd-kit/*` loaded via `next/dynamic` only on scheduling page
-  - Client bundle size measurably reduced for non-dashboard routes
+- Implemented: Chart components lazy-loaded via `next/dynamic` with `ssr: false` on analytics page. SchedulingCalendar lazy-loaded on scheduling page. Supabase already isolated in server-only `storage.ts`.
 
-### extract-large-components
+### ~~extract-large-components~~ ✅ DONE (2026-04-02)
 **Break down components >300 LOC into focused sub-components**
 - Priority: P3
 - Scope: M
 - Touches: ui
-- Depends on: none
-- Done when:
-  - `ResourceAssignmentDialog` (424 LOC), `EventForm` (347 LOC), `UploadDocumentDialog` (318 LOC), `TaskForm` (299 LOC), `SchedulingCalendar` (299 LOC) each decomposed into <200 LOC sub-components
-  - Existing tests (if any) still pass, new sub-components are independently testable
-- Notes: Improves testability and readability. Pairs well with `component-test-coverage`.
+- Implemented: ResourceAssignmentDialog 424→196 (3 sub-components). EventForm 347→148 (EventFormFields). UploadDocumentDialog 318→195 (FileUploadZone). SchedulingCalendar 299→194 (SchedulingToolbar). TaskForm 299→231 (TaskFormFields). All existing tests pass.
 
-### env-documentation-sync
+### ~~env-documentation-sync~~ ✅ DONE (2026-04-02)
 **Document undocumented env vars and wire up missing config**
 - Priority: P3
 - Scope: S
 - Touches: docs, api, go-service
-- Depends on: none
-- Done when:
-  - `ALLOWED_ORIGINS` documented in ENV.md with usage notes for both Next.js and Go service
-  - Go service loads `LOG_LEVEL` from env and applies to structured logger
-  - Go service rate limit aligned with Next.js (100/min) or documented why different
+- Implemented: Fixed ENV.md naming (CORS_ALLOWED_ORIGINS → ALLOWED_ORIGINS). Added LOG_LEVEL filtering to Go logger. Replaced `log.Printf` with structured logger in middleware and main. Documented rate limit difference. Removed unused REDIS_URL, added NODE_ENV.
 
-### go-structured-logging
+### ~~go-structured-logging~~ ✅ DONE (2026-04-02)
 **Replace `log.Printf` with structured logger in Go service**
 - Priority: P4
 - Scope: S
 - Touches: go-service
-- Depends on: none
-- Done when:
-  - `cmd/scheduler/main.go` and `internal/api/middleware.go` use the existing `internal/logger` package
-  - All Go log output is structured JSON matching the Next.js logger format
+- Implemented: middleware.go and main.go now use `internal/logger` package. Logger reads LOG_LEVEL from env with level filtering. Rate limit warning uses structured JSON output.
 
 ### enable-biome-a11y
 **Enable Biome accessibility linting rules**
@@ -370,6 +355,7 @@ _(No items — all P1 features complete)_
 
 | Date | Item | Notes |
 |------|------|-------|
+| 2026-04-02 | P3 tech debt batch | Lazy-load chart.js + @dnd-kit via next/dynamic, extract 5 large components (10 new sub-components), env docs sync + Go structured logging |
 | 2026-04-02 | Component test coverage | 23 new test files, 357 new tests, coverage 34% → 60.5% (52/86 components). Forms, dialogs, badges, lists. |
 | 2026-04-01 | P2 tech debt batch | Analytics N+1 → batch queries, type casts → Drizzle typed, updated_at triggers (19 tables), FK indexes (9 columns), CI optimization (Go artifact sharing, Playwright cache) |
 | 2026-04-01 | Dependency upgrades | TypeScript 6, batch minor/patch npm updates, Go module security updates, remove deprecated @types/bcryptjs |

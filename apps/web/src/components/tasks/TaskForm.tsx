@@ -5,19 +5,13 @@ import toast from 'react-hot-toast';
 import { useDialogId, useFocusTrap } from '@/hooks/use-focus-trap';
 import { useFormDirty } from '@/hooks/use-form-dirty';
 import { trpc } from '@/lib/trpc';
+import { TaskFormFields } from './TaskFormFields';
 
 interface TaskFormProps {
   eventId: number;
   taskId?: number;
   onClose: () => void;
   onSuccess: () => void;
-}
-
-interface DependencyTask {
-  id: number;
-  title: string;
-  status: 'pending' | 'in_progress' | 'completed';
-  category: 'pre_event' | 'during_event' | 'post_event';
 }
 
 type TaskCategory = 'pre_event' | 'during_event' | 'post_event';
@@ -182,81 +176,19 @@ export function TaskForm({ eventId, taskId, onClose, onSuccess }: TaskFormProps)
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
-            <input
-              id="title"
-              name="title"
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Enter task title"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-            <textarea
-              id="description"
-              name="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Enter task description"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
-            <select
-              id="category"
-              name="category"
-              value={category}
-              onChange={(e) => setCategory(e.target.value as TaskCategory)}
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="pre_event">Pre-Event</option>
-              <option value="during_event">During Event</option>
-              <option value="post_event">Post-Event</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
-            <input
-              id="dueDate"
-              name="dueDate"
-              type="datetime-local"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Depends On</label>
-            <select
-              id="dependsOnTaskId"
-              name="dependsOnTaskId"
-              value={dependsOnTaskId || ''}
-              onChange={(e) => setDependsOnTaskId(e.target.value ? Number(e.target.value) : null)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">No dependency</option>
-              {availableDeps?.map((dep: DependencyTask) => (
-                <option key={dep.id} value={dep.id}>
-                  {dep.title} ({dep.status})
-                </option>
-              ))}
-            </select>
-            <p className="text-xs text-gray-500 mt-1">
-              This task cannot be started until the dependent task is completed.
-            </p>
-          </div>
+          <TaskFormFields
+            title={title}
+            onTitleChange={setTitle}
+            description={description}
+            onDescriptionChange={setDescription}
+            category={category}
+            onCategoryChange={setCategory}
+            dueDate={dueDate}
+            onDueDateChange={setDueDate}
+            dependsOnTaskId={dependsOnTaskId}
+            onDependsOnChange={setDependsOnTaskId}
+            availableDeps={availableDeps}
+          />
 
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-3">

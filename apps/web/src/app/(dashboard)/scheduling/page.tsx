@@ -1,12 +1,25 @@
 'use client';
 
 import { addDays, endOfWeek, startOfWeek } from 'date-fns';
+import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { CreateEntryDialog } from '@/components/scheduling/CreateEntryDialog';
 import { ResourceFilterSidebar } from '@/components/scheduling/ResourceFilterSidebar';
 import { ScheduleConflictDialog } from '@/components/scheduling/ScheduleConflictDialog';
-import { SchedulingCalendar } from '@/components/scheduling/SchedulingCalendar';
+
+const SchedulingCalendar = dynamic(
+  () => import('@/components/scheduling/SchedulingCalendar').then((mod) => mod.SchedulingCalendar),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+      </div>
+    ),
+  }
+);
+
 import { trpc } from '@/lib/trpc';
 import { useIsAdmin } from '@/lib/use-auth';
 

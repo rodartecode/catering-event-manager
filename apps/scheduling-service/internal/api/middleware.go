@@ -1,7 +1,6 @@
 package api
 
 import (
-	"log"
 	"os"
 	"strings"
 	"time"
@@ -11,6 +10,8 @@ import (
 	"github.com/gofiber/fiber/v3/middleware/limiter"
 	"github.com/gofiber/fiber/v3/middleware/logger"
 	"github.com/gofiber/fiber/v3/middleware/recover"
+
+	applogger "github.com/catering-event-manager/scheduling-service/internal/logger"
 )
 
 func RegisterMiddleware(app *fiber.App) {
@@ -35,7 +36,7 @@ func RegisterMiddleware(app *fiber.App) {
 			return c.IP()
 		},
 		LimitReached: func(c fiber.Ctx) error {
-			log.Printf("Rate limit exceeded for IP: %s", c.IP())
+			applogger.Get().Warn().Str("ip", c.IP()).Msg("Rate limit exceeded")
 			return c.Status(fiber.StatusTooManyRequests).JSON(fiber.Map{
 				"error":   "Too many requests",
 				"message": "Rate limit exceeded. Please try again later.",

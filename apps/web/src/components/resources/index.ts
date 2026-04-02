@@ -2,5 +2,8 @@ export { ConflictWarning } from './ConflictWarning';
 export { ResourceAssignmentDialog } from './ResourceAssignmentDialog';
 export { ResourceCard } from './ResourceCard';
 export { ResourceForm } from './ResourceForm';
+export { ResourceListItem } from './ResourceListItem';
 export { ResourceScheduleCalendar } from './ResourceScheduleCalendar';
 export { ResourceTypeBadge } from './ResourceTypeBadge';
+export { ResourceTypeFilter } from './ResourceTypeFilter';
+export { TimeRangeEditor } from './TimeRangeEditor';
