@@ -1,8 +1,8 @@
 # Component Architecture Guide
 
-**Last updated**: 2026-04-01
+**Last updated**: 2026-04-02
 
-A comprehensive guide to the ~112 React components that make up the production-ready catering event management system's user interface.
+A comprehensive guide to the ~93 React components across 18 domains that make up the catering event management system's user interface.
 
 ## Table of Contents
 
@@ -19,23 +19,23 @@ Components are organized by feature domain in `apps/web/src/components/`:
 ```
 src/components/
 ├── a11y/                   # Accessibility helpers (1 component)
-├── auth/                   # Authentication & user management (2 components)
+├── auth/                   # Authentication & user management (3 components)
 ├── analytics/              # Reports & data visualization (6 components)
-├── clients/                # Client communication (8 components)
+├── clients/                # Client communication (9 components)
 ├── dashboard/              # Main navigation & layout (3 components)
-├── documents/              # Document management & uploads (3 components)
+├── documents/              # Document management & uploads (4 components)
 ├── events/                 # Event lifecycle management (8 components)
 ├── expenses/               # Expense tracking (3 components)
 ├── invoices/               # Invoicing & PDF (4 components)
 ├── menus/                  # Menu planning & dietary tracking (6 components)
-├── notifications/          # Notification bell, dropdown, preferences (2 components + barrel)
-├── payments/               # Payment recording (1 component)
-├── resources/              # Resource scheduling (7 components)
+├── notifications/          # Notification bell & dropdown (2 components)
+├── payments/               # Payment recording & list (2 components)
+├── resources/              # Resource scheduling & assignment (10 components)
+├── scheduling/             # Drag-drop calendar scheduling (7 components)
 ├── search/                 # Global search (2 components)
 ├── shared/                 # Export, import, bulk actions (4 components)
-├── scheduling/             # Drag-drop calendar scheduling (7 components)
 ├── staff/                  # Staff skills & availability (5 components)
-└── tasks/                  # Task management & assignment (9 components)
+└── tasks/                  # Task management & assignment (14 components)
 ```
 
 ## Component Categories

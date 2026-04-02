@@ -7,22 +7,23 @@ Domain-organized React 19 components with Tailwind CSS 4.
 ```
 components/
 ├── a11y/            # Skip-link, accessibility primitives
-├── analytics/       # Charts, metric cards, CSV export buttons
-├── auth/            # Login/register forms
-├── clients/         # Client list, detail, communication log
-├── dashboard/       # Sidebar, MobileNav, UserMenu, layout
-├── documents/       # DocumentList, UploadDocumentDialog, DocumentTypeBadge
-├── events/          # EventCard, EventForm, EventStatusBadge, EventStatusUpdateDialog
-├── expenses/        # ExpenseList, AddExpenseDialog
-├── invoices/        # InvoiceDetail, CreateInvoice, RecordPaymentDialog
-├── menus/           # EventMenuBuilder, AddMenuItemDialog, badges
+├── analytics/       # Charts, metric cards, date range picker, skeletons
+├── auth/            # Login/register forms, session guard
+├── clients/         # Client card/form, communication log, follow-up banner
+├── dashboard/       # Sidebar, MobileNav, UserMenu
+├── documents/       # DocumentList, UploadDocumentDialog, FileUploadZone, badges
+├── events/          # EventCard, EventForm, EventFormFields, status dialogs
+├── expenses/        # ExpenseForm, ExpenseList, ExpenseSummaryCard
+├── invoices/        # InvoiceDetail, InvoiceForm, InvoiceList, badges
+├── menus/           # EventMenuBuilder, AddMenuItemDialog, dietary/category badges
 ├── notifications/   # NotificationBell, NotificationDropdown
-├── payments/        # PaymentList
-├── resources/       # ResourceCard, ResourceForm, ScheduleBuilder
-├── search/          # GlobalSearch, SearchResults
+├── payments/        # PaymentList, RecordPaymentDialog
+├── resources/       # ResourceCard, ResourceForm, ResourceAssignmentDialog, filter/list sub-components
+├── scheduling/      # SchedulingCalendar, SchedulingToolbar, ScheduleGrid, ScheduleBlock, dialogs
+├── search/          # SearchBar, SearchDropdown
 ├── shared/          # ExportButton, ImportDialog, BulkActionBar, BatchStatusDialog
-├── staff/           # SkillBadge, SkillsEditor, AvailabilityGrid, StaffCard
-└── tasks/           # TaskCard, TaskForm, TaskDependencyGraph, GanttChart
+├── staff/           # SkillBadge, SkillsEditor, AvailabilityGrid, StaffCard, StaffSuggestionList
+└── tasks/           # TaskCard, TaskForm, TaskFormFields, TaskList, GanttChart, dependency tree
 ```
 
 ## Patterns
