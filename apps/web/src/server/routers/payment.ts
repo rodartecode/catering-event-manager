@@ -1,6 +1,6 @@
 import { invoices, paymentMethodEnum, payments } from '@catering-event-manager/database/schema';
 import { TRPCError } from '@trpc/server';
-import { eq, sql } from 'drizzle-orm';
+import { eq, sql, sum } from 'drizzle-orm';
 import { z } from 'zod';
 import { logger } from '@/lib/logger';
 import { adminProcedure, protectedProcedure, router } from '../trpc';
@@ -63,11 +63,12 @@ export const paymentRouter = router({
       .returning();
 
     // Check if invoice is fully paid
-    const totalPaidResult = (await db.execute(
-      sql`SELECT COALESCE(SUM(amount), 0) as total_paid FROM payments WHERE invoice_id = ${input.invoiceId}`
-    )) as unknown as { total_paid: string }[];
+    const [totalPaidResult] = await db
+      .select({ totalPaid: sql<string>`COALESCE(${sum(payments.amount)}, '0')` })
+      .from(payments)
+      .where(eq(payments.invoiceId, input.invoiceId));
 
-    const totalPaid = parseFloat(totalPaidResult[0]?.total_paid || '0');
+    const totalPaid = parseFloat(totalPaidResult?.totalPaid || '0');
     const invoiceTotal = parseFloat(invoice.total ?? '0');
 
     if (totalPaid >= invoiceTotal) {
@@ -160,11 +161,12 @@ export const paymentRouter = router({
       .then((rows) => rows[0]);
 
     if (invoice && invoice.status === 'paid') {
-      const totalPaidResult = (await db.execute(
-        sql`SELECT COALESCE(SUM(amount), 0) as total_paid FROM payments WHERE invoice_id = ${payment.invoiceId}`
-      )) as unknown as { total_paid: string }[];
+      const [totalPaidResult] = await db
+        .select({ totalPaid: sql<string>`COALESCE(${sum(payments.amount)}, '0')` })
+        .from(payments)
+        .where(eq(payments.invoiceId, payment.invoiceId));
 
-      const totalPaid = parseFloat(totalPaidResult[0]?.total_paid || '0');
+      const totalPaid = parseFloat(totalPaidResult?.totalPaid || '0');
       const invoiceTotal = parseFloat(invoice.total ?? '0');
 
       if (totalPaid < invoiceTotal) {

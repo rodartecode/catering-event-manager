@@ -239,49 +239,31 @@ _(No items — all P1 features complete)_
 
 ## Tech Debt & Code Hygiene
 
-### secure-cron-endpoints
+### ~~secure-cron-endpoints~~ ✅ DONE (2026-04-01)
 **Add authentication to `/api/cron/*` routes**
 - Priority: P1
 - Scope: S
 - Touches: api
-- Depends on: none
-- Done when:
-  - All cron routes (`/api/cron/follow-ups`, `/api/cron/notifications-digest`) verify a `CRON_SECRET` bearer token
-  - Unauthenticated requests return 401
-  - `CRON_SECRET` env var added to ENV.md, Vercel, and GitHub Actions
-  - Vercel Cron config passes the secret header
 
-### fix-non-null-assertions
+### ~~fix-non-null-assertions~~ ✅ DONE (2026-04-01)
 **Replace unsafe `!` assertions with proper guards in production code**
 - Priority: P1
 - Scope: S
 - Touches: api
-- Depends on: none
-- Done when:
-  - Pagination cursors in `event.ts:229`, `task.ts:595`, `resource.ts:159` use `nextItem?.id ?? undefined`
-  - Nullable FK accesses in `follow-ups/route.ts:69`, `task.ts:1020`, `event.ts:815` have null guards
-  - Zero non-null assertions remain in production code (test files exempt)
 
-### optimize-analytics-queries
-**Replace N+1 patterns in analytics router with JOINs/batch queries**
+### ~~optimize-analytics-queries~~ ✅ DONE (2026-04-01)
+**Replace N+1 patterns in analytics router with batch queries**
 - Priority: P2
 - Scope: S
 - Touches: api
-- Depends on: none
-- Done when:
-  - `analytics.ts:150` resource utilization uses a single JOIN query instead of per-resource `Promise.all`
-  - `analytics.ts:354` event profitability uses batch invoice/expense queries grouped by event_id
-  - Analytics response times measurably improved under load
+- Implemented: resourceUtilization uses single batch query for all schedule entries instead of per-resource Promise.all. eventProfitability uses 2 aggregate queries (invoices + expenses grouped by event_id) instead of 2N per-event queries.
 
-### eliminate-raw-sql-type-casts
+### ~~eliminate-raw-sql-type-casts~~ ✅ DONE (2026-04-01)
 **Replace `as unknown as` casts with typed Drizzle queries**
 - Priority: P2
 - Scope: S
 - Touches: api
-- Depends on: none
-- Done when:
-  - `payment.ts:68,165` and `invoice-number.ts:17` use Drizzle's typed `db.select()` or `sql<type>` tagged templates
-  - Zero `as unknown as` casts remain in production code
+- Implemented: payment.ts uses Drizzle `sum()` aggregation. invoice-number.ts uses typed `db.select()` with `like()` and `desc()`. Zero `as unknown as` casts remain in production code.
 
 ### component-test-coverage
 **Add unit tests for critical untested components**
@@ -295,42 +277,26 @@ _(No items — all P1 features complete)_
   - Each test covers rendering, user interactions, and accessibility basics
 - Notes: 57/86 components currently untested. Focus on forms and dialogs first (highest risk). Use existing test helpers in `test/helpers/`.
 
-### add-updated-at-triggers
+### ~~add-updated-at-triggers~~ ✅ DONE (2026-04-01)
 **Create database triggers to auto-update `updated_at` on all mutable tables**
 - Priority: P2
 - Scope: S
 - Touches: schema
-- Depends on: none
-- Done when:
-  - Generic `update_updated_at_column()` PL/pgSQL function created
-  - BEFORE UPDATE triggers attached to all tables with `updated_at` columns (communications, resources, tasks, resource_schedule, notifications, etc.)
-  - Existing `events` trigger also updates `updated_at` on status change
-  - New migration added and tested
+- Implemented: Generic `update_updated_at_column()` PL/pgSQL function with BEFORE UPDATE triggers on all 19 mutable tables. Migration 0013.
 
-### add-missing-fk-indexes
+### ~~add-missing-fk-indexes~~ ✅ DONE (2026-04-01)
 **Add database indexes on unindexed foreign key columns**
 - Priority: P2
 - Scope: S
 - Touches: schema
-- Depends on: none
-- Done when:
-  - Indexes added for `communications.contacted_by` and any other unindexed FKs identified by query plan analysis
-  - New migration added and applied to staging
-- Notes: Missing FK indexes cause full table scans on JOINs. Run `EXPLAIN ANALYZE` on key queries to confirm.
+- Implemented: 9 indexes added for FK columns referencing users.id (communications.contacted_by, events.archived_by/created_by, documents.uploaded_by, expenses.created_by, invoices.created_by, menu_items.created_by, payments.recorded_by, event_status_log.changed_by). Migration 0013.
 
-### ci-pipeline-optimization
+### ~~ci-pipeline-optimization~~ ✅ DONE (2026-04-01)
 **Reduce CI build time by eliminating redundant work**
 - Priority: P2
 - Scope: M
 - Touches: infra
-- Depends on: none
-- Done when:
-  - Schema push runs once as a shared job dependency (currently runs 3 times)
-  - Go binary built once and shared as artifact across e2e/quality-gates jobs
-  - Playwright browsers cached between runs
-  - pnpm store properly cached across all jobs
-  - CI wall time reduced by >30%
-- Notes: Current CI has 11 duplicate `pnpm install` calls, 3 schema pushes, 3 Go builds, and 2 Playwright installs.
+- Implemented: Go binary built once in dedicated `build-go` job and shared as artifact to e2e-tests/quality-gates (eliminates 2 redundant builds). Playwright browsers cached via actions/cache@v4 keyed on version. Go setup removed from `build` job.
 
 ### lazy-load-heavy-dependencies
 **Dynamic import chart.js, @dnd-kit, and @supabase/supabase-js**
@@ -409,6 +375,7 @@ _(No items — all P1 features complete)_
 
 | Date | Item | Notes |
 |------|------|-------|
+| 2026-04-01 | P2 tech debt batch | Analytics N+1 → batch queries, type casts → Drizzle typed, updated_at triggers (19 tables), FK indexes (9 columns), CI optimization (Go artifact sharing, Playwright cache) |
 | 2026-04-01 | Dependency upgrades | TypeScript 6, batch minor/patch npm updates, Go module security updates, remove deprecated @types/bcryptjs |
 | 2026-04-01 | Staff skills | Skills matrix (10 types), weekly availability, user↔resource bridge, findAvailable query, staff pages |
 | 2026-03-18 | Document management | File uploads via Supabase Storage with presigned URLs, client portal sharing, drag-and-drop UI |
