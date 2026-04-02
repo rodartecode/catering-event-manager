@@ -34,9 +34,11 @@ SCHEDULING_SERVICE_URL="http://localhost:8080"
 ```bash
 DATABASE_URL="postgresql://admin:changeme@localhost:5432/catering_events"
 PORT=8080
-LOG_LEVEL=info                              # debug, info, warn, error
-CORS_ALLOWED_ORIGINS="http://localhost:3000"
+LOG_LEVEL=info                              # debug, info, warn, error (default: info)
+ALLOWED_ORIGINS="http://localhost:3000"     # Comma-separated CORS origins
 ```
+
+> **Rate limiting**: Go service allows 200 req/min per IP (in-memory). Next.js uses 100 req/min general, 5/min auth, 3/5min magic links (Redis-backed). The Go service has a higher limit because it only handles scheduling API calls, not user-facing requests.
 
 ### Document Storage (Supabase)
 
@@ -65,12 +67,9 @@ Required for `/api/cron/*` endpoints. Vercel sends this as a `Bearer` token in t
 ## Optional Variables
 
 ```bash
-
-# Redis (caching)
-REDIS_URL="redis://localhost:6379"
-
 # Development
-ENVIRONMENT=development      # development, staging, production
+NODE_ENV=development         # development, staging, production
+ENVIRONMENT=development      # App-level environment flag
 ENABLE_QUERY_LOGGING=true   # Log SQL queries (dev only)
 ```
 

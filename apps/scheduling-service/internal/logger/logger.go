@@ -24,7 +24,8 @@ type LogEntry struct {
 }
 
 type Logger struct {
-	logger *log.Logger
+	logger   *log.Logger
+	minLevel int
 }
 
 // LogEvent provides a fluent interface for building log entries
@@ -35,9 +36,22 @@ type LogEvent struct {
 	err     error
 }
 
+var levelOrder = map[LogLevel]int{
+	DebugLevel: 0,
+	InfoLevel:  1,
+	WarnLevel:  2,
+	ErrorLevel: 3,
+}
+
 func New() *Logger {
+	level := os.Getenv("LOG_LEVEL")
+	minLevel := 1 // default: info
+	if l, ok := levelOrder[LogLevel(level)]; ok {
+		minLevel = l
+	}
 	return &Logger{
-		logger: log.New(os.Stdout, "", 0),
+		logger:   log.New(os.Stdout, "", 0),
+		minLevel: minLevel,
 	}
 }
 
@@ -47,6 +61,9 @@ func Get() *Logger {
 }
 
 func (l *Logger) log(level LogLevel, message string, context map[string]interface{}) {
+	if order, ok := levelOrder[level]; ok && order < l.minLevel {
+		return
+	}
 	entry := LogEntry{
 		Timestamp: time.Now().UTC().Format(time.RFC3339),
 		Level:     level,

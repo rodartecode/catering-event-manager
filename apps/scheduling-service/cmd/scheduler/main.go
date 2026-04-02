@@ -7,7 +7,9 @@ import (
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/joho/godotenv"
+
 	"github.com/catering-event-manager/scheduling-service/internal/api"
+	"github.com/catering-event-manager/scheduling-service/internal/logger"
 	"github.com/catering-event-manager/scheduling-service/internal/repository"
 )
 
@@ -26,6 +28,8 @@ func main() {
 	if port == "" {
 		port = "8080"
 	}
+
+	l := logger.Get()
 
 	// Initialize database connection
 	db, err := repository.NewDB()
@@ -46,7 +50,7 @@ func main() {
 	api.RegisterRoutes(app, db)
 
 	// Start server
-	log.Printf("Starting scheduler service on port %s", port)
+	l.Info().Str("port", port).Msg("Starting scheduler service")
 	if err := app.Listen(":" + port); err != nil {
 		log.Fatalf("Server failed to start: %v", err)
 	}
