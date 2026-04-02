@@ -339,9 +339,9 @@ _(No items — all P1 features complete)_
 
 | Priority | Item | Description | Scope |
 |----------|------|-------------|-------|
-| High | **Automate Go service deployment** | Add Fly.io deployment to CI pipeline (currently manual) | M |
+| ~~High~~ | ~~**Automate Go service deployment**~~ | ~~Add Fly.io deployment to CI pipeline~~ — deploy-go-production job in CI | ✅ Done |
 | ~~High~~ | ~~**Security scanning**~~ | ~~Integrate Snyk or Dependabot~~ — Dependabot configured (npm + gomod, weekly) | ✅ Done |
-| High | **Container registry** | Publish Docker images to GHCR for versioned deployments | M |
+| ~~High~~ | ~~**Container registry**~~ | ~~Publish Docker images to GHCR~~ — publish-images job in CI on main push | ✅ Done |
 | Medium | **Distributed Turbo caching** | Remote cache for faster CI builds | S |
 | Medium | **APM integration** | Sentry for error tracking and performance monitoring | M |
 | Medium | **Database backup automation** | Formalize Supabase backup policy and verification | S |
