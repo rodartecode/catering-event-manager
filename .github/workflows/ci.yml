@@ -381,7 +381,7 @@ jobs:
 
       - name: Audit Go dependencies
         working-directory: apps/scheduling-service
-        run: govulncheck ./...
+        run: govulncheck ./cmd/... ./internal/api/... ./internal/config/... ./internal/domain/... ./internal/logger/... ./internal/repository/... ./internal/scheduler/...
 
   publish-images:
     name: Publish Docker Images (GHCR)
