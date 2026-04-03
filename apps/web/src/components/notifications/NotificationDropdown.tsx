@@ -227,7 +227,7 @@ export function NotificationDropdown({ onClose }: NotificationDropdownProps) {
         ) : items.length === 0 ? (
           <div className="px-4 py-8 text-center text-sm text-gray-500">No notifications</div>
         ) : (
-          <ul role="list">
+          <ul>
             {items.map((notif) => (
               <li key={notif.id}>
                 <button
@@ -258,6 +258,7 @@ export function NotificationDropdown({ onClose }: NotificationDropdownProps) {
                   </div>
                   {!notif.readAt && (
                     <span
+                      role="img"
                       className="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full bg-blue-500"
                       aria-label="Unread"
                     />

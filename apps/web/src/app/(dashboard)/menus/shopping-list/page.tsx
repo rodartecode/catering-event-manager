@@ -34,8 +34,14 @@ export default function ShoppingListPage() {
       <div className="bg-white rounded-lg shadow p-4 mb-6">
         <div className="flex items-center gap-4 flex-wrap">
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">From</label>
+            <label
+              htmlFor="shopping-list-date-from"
+              className="block text-xs font-medium text-gray-500 mb-1"
+            >
+              From
+            </label>
             <input
+              id="shopping-list-date-from"
               type="date"
               value={dateFrom}
               onChange={(e) => setDateFrom(e.target.value)}
@@ -43,8 +49,14 @@ export default function ShoppingListPage() {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">To</label>
+            <label
+              htmlFor="shopping-list-date-to"
+              className="block text-xs font-medium text-gray-500 mb-1"
+            >
+              To
+            </label>
             <input
+              id="shopping-list-date-to"
               type="date"
               value={dateTo}
               onChange={(e) => setDateTo(e.target.value)}

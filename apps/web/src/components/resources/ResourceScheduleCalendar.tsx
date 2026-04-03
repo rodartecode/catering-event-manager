@@ -92,10 +92,17 @@ export function ResourceScheduleCalendar({ entries, onEntryClick }: ResourceSche
       {/* Header with navigation */}
       <div className="flex items-center justify-between p-4 border-b">
         <button
+          type="button"
           onClick={() => navigateWeek(-1)}
           className="p-2 hover:bg-gray-100 rounded-lg transition"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg
+            aria-hidden="true"
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -109,16 +116,24 @@ export function ResourceScheduleCalendar({ entries, onEntryClick }: ResourceSche
         </h3>
         <div className="flex items-center gap-2">
           <button
+            type="button"
             onClick={() => setViewDate(new Date())}
             className="px-3 py-1 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition"
           >
             Today
           </button>
           <button
+            type="button"
             onClick={() => navigateWeek(1)}
             className="p-2 hover:bg-gray-100 rounded-lg transition"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              aria-hidden="true"
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </button>
@@ -176,6 +191,7 @@ export function ResourceScheduleCalendar({ entries, onEntryClick }: ResourceSche
 
                         return (
                           <button
+                            type="button"
                             key={entry.id}
                             onClick={() => onEntryClick?.(entry)}
                             className="absolute inset-x-1 bg-blue-500 text-white text-xs rounded p-1 overflow-hidden hover:bg-blue-600 transition text-left z-10"
@@ -204,6 +220,7 @@ export function ResourceScheduleCalendar({ entries, onEntryClick }: ResourceSche
       {entries.length === 0 && (
         <div className="p-8 text-center text-gray-500">
           <svg
+            aria-hidden="true"
             className="w-12 h-12 mx-auto mb-4 text-gray-300"
             fill="none"
             stroke="currentColor"

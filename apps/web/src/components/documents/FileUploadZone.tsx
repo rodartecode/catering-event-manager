@@ -78,7 +78,9 @@ export function FileUploadZone({
 
   return (
     <>
+      {/* biome-ignore lint/a11y/noStaticElementInteractions: drop zone uses drag events for file upload */}
       <div
+        role="presentation"
         onDragOver={(e) => {
           e.preventDefault();
           setDragOver(true);

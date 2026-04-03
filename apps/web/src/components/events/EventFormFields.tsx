@@ -137,7 +137,6 @@ export function EventFormFields({
           id="eventDate"
           type="date"
           required
-          aria-required="true"
           {...getInputA11yProps('eventDate', !!errors.eventDate)}
           value={
             formData.eventDate

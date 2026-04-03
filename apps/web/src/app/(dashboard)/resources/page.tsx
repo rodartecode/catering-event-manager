@@ -83,6 +83,7 @@ export default function ResourcesPage() {
           {/* Clear Filters */}
           <div className="flex items-end">
             <button
+              type="button"
               onClick={() => {
                 setType('all');
                 setAvailability('all');
@@ -129,6 +130,7 @@ export default function ResourcesPage() {
       ) : resources.length === 0 ? (
         <div className="bg-white rounded-lg shadow p-12 text-center">
           <svg
+            aria-hidden="true"
             className="w-16 h-16 mx-auto mb-4 text-gray-300"
             fill="none"
             stroke="currentColor"
@@ -161,6 +163,7 @@ export default function ResourcesPage() {
           {hasNextPage && (
             <div className="flex justify-center mt-8">
               <button
+                type="button"
                 onClick={() => fetchNextPage()}
                 disabled={isFetchingNextPage}
                 className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"

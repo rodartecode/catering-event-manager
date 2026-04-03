@@ -27,6 +27,7 @@ export function ExportButton({ onExport, label = 'Export CSV' }: ExportButtonPro
 
   return (
     <button
+      type="button"
       onClick={handleExport}
       disabled={isExporting}
       className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed text-sm"

@@ -44,11 +44,12 @@ const filterOptions: {
 
 export function ResourceTypeFilter({ value, onChange }: ResourceTypeFilterProps) {
   return (
-    <div className="mb-4">
-      <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Type</label>
+    <fieldset className="mb-4">
+      <legend className="block text-sm font-medium text-gray-700 mb-2">Filter by Type</legend>
       <div className="flex gap-2">
         {filterOptions.map((option) => (
           <button
+            type="button"
             key={option.value}
             onClick={() => onChange(option.value)}
             className={`px-3 py-1 rounded-full text-sm focus:outline-none focus:ring-2 ${option.ringClass} focus:ring-offset-2 ${
@@ -59,6 +60,6 @@ export function ResourceTypeFilter({ value, onChange }: ResourceTypeFilterProps)
           </button>
         ))}
       </div>
-    </div>
+    </fieldset>
   );
 }

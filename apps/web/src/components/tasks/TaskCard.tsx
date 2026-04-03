@@ -155,6 +155,7 @@ export function TaskCard({
             <div className="flex gap-2">
               {onResources && (
                 <button
+                  type="button"
                   onClick={onResources}
                   className="px-3 py-1 text-sm text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded transition"
                 >
@@ -163,6 +164,7 @@ export function TaskCard({
               )}
               {onAssign && (
                 <button
+                  type="button"
                   onClick={onAssign}
                   className="px-3 py-1 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded transition"
                 >
@@ -171,6 +173,7 @@ export function TaskCard({
               )}
               {onEdit && (
                 <button
+                  type="button"
                   onClick={onEdit}
                   className="px-3 py-1 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded transition"
                 >

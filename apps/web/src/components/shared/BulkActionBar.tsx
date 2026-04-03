@@ -19,12 +19,14 @@ export function BulkActionBar({ count, entityLabel, onUpdateStatus, onClear }: B
         </span>
         <div className="flex items-center gap-3">
           <button
+            type="button"
             onClick={onClear}
             className="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition"
           >
             Clear Selection
           </button>
           <button
+            type="button"
             onClick={onUpdateStatus}
             className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
           >

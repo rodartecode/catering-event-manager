@@ -165,7 +165,9 @@ describe('UserMenu', () => {
       render(
         <div>
           <UserMenu />
-          <button data-testid="outside">Outside</button>
+          <button type="button" data-testid="outside">
+            Outside
+          </button>
         </div>
       );
 

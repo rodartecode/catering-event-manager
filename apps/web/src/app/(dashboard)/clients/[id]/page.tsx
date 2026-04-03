@@ -72,7 +72,13 @@ export default function ClientDetailPage() {
           href="/clients"
           className="text-blue-600 hover:text-blue-700 flex items-center text-sm mb-4"
         >
-          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg
+            aria-hidden="true"
+            className="w-4 h-4 mr-1"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -96,6 +102,7 @@ export default function ClientDetailPage() {
         <nav className="-mb-px flex space-x-8">
           {tabs.map((tab) => (
             <button
+              type="button"
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`py-4 px-1 border-b-2 font-medium text-sm transition ${

@@ -96,12 +96,14 @@ export default function EventsPage() {
           <div className="flex items-center gap-2">
             <ExportButton onExport={handleExport} />
             <button
+              type="button"
               onClick={() => setShowImportDialog(true)}
               className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition text-sm"
             >
               Import CSV
             </button>
             <button
+              type="button"
               onClick={selectMode ? handleExitSelectMode : () => setSelectMode(true)}
               className={`px-4 py-2 border rounded-lg transition text-sm ${
                 selectMode
@@ -184,6 +186,7 @@ export default function EventsPage() {
 
           <div className="flex items-end">
             <button
+              type="button"
               onClick={() => {
                 setStatus('all');
                 setClientId(undefined);
@@ -226,6 +229,7 @@ export default function EventsPage() {
           {hasNextPage && (
             <div className="flex justify-center mt-8">
               <button
+                type="button"
                 onClick={() => fetchNextPage()}
                 disabled={isFetchingNextPage}
                 className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"

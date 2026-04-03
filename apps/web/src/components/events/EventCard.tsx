@@ -107,12 +107,13 @@ export function EventCard({ event, selectable, selected, onToggleSelect }: Event
 
   if (selectable) {
     return (
-      <div
+      <button
+        type="button"
         onClick={onToggleSelect}
-        className={`bg-white rounded-lg shadow hover:shadow-lg transition-shadow p-6 h-full cursor-pointer ${selected ? 'ring-2 ring-blue-600' : ''}`}
+        className={`bg-white rounded-lg shadow hover:shadow-lg transition-shadow p-6 h-full cursor-pointer text-left w-full ${selected ? 'ring-2 ring-blue-600' : ''}`}
       >
         {cardContent}
-      </div>
+      </button>
     );
   }
 

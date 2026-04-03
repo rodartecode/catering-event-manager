@@ -49,7 +49,7 @@ export function ScheduleGrid({
   // Drag-to-create state
   const [dragStart, setDragStart] = useState<number | null>(null);
   const [dragCurrent, setDragCurrent] = useState<number | null>(null);
-  const gridRef = useRef<HTMLDivElement>(null);
+  const gridRef = useRef<HTMLElement>(null);
 
   // Drag-to-resize state
   const [resizingEntryId, setResizingEntryId] = useState<number | null>(null);
@@ -186,7 +186,7 @@ export function ScheduleGrid({
   };
 
   return (
-    <div
+    <section
       ref={(node) => {
         setNodeRef(node);
         gridRef.current = node;
@@ -248,6 +248,6 @@ export function ScheduleGrid({
 
       {/* Resize ghost */}
       {renderResizeGhost()}
-    </div>
+    </section>
   );
 }

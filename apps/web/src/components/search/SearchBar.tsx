@@ -71,6 +71,7 @@ export function SearchBar() {
       <form onSubmit={handleSubmit}>
         <div className="relative">
           <svg
+            aria-hidden="true"
             className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
             fill="none"
             stroke="currentColor"

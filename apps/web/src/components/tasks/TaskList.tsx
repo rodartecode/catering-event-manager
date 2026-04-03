@@ -163,10 +163,17 @@ export function TaskList({ eventId, isAdmin = false }: TaskListProps) {
 
         {isAdmin && (
           <button
+            type="button"
             onClick={() => setIsCreateOpen(true)}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center"
           >
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              aria-hidden="true"
+              className="w-4 h-4 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -183,6 +190,7 @@ export function TaskList({ eventId, isAdmin = false }: TaskListProps) {
       {!data?.items.length ? (
         <div className="text-center py-12 bg-gray-50 rounded-lg">
           <svg
+            aria-hidden="true"
             className="w-12 h-12 mx-auto text-gray-400 mb-4"
             fill="none"
             stroke="currentColor"
@@ -198,6 +206,7 @@ export function TaskList({ eventId, isAdmin = false }: TaskListProps) {
           <p className="text-gray-600 mb-4">No tasks found</p>
           {isAdmin && (
             <button
+              type="button"
               onClick={() => setIsCreateOpen(true)}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
             >

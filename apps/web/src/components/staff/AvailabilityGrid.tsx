@@ -75,7 +75,11 @@ export function AvailabilityGrid({ userId, slots, isAdmin }: AvailabilityGridPro
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-lg font-semibold text-gray-900">Weekly Availability</h3>
           {isAdmin && (
-            <button onClick={startEditing} className="text-sm text-blue-600 hover:text-blue-700">
+            <button
+              type="button"
+              onClick={startEditing}
+              className="text-sm text-blue-600 hover:text-blue-700"
+            >
               Edit
             </button>
           )}
@@ -115,12 +119,14 @@ export function AvailabilityGrid({ userId, slots, isAdmin }: AvailabilityGridPro
         <h3 className="text-lg font-semibold text-gray-900">Edit Availability</h3>
         <div className="flex gap-2">
           <button
+            type="button"
             onClick={() => setEditing(false)}
             className="text-sm text-gray-600 hover:text-gray-700"
           >
             Cancel
           </button>
           <button
+            type="button"
             onClick={handleSave}
             disabled={setAvailability.isPending}
             className="text-sm text-blue-600 hover:text-blue-700 font-medium disabled:opacity-50"
@@ -157,6 +163,7 @@ export function AvailabilityGrid({ userId, slots, isAdmin }: AvailabilityGridPro
                       className="px-2 py-1 border border-gray-300 rounded text-sm"
                     />
                     <button
+                      type="button"
                       onClick={() => removeSlot(slot.index)}
                       className="text-red-500 hover:text-red-700 text-sm"
                       aria-label={`Remove ${day} slot`}
@@ -166,6 +173,7 @@ export function AvailabilityGrid({ userId, slots, isAdmin }: AvailabilityGridPro
                   </div>
                 ))}
                 <button
+                  type="button"
                   onClick={() => addSlot(dayIndex)}
                   className="text-xs text-blue-600 hover:text-blue-700"
                 >

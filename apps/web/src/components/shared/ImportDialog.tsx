@@ -93,6 +93,7 @@ export function ImportDialog({ entityLabel, onImport, onClose, onSuccess }: Impo
             Import {entityLabel}s
           </h3>
           <button
+            type="button"
             onClick={onClose}
             aria-label="Close dialog"
             className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition"
@@ -190,6 +191,7 @@ export function ImportDialog({ entityLabel, onImport, onClose, onSuccess }: Impo
             </button>
             {!result && (
               <button
+                type="button"
                 onClick={handleImport}
                 disabled={!file || isPending}
                 className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"

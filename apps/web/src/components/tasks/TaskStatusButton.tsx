@@ -57,6 +57,7 @@ export function TaskStatusButton({ taskId, currentStatus, onStatusChange }: Task
   return (
     <div>
       <button
+        type="button"
         onClick={handleClick}
         disabled={updateStatusMutation.isPending}
         className={`px-4 py-2 text-sm font-medium rounded transition disabled:opacity-50 ${transition.className}`}

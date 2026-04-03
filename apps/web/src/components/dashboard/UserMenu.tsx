@@ -87,6 +87,7 @@ export function UserMenu() {
   return (
     <div className="relative" ref={menuRef}>
       <button
+        type="button"
         ref={triggerRef}
         data-testid="user-menu"
         onClick={() => setIsOpen(!isOpen)}
@@ -127,6 +128,7 @@ export function UserMenu() {
             <p className="text-sm font-medium capitalize">{session.user.role}</p>
           </div>
           <button
+            type="button"
             ref={signOutRef}
             role="menuitem"
             onClick={handleSignOut}

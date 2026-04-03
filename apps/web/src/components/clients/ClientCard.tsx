@@ -60,6 +60,7 @@ export function ClientCard({ client, eventsCount = 0 }: ClientCardProps) {
         <div className="space-y-2 text-sm text-gray-600">
           <div className="flex items-center">
             <svg
+              aria-hidden="true"
               className="w-4 h-4 mr-2 text-gray-400"
               fill="none"
               stroke="currentColor"
@@ -77,6 +78,7 @@ export function ClientCard({ client, eventsCount = 0 }: ClientCardProps) {
 
           <div className="flex items-center">
             <svg
+              aria-hidden="true"
               className="w-4 h-4 mr-2 text-gray-400"
               fill="none"
               stroke="currentColor"
@@ -95,6 +97,7 @@ export function ClientCard({ client, eventsCount = 0 }: ClientCardProps) {
           {client.phone && (
             <div className="flex items-center">
               <svg
+                aria-hidden="true"
                 className="w-4 h-4 mr-2 text-gray-400"
                 fill="none"
                 stroke="currentColor"

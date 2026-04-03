@@ -107,6 +107,7 @@ export function EventStatusUpdateDialog({
             Update Event Status
           </h3>
           <button
+            type="button"
             onClick={onClose}
             aria-label="Close dialog"
             className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
@@ -131,8 +132,10 @@ export function EventStatusUpdateDialog({
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Status Selection */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">New Status</label>
-            <div className="space-y-3">
+            <span className="block text-sm font-medium text-gray-700 mb-3" id="status-group-label">
+              New Status
+            </span>
+            <div className="space-y-3" role="radiogroup" aria-labelledby="status-group-label">
               {statusOptions.map((option) => (
                 <label
                   key={option.value}

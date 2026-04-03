@@ -8,7 +8,13 @@ const typeConfig = {
     bgColor: 'bg-blue-100',
     textColor: 'text-blue-800',
     icon: (
-      <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg
+        aria-hidden="true"
+        className="w-3 h-3 mr-1"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -23,7 +29,13 @@ const typeConfig = {
     bgColor: 'bg-green-100',
     textColor: 'text-green-800',
     icon: (
-      <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg
+        aria-hidden="true"
+        className="w-3 h-3 mr-1"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -38,7 +50,13 @@ const typeConfig = {
     bgColor: 'bg-purple-100',
     textColor: 'text-purple-800',
     icon: (
-      <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg
+        aria-hidden="true"
+        className="w-3 h-3 mr-1"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -53,7 +71,13 @@ const typeConfig = {
     bgColor: 'bg-gray-100',
     textColor: 'text-gray-800',
     icon: (
-      <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg
+        aria-hidden="true"
+        className="w-3 h-3 mr-1"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
         <path
           strokeLinecap="round"
           strokeLinejoin="round"

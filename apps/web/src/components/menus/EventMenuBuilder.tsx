@@ -133,6 +133,7 @@ export function EventMenuBuilder({ eventId, isAdmin }: EventMenuBuilderProps) {
                   className="flex items-center gap-2 text-left flex-1 min-w-0"
                 >
                   <svg
+                    aria-hidden="true"
                     className={`w-4 h-4 text-gray-500 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
                     fill="none"
                     stroke="currentColor"

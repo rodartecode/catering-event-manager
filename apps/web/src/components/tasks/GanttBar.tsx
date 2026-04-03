@@ -38,9 +38,8 @@ export function GanttBar({ bar, onClick }: GanttBarProps) {
     : 'No date';
 
   return (
-    <div
-      role="button"
-      tabIndex={0}
+    <button
+      type="button"
       aria-label={`Task: ${bar.title}, Status: ${statusLabels[bar.status]}, Due: ${dueDateLabel}`}
       className={`absolute rounded border text-xs font-medium px-2 flex items-center cursor-pointer
         hover:opacity-80 transition-opacity select-none truncate
@@ -58,6 +57,6 @@ export function GanttBar({ bar, onClick }: GanttBarProps) {
       title={`${bar.title}${bar.assigneeName ? ` — ${bar.assigneeName}` : ''}\n${statusLabels[bar.status]} · ${dueDateLabel}`}
     >
       <span className="truncate">{bar.title}</span>
-    </div>
+    </button>
   );
 }

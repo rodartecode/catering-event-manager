@@ -46,9 +46,15 @@ vi.mock('./TaskCard', () => ({
       <span>{task.title}</span>
       {isAdmin && (
         <>
-          <button onClick={onEdit}>Edit</button>
-          <button onClick={onAssign}>Assign</button>
-          <button onClick={onResources}>Resources</button>
+          <button type="button" onClick={onEdit}>
+            Edit
+          </button>
+          <button type="button" onClick={onAssign}>
+            Assign
+          </button>
+          <button type="button" onClick={onResources}>
+            Resources
+          </button>
         </>
       )}
     </div>
@@ -58,7 +64,9 @@ vi.mock('./TaskCard', () => ({
 vi.mock('./TaskForm', () => ({
   TaskForm: ({ onClose }: { onClose: () => void }) => (
     <div data-testid="task-form">
-      <button onClick={onClose}>Close Form</button>
+      <button type="button" onClick={onClose}>
+        Close Form
+      </button>
     </div>
   ),
 }));
@@ -66,7 +74,9 @@ vi.mock('./TaskForm', () => ({
 vi.mock('./TaskAssignDialog', () => ({
   TaskAssignDialog: ({ onClose }: { onClose: () => void }) => (
     <div data-testid="task-assign-dialog">
-      <button onClick={onClose}>Close Assign</button>
+      <button type="button" onClick={onClose}>
+        Close Assign
+      </button>
     </div>
   ),
 }));
@@ -74,7 +84,9 @@ vi.mock('./TaskAssignDialog', () => ({
 vi.mock('@/components/resources/ResourceAssignmentDialog', () => ({
   ResourceAssignmentDialog: ({ onClose }: { onClose: () => void }) => (
     <div data-testid="resource-assignment-dialog">
-      <button onClick={onClose}>Close Resources</button>
+      <button type="button" onClick={onClose}>
+        Close Resources
+      </button>
     </div>
   ),
 }));
