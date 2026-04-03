@@ -12,6 +12,7 @@ import {
 import { clients } from './clients';
 import { taskTemplates } from './task-templates';
 import { users } from './users';
+import { venues } from './venues';
 
 export const eventStatusEnum = pgEnum('event_status', [
   'inquiry',
@@ -43,6 +44,7 @@ export const events = pgTable(
       .notNull(),
     templateId: integer('template_id').references(() => taskTemplates.id, { onDelete: 'set null' }),
     clonedFromEventId: integer('cloned_from_event_id'),
+    venueId: integer('venue_id').references(() => venues.id, { onDelete: 'set null' }),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
   },
@@ -61,5 +63,6 @@ export const events = pgTable(
       table.isArchived,
       table.createdAt
     ),
+    venueIdIdx: index('idx_events_venue_id').on(table.venueId),
   })
 );

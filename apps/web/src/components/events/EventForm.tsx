@@ -25,6 +25,7 @@ const eventFormSchema = z.object({
     .or(z.literal(undefined)),
   notes: z.string().optional(),
   templateId: z.number().positive().optional(),
+  venueId: z.number().positive().optional(),
 });
 
 type EventFormData = z.infer<typeof eventFormSchema>;
@@ -79,6 +80,7 @@ export function EventForm({ onSuccess, onCancel }: EventFormProps) {
           ? Number(formData.estimatedAttendees)
           : undefined,
         templateId: formData.templateId ? Number(formData.templateId) : undefined,
+        venueId: formData.venueId ? Number(formData.venueId) : undefined,
       });
 
       createEventMutation.mutate(validatedData);

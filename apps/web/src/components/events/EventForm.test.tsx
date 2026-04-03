@@ -30,6 +30,14 @@ vi.mock('@/lib/trpc', () => ({
         }),
       },
     },
+    venue: {
+      list: {
+        useQuery: vi.fn().mockReturnValue({
+          data: [],
+          isLoading: false,
+        }),
+      },
+    },
     event: {
       create: {
         useMutation: vi.fn().mockReturnValue({
