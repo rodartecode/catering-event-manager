@@ -23,7 +23,8 @@ components/
 ├── search/          # SearchBar, SearchDropdown
 ├── shared/          # ExportButton, ImportDialog, BulkActionBar, BatchStatusDialog
 ├── staff/           # SkillBadge, SkillsEditor, AvailabilityGrid, StaffCard, StaffSuggestionList
-└── tasks/           # TaskCard, TaskForm, TaskFormFields, TaskList, GanttChart, dependency tree
+├── tasks/           # TaskCard, TaskForm, TaskFormFields, TaskList, GanttChart, dependency tree
+└── venues/          # VenueForm, VenueCard, VenueSelect, VenueEquipmentChecklist, VenueListSkeleton
 ```
 
 ## Patterns

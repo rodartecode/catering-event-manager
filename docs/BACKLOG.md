@@ -72,18 +72,15 @@ _(No items — all P1 features complete)_
   - Auto-generate production tasks from menu items (each dish = set of prep steps)
 - Notes: Extends task templates — menu-driven production templates. This is what separates professional catering software from generic PM tools. Start with manual production task creation, then add auto-generation.
 
-### venue-database
+### ~~venue-database~~ DONE (PR #50, 2026-04-03)
 **Venue profiles with logistics intelligence**
-- Scope: M
-- Touches: schema, api, ui
-- Depends on: none
-- Done when:
-  - `venues` table: name, address, capacity, has_kitchen, kitchen_type, equipment_available (array), parking_notes, load_in_notes, contact_info
-  - `events.venue_id` FK replaces free-text `location` field (keep `location` as fallback for ad-hoc venues)
-  - tRPC: `venue.create`, `venue.list`, `venue.getById`, `venue.update`
-  - Event creation: select venue from database, auto-populate logistics notes
-  - Equipment checklist per venue ("this venue has no oven — add portable oven to resources")
-- Notes: `events.location` is currently a text field. Venue profiles enable reuse and logistics planning. Travel time between venues (for same-day multi-event allocation) is a v2 enhancement.
+- `venues` table (28th): name, address, capacity, kitchen_type enum, equipment_available array, parking/load-in notes, contact info
+- `events.venue_id` FK (nullable, ON DELETE SET NULL) — keeps `location` as ad-hoc fallback
+- tRPC venue router: create, list (with search/kitchen/capacity filters), getById, update
+- VenueSelect in event form auto-populates location from venue address
+- VenueEquipmentChecklist compares venue equipment against event resources
+- 3 pages: /venues, /venues/new, /venues/[id] with detail tabs
+- 36 tests (19 router, 17 component)
 
 ### post-event-feedback
 **Client feedback surveys and quality scoring**

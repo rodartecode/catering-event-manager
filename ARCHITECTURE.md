@@ -53,7 +53,8 @@ src/server/routers/
 ├── notification.ts # In-app notifications & preferences
 ├── staff.ts       # Staff skills & availability
 ├── search.ts      # Global search
-└── template.ts    # Task templates
+├── template.ts    # Task templates
+└── venue.ts       # Venue database profiles
 ```
 
 ## Authentication & Authorization

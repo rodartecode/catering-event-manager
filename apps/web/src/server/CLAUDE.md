@@ -6,7 +6,7 @@ tRPC v11 API layer with domain-organized routers and Next-Auth v5 integration.
 
 ```
 server/
-├── routers/           # Domain-organized API routes (16 routers, 122 procedures)
+├── routers/           # Domain-organized API routes (17 routers, 126 procedures)
 │   ├── _app.ts       # Root router combining all domains
 │   ├── event.ts      # Event management
 │   ├── task.ts       # Task management
@@ -23,7 +23,8 @@ server/
 │   ├── user.ts       # User management
 │   ├── portal.ts     # Client portal (read-only)
 │   ├── search.ts     # Global search
-│   └── template.ts   # Task templates
+│   ├── template.ts   # Task templates
+│   └── venue.ts      # Venue database profiles
 ├── services/         # Business logic services
 ├── trpc.ts          # tRPC initialization + context
 ├── auth.ts          # Next-Auth v5 configuration

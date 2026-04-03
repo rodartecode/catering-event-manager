@@ -17,7 +17,7 @@ Next.js 16 + React 19 full-stack application with tRPC v11 API, Next-Auth v5 aut
 ```
 src/
 ├── server/routers/           # tRPC API (→ src/server/CLAUDE.md)
-│   ├── _app.ts              # Root router (combines 16 domain routers)
+│   ├── _app.ts              # Root router (combines 17 domain routers)
 │   ├── event.ts             # Event management
 │   ├── task.ts              # Task management
 │   ├── resource.ts          # Resource scheduling
@@ -30,6 +30,7 @@ src/
 │   ├── staff.ts             # Staff skills & availability
 │   ├── analytics.ts         # Reporting
 │   ├── clients.ts           # Client management
+│   ├── venue.ts             # Venue profiles
 │   └── ...                  # portal, user, search, template
 │
 ├── components/              # Domain-organized UI
@@ -41,6 +42,7 @@ src/
 │   ├── menus/              # Menu planning
 │   ├── notifications/      # Bell icon, dropdown, preferences
 │   ├── staff/              # Staff skills, availability, profiles
+│   ├── venues/             # Venue profiles, selection, equipment checklist
 │   ├── dashboard/          # Layout components
 │   └── auth/               # Auth forms
 │

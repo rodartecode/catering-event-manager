@@ -1,8 +1,8 @@
 # Component Architecture Guide
 
-**Last updated**: 2026-04-02
+**Last updated**: 2026-04-03
 
-A comprehensive guide to the ~93 React components across 18 domains that make up the catering event management system's user interface.
+A comprehensive guide to the ~99 React components across 19 domains that make up the catering event management system's user interface.
 
 ## Table of Contents
 
@@ -35,7 +35,8 @@ src/components/
 ├── search/                 # Global search (2 components)
 ├── shared/                 # Export, import, bulk actions (4 components)
 ├── staff/                  # Staff skills & availability (5 components)
-└── tasks/                  # Task management & assignment (14 components)
+├── tasks/                  # Task management & assignment (14 components)
+└── venues/                 # Venue profiles & selection (6 components)
 ```
 
 ## Component Categories
@@ -225,6 +226,19 @@ Reusable components used throughout the application:
 | `SearchInput` | Search functionality | Filtering |
 | `DatePicker` | Date selection | Event/task dates |
 | `FileUpload` | File handling | Future feature |
+
+### 11. Venue Components (6 components)
+
+**Location**: `src/components/venues/`
+
+| Component | Type | Purpose |
+|-----------|------|---------|
+| `VenueForm` | Form | Create venue with kitchen, equipment, logistics, contact fields |
+| `VenueCard` | Card | Venue summary with capacity/kitchen badges, link to detail |
+| `VenueSelect` | Select | Searchable venue dropdown for event forms, fires onSelect with full venue data |
+| `VenueEquipmentChecklist` | Display | Compare venue equipment against event resource requirements |
+| `VenueListSkeleton` | Skeleton | Loading placeholder for venue grid |
+| `index.ts` | Barrel | Re-exports all venue components |
 
 ## Design Patterns
 
