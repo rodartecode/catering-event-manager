@@ -55,6 +55,7 @@ export function EventStatusTimeline({ history }: EventStatusTimelineProps) {
                       <>
                         <EventStatusBadge status={item.oldStatus} />
                         <svg
+                          aria-hidden="true"
                           className="w-4 h-4 text-gray-400"
                           fill="none"
                           stroke="currentColor"

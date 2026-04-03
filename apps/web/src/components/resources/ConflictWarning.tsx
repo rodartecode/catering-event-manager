@@ -34,6 +34,7 @@ export function ConflictWarning({ conflicts, onDismiss }: ConflictWarningProps) 
       <div className="flex items-start">
         <div className="flex-shrink-0">
           <svg
+            aria-hidden="true"
             className="h-5 w-5 text-yellow-400"
             fill="none"
             stroke="currentColor"
@@ -78,7 +79,13 @@ export function ConflictWarning({ conflicts, onDismiss }: ConflictWarningProps) 
               className="p-2 text-yellow-500 hover:text-yellow-600 hover:bg-yellow-100 rounded-lg transition"
             >
               <span className="sr-only">Dismiss</span>
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg
+                aria-hidden="true"
+                className="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"

@@ -68,10 +68,17 @@ export default function EventDetailPage() {
       {/* Header */}
       <div className="mb-6">
         <button
+          type="button"
           onClick={() => router.back()}
           className="text-blue-600 hover:text-blue-700 mb-4 flex items-center"
         >
-          <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg
+            aria-hidden="true"
+            className="w-5 h-5 mr-1"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -129,33 +136,33 @@ export default function EventDetailPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium text-gray-500">Event Date</label>
+                <span className="text-sm font-medium text-gray-500">Event Date</span>
                 <p className="text-gray-900">{formattedDate}</p>
               </div>
 
               {event.location && (
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Location</label>
+                  <span className="text-sm font-medium text-gray-500">Location</span>
                   <p className="text-gray-900">{event.location}</p>
                 </div>
               )}
 
               {event.estimatedAttendees && (
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Estimated Attendees</label>
+                  <span className="text-sm font-medium text-gray-500">Estimated Attendees</span>
                   <p className="text-gray-900">{event.estimatedAttendees}</p>
                 </div>
               )}
 
               <div>
-                <label className="text-sm font-medium text-gray-500">Created</label>
+                <span className="text-sm font-medium text-gray-500">Created</span>
                 <p className="text-gray-900">{new Date(event.createdAt).toLocaleDateString()}</p>
               </div>
             </div>
 
             {event.notes && (
               <div className="mt-4">
-                <label className="text-sm font-medium text-gray-500">Notes</label>
+                <span className="text-sm font-medium text-gray-500">Notes</span>
                 <p className="text-gray-900 mt-1">{event.notes}</p>
               </div>
             )}
@@ -168,23 +175,23 @@ export default function EventDetailPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Company</label>
+                  <span className="text-sm font-medium text-gray-500">Company</span>
                   <p className="text-gray-900">{event.client.companyName}</p>
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Contact Name</label>
+                  <span className="text-sm font-medium text-gray-500">Contact Name</span>
                   <p className="text-gray-900">{event.client.contactName}</p>
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Email</label>
+                  <span className="text-sm font-medium text-gray-500">Email</span>
                   <p className="text-gray-900">{event.client.email}</p>
                 </div>
 
                 {event.client.phone && (
                   <div>
-                    <label className="text-sm font-medium text-gray-500">Phone</label>
+                    <span className="text-sm font-medium text-gray-500">Phone</span>
                     <p className="text-gray-900">{event.client.phone}</p>
                   </div>
                 )}
@@ -259,6 +266,7 @@ export default function EventDetailPage() {
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
               <div className="flex items-start">
                 <svg
+                  aria-hidden="true"
                   className="w-5 h-5 text-yellow-600 mt-0.5 mr-2"
                   fill="currentColor"
                   viewBox="0 0 20 20"
@@ -307,12 +315,14 @@ export default function EventDetailPage() {
 
             <div className="flex justify-end gap-3">
               <button
+                type="button"
                 onClick={() => setIsArchiveDialogOpen(false)}
                 className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
               >
                 Cancel
               </button>
               <button
+                type="button"
                 onClick={() => archiveMutation.mutate({ id: eventId })}
                 disabled={archiveMutation.isPending}
                 className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition disabled:opacity-50"

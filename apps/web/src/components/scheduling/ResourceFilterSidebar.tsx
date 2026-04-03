@@ -80,6 +80,7 @@ export function ResourceFilterSidebar({
           {(Object.entries(typeConfig) as [string, { label: string; color: string }][]).map(
             ([type, { label, color }]) => (
               <button
+                type="button"
                 key={type}
                 onClick={() => toggleType(type)}
                 className={`px-2 py-0.5 text-xs rounded-full border transition ${
@@ -110,11 +111,19 @@ export function ResourceFilterSidebar({
 
       {/* Quick actions */}
       <div className="px-3 py-2 border-b border-gray-200 flex gap-2">
-        <button onClick={onSelectAll} className="text-xs text-blue-600 hover:text-blue-800">
+        <button
+          type="button"
+          onClick={onSelectAll}
+          className="text-xs text-blue-600 hover:text-blue-800"
+        >
           Select all
         </button>
         <span className="text-gray-300">|</span>
-        <button onClick={onDeselectAll} className="text-xs text-blue-600 hover:text-blue-800">
+        <button
+          type="button"
+          onClick={onDeselectAll}
+          className="text-xs text-blue-600 hover:text-blue-800"
+        >
           Deselect all
         </button>
       </div>

@@ -321,17 +321,12 @@ _(No items — all P1 features complete)_
 - Touches: go-service
 - Implemented: middleware.go and main.go now use `internal/logger` package. Logger reads LOG_LEVEL from env with level filtering. Rate limit warning uses structured JSON output.
 
-### enable-biome-a11y
+### ~~enable-biome-a11y~~ ✅ DONE (2026-04-02)
 **Enable Biome accessibility linting rules**
 - Priority: P4
 - Scope: S
 - Touches: ui
-- Depends on: none
-- Done when:
-  - `biome.json` sets `a11y.recommended: true` (currently `false`)
-  - All existing a11y violations either fixed or explicitly suppressed with justification
-  - Developers catch a11y issues locally instead of only in CI via axe-core
-- Notes: Currently a11y is only enforced by Playwright quality gates in CI. Local Biome rules would catch issues earlier.
+- Implemented: `a11y.recommended: true` in biome.json. Fixed 206 violations across 8 rules: 92 useButtonType (added `type="button"`), 63 noSvgWithoutTitle (added `aria-hidden="true"`), 30 noLabelWithoutControl (htmlFor/id pairs or semantic fix), 11 useAriaPropsSupportedByRole, 5 noStaticElementInteractions, 2 useSemanticElements, 2 useKeyWithClickEvents, 1 noRedundantRoles. 3 biome-ignore suppressions with justification (dnd-kit draggable, drop zone, test wrapper).
 
 ---
 
@@ -355,6 +350,7 @@ _(No items — all P1 features complete)_
 
 | Date | Item | Notes |
 |------|------|-------|
+| 2026-04-02 | Biome a11y linting | Enabled `a11y.recommended: true`, fixed 206 violations (8 rules) across ~50 files, 3 justified suppressions |
 | 2026-04-02 | P3 tech debt batch | Lazy-load chart.js + @dnd-kit via next/dynamic, extract 5 large components (10 new sub-components), env docs sync + Go structured logging |
 | 2026-04-02 | Component test coverage | 23 new test files, 357 new tests, coverage 34% → 60.5% (52/86 components). Forms, dialogs, badges, lists. |
 | 2026-04-01 | P2 tech debt batch | Analytics N+1 → batch queries, type casts → Drizzle typed, updated_at triggers (19 tables), FK indexes (9 columns), CI optimization (Go artifact sharing, Playwright cache) |

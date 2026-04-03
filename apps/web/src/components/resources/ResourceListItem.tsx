@@ -17,7 +17,9 @@ export function ResourceListItem({
   onToggle,
 }: ResourceListItemProps) {
   return (
+    // biome-ignore lint/a11y/useSemanticElements: custom checkbox button — role="checkbox" is intentional for this selectable list item
     <button
+      type="button"
       role="checkbox"
       aria-checked={isSelected}
       onClick={onToggle}

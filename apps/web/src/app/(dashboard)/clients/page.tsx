@@ -59,6 +59,7 @@ function ClientsPageContent() {
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <svg
+                  aria-hidden="true"
                   className="h-5 w-5 text-gray-400"
                   fill="none"
                   stroke="currentColor"
@@ -100,6 +101,7 @@ function ClientsPageContent() {
       ) : filteredClients?.length === 0 ? (
         <div className="bg-white rounded-lg shadow p-12 text-center">
           <svg
+            aria-hidden="true"
             className="mx-auto h-12 w-12 text-gray-400 mb-4"
             fill="none"
             stroke="currentColor"

@@ -63,7 +63,9 @@ vi.mock('./DocumentTypeBadge', () => ({
 vi.mock('./UploadDocumentDialog', () => ({
   UploadDocumentDialog: ({ onClose }: { onClose: () => void }) => (
     <div data-testid="upload-dialog">
-      <button onClick={onClose}>Close Upload</button>
+      <button type="button" onClick={onClose}>
+        Close Upload
+      </button>
     </div>
   ),
 }));

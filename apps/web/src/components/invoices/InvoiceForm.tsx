@@ -115,9 +115,15 @@ export function InvoiceForm({ eventId }: InvoiceFormProps) {
             <div key={index} className="grid grid-cols-12 gap-2 items-start">
               <div className="col-span-5">
                 {index === 0 && (
-                  <label className="block text-xs text-gray-500 mb-1">Description</label>
+                  <label
+                    htmlFor="line-item-description-0"
+                    className="block text-xs text-gray-500 mb-1"
+                  >
+                    Description
+                  </label>
                 )}
                 <input
+                  id={`line-item-description-${index}`}
                   type="text"
                   value={item.description}
                   onChange={(e) => updateLineItem(index, 'description', e.target.value)}
@@ -128,8 +134,13 @@ export function InvoiceForm({ eventId }: InvoiceFormProps) {
                 />
               </div>
               <div className="col-span-2">
-                {index === 0 && <label className="block text-xs text-gray-500 mb-1">Qty</label>}
+                {index === 0 && (
+                  <label htmlFor="line-item-qty-0" className="block text-xs text-gray-500 mb-1">
+                    Qty
+                  </label>
+                )}
                 <input
+                  id={`line-item-qty-${index}`}
                   type="text"
                   inputMode="decimal"
                   value={item.quantity}
@@ -141,9 +152,15 @@ export function InvoiceForm({ eventId }: InvoiceFormProps) {
               </div>
               <div className="col-span-2">
                 {index === 0 && (
-                  <label className="block text-xs text-gray-500 mb-1">Unit Price</label>
+                  <label
+                    htmlFor="line-item-unit-price-0"
+                    className="block text-xs text-gray-500 mb-1"
+                  >
+                    Unit Price
+                  </label>
                 )}
                 <input
+                  id={`line-item-unit-price-${index}`}
                   type="text"
                   inputMode="decimal"
                   value={item.unitPrice}
@@ -155,13 +172,13 @@ export function InvoiceForm({ eventId }: InvoiceFormProps) {
                 />
               </div>
               <div className="col-span-2">
-                {index === 0 && <label className="block text-xs text-gray-500 mb-1">Amount</label>}
+                {index === 0 && <span className="block text-xs text-gray-500 mb-1">Amount</span>}
                 <p className="py-1.5 text-sm text-gray-900 font-medium">
                   ${calcAmount(item.quantity, item.unitPrice).toFixed(2)}
                 </p>
               </div>
               <div className="col-span-1">
-                {index === 0 && <label className="block text-xs text-gray-500 mb-1">&nbsp;</label>}
+                {index === 0 && <span className="block text-xs text-gray-500 mb-1">&nbsp;</span>}
                 {lineItems.length > 1 && (
                   <button
                     type="button"

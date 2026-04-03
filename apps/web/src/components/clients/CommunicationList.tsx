@@ -44,6 +44,7 @@ export function CommunicationList({ communications, onComplete }: CommunicationL
     return (
       <div className="text-center py-8 text-gray-500">
         <svg
+          aria-hidden="true"
           className="mx-auto h-12 w-12 text-gray-400 mb-4"
           fill="none"
           stroke="currentColor"
@@ -117,6 +118,7 @@ export function CommunicationList({ communications, onComplete }: CommunicationL
                 </p>
                 {item.communication.notes.length > 150 && (
                   <button
+                    type="button"
                     onClick={() => setExpandedId(isExpanded ? null : item.communication.id)}
                     className="text-blue-600 text-sm mt-1 hover:text-blue-700"
                   >
@@ -129,6 +131,7 @@ export function CommunicationList({ communications, onComplete }: CommunicationL
             {item.communication.followUpDate && !item.communication.followUpCompleted && (
               <div className="mt-3 pt-3 border-t border-gray-100">
                 <button
+                  type="button"
                   onClick={() =>
                     completeFollowUp.mutate({ communicationId: item.communication.id })
                   }

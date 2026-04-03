@@ -33,6 +33,7 @@ export function TaskDependencyTree({
           <h4 className="text-sm font-medium text-gray-700 mb-2">Depends On</h4>
           <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
             <svg
+              aria-hidden="true"
               className="w-5 h-5 text-amber-600 flex-shrink-0"
               fill="none"
               stroke="currentColor"
@@ -67,6 +68,7 @@ export function TaskDependencyTree({
                 {dependency.title}
               </div>
               <svg
+                aria-hidden="true"
                 className="w-4 h-8 text-gray-400"
                 fill="none"
                 stroke="currentColor"
@@ -87,6 +89,7 @@ export function TaskDependencyTree({
           {dependentTasks.length > 0 && (
             <>
               <svg
+                aria-hidden="true"
                 className="w-4 h-8 text-gray-400"
                 fill="none"
                 stroke="currentColor"
@@ -127,6 +130,7 @@ export function TaskDependencyTree({
                 className="flex items-center gap-2 p-3 bg-gray-50 border border-gray-200 rounded-lg"
               >
                 <svg
+                  aria-hidden="true"
                   className="w-5 h-5 text-gray-400 flex-shrink-0"
                   fill="none"
                   stroke="currentColor"

@@ -64,6 +64,7 @@ export function BatchStatusDialog({
             Batch Update Status
           </h3>
           <button
+            type="button"
             onClick={onClose}
             aria-label="Close dialog"
             className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition"

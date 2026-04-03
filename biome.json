@@ -6,7 +6,7 @@
     "rules": {
       "recommended": true,
       "a11y": {
-        "recommended": false
+        "recommended": true
       },
       "suspicious": {
         "noExplicitAny": "warn",

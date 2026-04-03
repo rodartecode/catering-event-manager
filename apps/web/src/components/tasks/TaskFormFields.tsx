@@ -40,7 +40,9 @@ export function TaskFormFields({
   return (
     <>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
+        <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+          Title *
+        </label>
         <input
           id="title"
           name="title"
@@ -54,7 +56,9 @@ export function TaskFormFields({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+        <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+          Description
+        </label>
         <textarea
           id="description"
           name="description"
@@ -67,7 +71,9 @@ export function TaskFormFields({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
+        <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
+          Category *
+        </label>
         <select
           id="category"
           name="category"
@@ -83,7 +89,9 @@ export function TaskFormFields({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
+        <label htmlFor="dueDate" className="block text-sm font-medium text-gray-700 mb-1">
+          Due Date
+        </label>
         <input
           id="dueDate"
           name="dueDate"
@@ -95,7 +103,9 @@ export function TaskFormFields({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Depends On</label>
+        <label htmlFor="dependsOnTaskId" className="block text-sm font-medium text-gray-700 mb-1">
+          Depends On
+        </label>
         <select
           id="dependsOnTaskId"
           name="dependsOnTaskId"

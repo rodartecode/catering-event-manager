@@ -39,8 +39,12 @@ vi.mock('@/lib/trpc', () => ({
 vi.mock('./ExpenseForm', () => ({
   ExpenseForm: ({ onSuccess, onCancel }: { onSuccess: () => void; onCancel: () => void }) => (
     <div data-testid="expense-form">
-      <button onClick={onSuccess}>Save</button>
-      <button onClick={onCancel}>Cancel</button>
+      <button type="button" onClick={onSuccess}>
+        Save
+      </button>
+      <button type="button" onClick={onCancel}>
+        Cancel
+      </button>
     </div>
   ),
 }));

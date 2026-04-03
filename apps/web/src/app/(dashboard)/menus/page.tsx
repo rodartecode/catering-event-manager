@@ -154,8 +154,14 @@ export default function MenuCatalogPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                <label
+                  htmlFor="menu-item-name"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Name
+                </label>
                 <input
+                  id="menu-item-name"
                   type="text"
                   required
                   value={formName}
@@ -164,10 +170,14 @@ export default function MenuCatalogPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="menu-item-cost"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Cost per Person
                 </label>
                 <input
+                  id="menu-item-cost"
                   type="text"
                   required
                   pattern="^\d+(\.\d{1,2})?$"
@@ -178,8 +188,14 @@ export default function MenuCatalogPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                <label
+                  htmlFor="menu-item-category"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Category
+                </label>
                 <select
+                  id="menu-item-category"
                   value={formCategory}
                   onChange={(e) => setFormCategory(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -192,10 +208,14 @@ export default function MenuCatalogPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="menu-item-allergens"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Allergens (comma-separated)
                 </label>
                 <input
+                  id="menu-item-allergens"
                   type="text"
                   placeholder="e.g., nuts, dairy, soy"
                   value={formAllergens}
@@ -206,8 +226,14 @@ export default function MenuCatalogPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+              <label
+                htmlFor="menu-item-description"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Description
+              </label>
               <textarea
+                id="menu-item-description"
                 value={formDescription}
                 onChange={(e) => setFormDescription(e.target.value)}
                 rows={2}
@@ -216,7 +242,7 @@ export default function MenuCatalogPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Dietary Tags</label>
+              <span className="block text-sm font-medium text-gray-700 mb-2">Dietary Tags</span>
               <div className="flex flex-wrap gap-2">
                 {dietaryTagOptions.map((tag) => (
                   <button

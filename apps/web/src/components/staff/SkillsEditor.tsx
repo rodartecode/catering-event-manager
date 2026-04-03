@@ -62,6 +62,7 @@ export function SkillsEditor({ userId, currentSkills, isAdmin }: SkillsEditorPro
           <h3 className="text-lg font-semibold text-gray-900">Skills</h3>
           {isAdmin && (
             <button
+              type="button"
               onClick={() => {
                 setSelectedSkills(currentSkills.map((s) => s.skill));
                 setEditing(true);
@@ -91,12 +92,14 @@ export function SkillsEditor({ userId, currentSkills, isAdmin }: SkillsEditorPro
         <h3 className="text-lg font-semibold text-gray-900">Edit Skills</h3>
         <div className="flex gap-2">
           <button
+            type="button"
             onClick={() => setEditing(false)}
             className="text-sm text-gray-600 hover:text-gray-700"
           >
             Cancel
           </button>
           <button
+            type="button"
             onClick={handleSave}
             disabled={updateSkills.isPending}
             className="text-sm text-blue-600 hover:text-blue-700 font-medium disabled:opacity-50"
@@ -110,6 +113,7 @@ export function SkillsEditor({ userId, currentSkills, isAdmin }: SkillsEditorPro
           const isSelected = selectedSkills.includes(skill);
           return (
             <button
+              type="button"
               key={skill}
               onClick={() => toggleSkill(skill)}
               className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium border transition ${
@@ -119,7 +123,12 @@ export function SkillsEditor({ userId, currentSkills, isAdmin }: SkillsEditorPro
               }`}
             >
               {isSelected && (
-                <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                <svg
+                  aria-hidden="true"
+                  className="w-3 h-3 mr-1"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
                   <path
                     fillRule="evenodd"
                     d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"

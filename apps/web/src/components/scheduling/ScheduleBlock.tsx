@@ -70,12 +70,15 @@ export function ScheduleBlock({
   const timeLabel = `${formatTime(entry.startTime)} - ${formatTime(entry.endTime)}`;
 
   return (
+    // biome-ignore lint/a11y/useSemanticElements: dnd-kit draggable requires div (contains nested button for delete)
     <div
       ref={setNodeRef}
       style={style}
       className={`${colors.bg} ${colors.border} border rounded px-1.5 py-0.5 overflow-hidden cursor-grab active:cursor-grabbing select-none group ${isDragging ? 'shadow-lg ring-2 ring-blue-400' : ''}`}
       {...listeners}
       {...attributes}
+      role="button"
+      tabIndex={0}
       aria-label={`${entry.eventName ?? 'Event'}, ${timeLabel}`}
     >
       <div className={`text-xs font-medium truncate ${colors.text}`}>
@@ -101,6 +104,7 @@ export function ScheduleBlock({
       {/* Delete button (visible on hover) */}
       {onDelete && (
         <button
+          type="button"
           onClick={(e) => {
             e.stopPropagation();
             onDelete(entry.id);

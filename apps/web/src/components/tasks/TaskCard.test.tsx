@@ -11,7 +11,11 @@ vi.mock('./TaskStatusButton', () => ({
   }: {
     taskId: number;
     currentStatus: string;
-  }) => <button data-testid="task-status-button">Status: {currentStatus}</button>,
+  }) => (
+    <button type="button" data-testid="task-status-button">
+      Status: {currentStatus}
+    </button>
+  ),
 }));
 
 describe('TaskCard', () => {

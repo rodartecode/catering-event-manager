@@ -72,6 +72,7 @@ export default function ResourceDetailPage() {
             The resource you&apos;re looking for doesn&apos;t exist.
           </p>
           <button
+            type="button"
             onClick={() => router.push('/resources')}
             className="text-blue-600 hover:text-blue-700"
           >
@@ -87,10 +88,17 @@ export default function ResourceDetailPage() {
       {/* Header */}
       <div className="mb-6">
         <button
+          type="button"
           onClick={() => router.back()}
           className="text-blue-600 hover:text-blue-700 mb-4 flex items-center"
         >
-          <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg
+            aria-hidden="true"
+            className="w-5 h-5 mr-1"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -121,12 +129,14 @@ export default function ResourceDetailPage() {
 
           <div className="flex gap-2">
             <button
+              type="button"
               onClick={() => setIsEditing(true)}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
             >
               Edit
             </button>
             <button
+              type="button"
               onClick={handleDelete}
               disabled={deleteMutation.isPending}
               className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition disabled:opacity-50"

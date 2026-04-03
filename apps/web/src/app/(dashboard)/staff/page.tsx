@@ -69,6 +69,7 @@ export default function StaffPage() {
           {hasNextPage && (
             <div className="flex justify-center mt-8">
               <button
+                type="button"
                 onClick={() => fetchNextPage()}
                 disabled={isFetchingNextPage}
                 className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"

@@ -68,6 +68,7 @@ export function TaskAssignDialog({ taskId, onClose, onSuccess }: TaskAssignDialo
             Assign Task
           </h3>
           <button
+            type="button"
             onClick={onClose}
             aria-label="Close dialog"
             className="text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
@@ -101,10 +102,16 @@ export function TaskAssignDialog({ taskId, onClose, onSuccess }: TaskAssignDialo
         )}
 
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Select Team Member</label>
+          <span
+            className="block text-sm font-medium text-gray-700 mb-2"
+            id="team-member-select-label"
+          >
+            Select Team Member
+          </span>
           {usersLoading ? (
             <div
               className="flex justify-center py-4"
+              role="status"
               aria-busy="true"
               aria-label="Loading team members"
             >
@@ -116,6 +123,7 @@ export function TaskAssignDialog({ taskId, onClose, onSuccess }: TaskAssignDialo
           ) : (
             <div className="space-y-2 max-h-60 overflow-y-auto">
               <button
+                type="button"
                 onClick={() => setSelectedUserId(null)}
                 className={`w-full text-left px-4 py-3 rounded-lg border transition ${
                   selectedUserId === null
@@ -129,6 +137,7 @@ export function TaskAssignDialog({ taskId, onClose, onSuccess }: TaskAssignDialo
 
               {users?.map((user) => (
                 <button
+                  type="button"
                   key={user.id}
                   onClick={() => setSelectedUserId(user.id)}
                   className={`w-full text-left px-4 py-3 rounded-lg border transition ${
@@ -160,12 +169,14 @@ export function TaskAssignDialog({ taskId, onClose, onSuccess }: TaskAssignDialo
 
         <div className="flex justify-end gap-3">
           <button
+            type="button"
             onClick={onClose}
             className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
           >
             Cancel
           </button>
           <button
+            type="button"
             onClick={handleAssign}
             disabled={assignMutation.isPending}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"

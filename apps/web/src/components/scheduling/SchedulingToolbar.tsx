@@ -21,11 +21,18 @@ export function SchedulingToolbar({
     <div className="flex items-center justify-between p-3 border-b border-gray-200">
       <div className="flex items-center gap-2">
         <button
+          type="button"
           onClick={onNavigatePrev}
           className="p-1.5 hover:bg-gray-100 rounded transition"
           aria-label="Previous"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg
+            aria-hidden="true"
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -35,17 +42,25 @@ export function SchedulingToolbar({
           </svg>
         </button>
         <button
+          type="button"
           onClick={onGoToToday}
           className="px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 rounded transition"
         >
           Today
         </button>
         <button
+          type="button"
           onClick={onNavigateNext}
           className="p-1.5 hover:bg-gray-100 rounded transition"
           aria-label="Next"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg
+            aria-hidden="true"
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
         </button>
@@ -54,6 +69,7 @@ export function SchedulingToolbar({
 
       <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5">
         <button
+          type="button"
           onClick={() => onViewModeChange('day')}
           className={`px-3 py-1 text-xs rounded-md transition ${
             viewMode === 'day'
@@ -64,6 +80,7 @@ export function SchedulingToolbar({
           Day
         </button>
         <button
+          type="button"
           onClick={() => onViewModeChange('week')}
           className={`px-3 py-1 text-xs rounded-md transition ${
             viewMode === 'week'

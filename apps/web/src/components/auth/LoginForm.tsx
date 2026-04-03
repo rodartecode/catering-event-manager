@@ -99,7 +99,6 @@ export function LoginForm() {
                 type="email"
                 autoComplete="email"
                 required
-                aria-required="true"
                 {...getInputA11yProps('email', !!errors.email)}
                 value={formData.email}
                 onChange={(e) => updateField('email', e.target.value)}
@@ -124,7 +123,6 @@ export function LoginForm() {
                 type="password"
                 autoComplete="current-password"
                 required
-                aria-required="true"
                 {...getInputA11yProps('password', !!errors.password)}
                 value={formData.password}
                 onChange={(e) => updateField('password', e.target.value)}

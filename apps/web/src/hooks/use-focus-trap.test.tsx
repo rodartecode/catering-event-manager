@@ -23,9 +23,13 @@ function TestDialog({
   return (
     <div ref={dialogRef} role="dialog" aria-modal="true" data-testid="dialog" tabIndex={-1}>
       <h2>Test Dialog</h2>
-      <button data-testid="first-button">First Button</button>
+      <button type="button" data-testid="first-button">
+        First Button
+      </button>
       <input data-testid="input" type="text" />
-      <button data-testid="last-button">Last Button</button>
+      <button type="button" data-testid="last-button">
+        Last Button
+      </button>
     </div>
   );
 }
@@ -50,7 +54,7 @@ function DialogWithTrigger() {
 
   return (
     <div>
-      <button data-testid="trigger" onClick={() => setIsOpen(true)}>
+      <button type="button" data-testid="trigger" onClick={() => setIsOpen(true)}>
         Open Dialog
       </button>
       <TestDialog isOpen={isOpen} onClose={() => setIsOpen(false)} />
@@ -202,7 +206,8 @@ describe('useFocusTrap', () => {
       const parentHandler = vi.fn();
 
       render(
-        <div onKeyDown={parentHandler}>
+        // biome-ignore lint/a11y/noStaticElementInteractions: test wrapper capturing key events
+        <div role="presentation" onKeyDown={parentHandler}>
           <TestDialog isOpen={true} onClose={onClose} />
         </div>
       );

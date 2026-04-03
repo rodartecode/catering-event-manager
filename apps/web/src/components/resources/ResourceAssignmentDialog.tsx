@@ -150,6 +150,7 @@ export function ResourceAssignmentDialog({
               />
             </div>
             <button
+              type="button"
               onClick={handleClose}
               aria-label="Close dialog"
               className="text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
@@ -196,6 +197,7 @@ export function ResourceAssignmentDialog({
             {resourcesLoading ? (
               <div
                 className="flex justify-center py-8"
+                role="status"
                 aria-busy="true"
                 aria-label="Loading resources"
               >
@@ -234,12 +236,14 @@ export function ResourceAssignmentDialog({
             </div>
             <div className="flex gap-3">
               <button
+                type="button"
                 onClick={handleClose}
                 className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition"
               >
                 Cancel
               </button>
               <button
+                type="button"
                 onClick={handleAssign}
                 disabled={
                   selectedResources.length === 0 ||

@@ -34,7 +34,7 @@ export function ChartSkeleton({ height = 'h-64' }: { height?: string }) {
 
 export function AnalyticsPageSkeleton() {
   return (
-    <div className="space-y-6" aria-busy="true" aria-label="Loading analytics">
+    <div className="space-y-6" role="status" aria-busy="true" aria-label="Loading analytics">
       {/* Header skeleton */}
       <div className="animate-pulse" aria-hidden="true">
         <div className="h-8 bg-gray-200 rounded w-48 mb-2" />

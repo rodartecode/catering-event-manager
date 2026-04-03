@@ -39,6 +39,7 @@ export function ResourceCard({ resource }: ResourceCardProps) {
           {resource.hourlyRate && (
             <div className="flex items-center">
               <svg
+                aria-hidden="true"
                 className="w-4 h-4 mr-2 text-gray-400"
                 fill="none"
                 stroke="currentColor"
@@ -59,6 +60,7 @@ export function ResourceCard({ resource }: ResourceCardProps) {
           {resource.notes && (
             <div className="flex items-start">
               <svg
+                aria-hidden="true"
                 className="w-4 h-4 mr-2 text-gray-400 mt-0.5"
                 fill="none"
                 stroke="currentColor"
@@ -80,7 +82,13 @@ export function ResourceCard({ resource }: ResourceCardProps) {
         {resource.upcomingAssignments !== undefined && resource.upcomingAssignments > 0 && (
           <div className="pt-3 border-t border-gray-100">
             <div className="flex items-center text-sm text-gray-500">
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg
+                aria-hidden="true"
+                className="w-4 h-4 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
