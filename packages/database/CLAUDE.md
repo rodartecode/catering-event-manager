@@ -15,7 +15,8 @@ Shared Drizzle ORM schema definitions for the Catering Event Manager.
 src/schema/
 ├── clients.ts           # Base entity (no FKs)
 ├── users.ts             # References clients
-├── events.ts            # References clients, users
+├── venues.ts            # Venue profiles (capacity, kitchen, equipment)
+├── events.ts            # References clients, users, venues
 ├── event-status-log.ts  # References events, users
 ├── tasks.ts             # References events, users
 ├── resources.ts         # Staff/equipment/materials (optional user_id FK for staff)
@@ -48,6 +49,9 @@ eventStatusEnum: ['inquiry', 'planning', 'preparation', 'in_progress', 'complete
 
 // Resource Types
 resourceTypeEnum: ['staff', 'equipment', 'materials']
+
+// Kitchen Types
+kitchenTypeEnum: ['full', 'prep_only', 'warming_only', 'none']
 
 // Task Categories
 taskCategoryEnum: ['pre_event', 'during_event', 'post_event']
