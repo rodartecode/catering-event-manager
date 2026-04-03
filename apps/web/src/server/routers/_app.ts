@@ -15,6 +15,7 @@ import { staffRouter } from './staff';
 import { taskRouter } from './task';
 import { templateRouter } from './template';
 import { userRouter } from './user';
+import { venueRouter } from './venue';
 
 export const appRouter = router({
   event: eventRouter,
@@ -33,6 +34,7 @@ export const appRouter = router({
   portal: portalRouter,
   template: templateRouter,
   search: searchRouter,
+  venue: venueRouter,
 });
 
 export type AppRouter = typeof appRouter;

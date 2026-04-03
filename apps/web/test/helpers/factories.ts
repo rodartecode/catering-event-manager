@@ -110,6 +110,72 @@ export async function createClient(
 }
 
 /**
+ * Create a test venue.
+ */
+export async function createVenue(
+  db: TestDatabase,
+  overrides: Partial<{
+    name: string;
+    address: string;
+    capacity: number;
+    hasKitchen: boolean;
+    kitchenType: 'full' | 'prep_only' | 'warming_only' | 'none';
+    equipmentAvailable: string[];
+    parkingNotes: string;
+    loadInNotes: string;
+    contactName: string;
+    contactPhone: string;
+    contactEmail: string;
+    notes: string;
+    isActive: boolean;
+  }> = {}
+) {
+  const id = nextId();
+  const equipment = overrides.equipmentAvailable
+    ? `{${overrides.equipmentAvailable.join(',')}}`
+    : '{}';
+
+  const result = await db.execute(sql`
+    INSERT INTO venues (name, address, capacity, has_kitchen, kitchen_type, equipment_available, parking_notes, load_in_notes, contact_name, contact_phone, contact_email, notes, is_active)
+    VALUES (
+      ${overrides.name || `Test Venue ${id}`},
+      ${overrides.address || `${id} Test Street, Test City`},
+      ${overrides.capacity || null},
+      ${overrides.hasKitchen || false},
+      ${overrides.kitchenType || null},
+      ${sql.raw(`'${equipment}'`)},
+      ${overrides.parkingNotes || null},
+      ${overrides.loadInNotes || null},
+      ${overrides.contactName || null},
+      ${overrides.contactPhone || null},
+      ${overrides.contactEmail || null},
+      ${overrides.notes || null},
+      ${overrides.isActive !== undefined ? overrides.isActive : true}
+    )
+    RETURNING id, name, address, capacity, has_kitchen, kitchen_type, equipment_available, parking_notes, load_in_notes, contact_name, contact_phone, contact_email, notes, is_active, created_at, updated_at
+  `);
+
+  return result[0] as {
+    id: number;
+    name: string;
+    address: string;
+    capacity: number | null;
+    has_kitchen: boolean;
+    kitchen_type: string | null;
+    equipment_available: string[];
+    parking_notes: string | null;
+    load_in_notes: string | null;
+    contact_name: string | null;
+    contact_phone: string | null;
+    contact_email: string | null;
+    notes: string | null;
+    is_active: boolean;
+    created_at: Date;
+    updated_at: Date;
+  };
+}
+
+/**
  * Create a test event.
  */
 export async function createEvent(

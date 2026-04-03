@@ -22,4 +22,5 @@ export * from './task-template-items';
 export * from './task-templates'; // Must be before events due to FK reference
 export * from './tasks';
 export * from './users';
+export * from './venues'; // Must be before events due to FK reference
 export * from './verification-tokens';

@@ -1,3 +1,4 @@
+import { VenueSelect } from '@/components/venues';
 import { getErrorProps, getInputA11yProps } from '@/lib/form-a11y';
 
 export interface EventFormFieldsProps {
@@ -108,6 +109,16 @@ export function EventFormFields({
           Select a template to auto-generate tasks with due dates based on the event date.
         </p>
       </div>
+      {/* Venue Selection */}
+      <VenueSelect
+        value={(formData.venueId as number) ?? null}
+        onSelect={(venue) => {
+          onFieldChange('venueId', venue?.id ?? undefined);
+          if (venue) {
+            onFieldChange('location', venue.address);
+          }
+        }}
+      />
       {/* Event Name */}
       <div>
         <label htmlFor="eventName" className={LABEL}>

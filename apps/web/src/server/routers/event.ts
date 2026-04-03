@@ -6,6 +6,7 @@ import {
   taskTemplateItems,
   taskTemplates,
   users,
+  venues,
 } from '@catering-event-manager/database/schema';
 import { TRPCError } from '@trpc/server';
 import { addDays, differenceInMilliseconds } from 'date-fns';
@@ -35,6 +36,7 @@ const createEventInput = z.object({
   estimatedAttendees: z.number().positive().optional(),
   notes: z.string().optional(),
   templateId: z.number().positive().optional(),
+  venueId: z.number().positive().optional(),
 });
 
 // Event list input schema
@@ -58,6 +60,7 @@ const updateEventInput = z.object({
   location: z.string().max(500).optional(),
   estimatedAttendees: z.number().positive().optional(),
   notes: z.string().optional(),
+  venueId: z.number().positive().nullable().optional(),
 });
 
 // Event status update input schema
@@ -76,6 +79,7 @@ const cloneEventInput = z.object({
   location: z.string().max(500).optional(),
   estimatedAttendees: z.number().positive().optional(),
   notes: z.string().optional(),
+  venueId: z.number().positive().optional(),
 });
 
 export const eventRouter = router({
@@ -91,6 +95,18 @@ export const eventRouter = router({
         code: 'NOT_FOUND',
         message: 'Client not found',
       });
+    }
+
+    // If venueId provided, verify venue exists
+    if (input.venueId) {
+      const [venue] = await db.select().from(venues).where(eq(venues.id, input.venueId)).limit(1);
+
+      if (!venue) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Venue not found',
+        });
+      }
     }
 
     // If templateId provided, verify template exists
@@ -122,6 +138,7 @@ export const eventRouter = router({
         status: 'inquiry',
         createdBy: parseInt(session.user.id, 10),
         templateId: input.templateId ?? null,
+        venueId: input.venueId ?? null,
       })
       .returning();
 
@@ -241,7 +258,7 @@ export const eventRouter = router({
     .query(async ({ ctx, input }) => {
       const { db } = ctx;
 
-      // Get event with client info
+      // Get event with client and venue info
       const [event] = await db
         .select({
           id: events.id,
@@ -254,6 +271,7 @@ export const eventRouter = router({
           isArchived: events.isArchived,
           archivedAt: events.archivedAt,
           clonedFromEventId: events.clonedFromEventId,
+          venueId: events.venueId,
           createdAt: events.createdAt,
           updatedAt: events.updatedAt,
           client: {
@@ -263,9 +281,21 @@ export const eventRouter = router({
             email: clients.email,
             phone: clients.phone,
           },
+          venue: {
+            id: venues.id,
+            name: venues.name,
+            address: venues.address,
+            capacity: venues.capacity,
+            hasKitchen: venues.hasKitchen,
+            kitchenType: venues.kitchenType,
+            equipmentAvailable: venues.equipmentAvailable,
+            parkingNotes: venues.parkingNotes,
+            loadInNotes: venues.loadInNotes,
+          },
         })
         .from(events)
         .leftJoin(clients, eq(events.clientId, clients.id))
+        .leftJoin(venues, eq(events.venueId, venues.id))
         .where(eq(events.id, input.id))
         .limit(1);
 
@@ -452,6 +482,7 @@ export const eventRouter = router({
           status: 'inquiry',
           createdBy: parseInt(session.user.id, 10),
           templateId: sourceEvent.templateId,
+          venueId: input.venueId ?? sourceEvent.venueId,
           clonedFromEventId: sourceEvent.id,
         })
         .returning();

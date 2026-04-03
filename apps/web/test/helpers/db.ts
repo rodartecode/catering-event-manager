@@ -168,6 +168,14 @@ async function runMigrations(db: TestDatabase): Promise<void> {
     END $$;
   `);
 
+  await db.execute(sql`
+    DO $$ BEGIN
+      CREATE TYPE kitchen_type AS ENUM ('full', 'prep_only', 'warming_only', 'none');
+    EXCEPTION
+      WHEN duplicate_object THEN null;
+    END $$;
+  `);
+
   // Create tables (clients first for FK references)
   await db.execute(sql`
     CREATE TABLE IF NOT EXISTS clients (
@@ -234,6 +242,27 @@ async function runMigrations(db: TestDatabase): Promise<void> {
   `);
 
   await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS venues (
+      id SERIAL PRIMARY KEY,
+      name VARCHAR(255) NOT NULL,
+      address TEXT NOT NULL,
+      capacity INTEGER,
+      has_kitchen BOOLEAN NOT NULL DEFAULT false,
+      kitchen_type kitchen_type,
+      equipment_available TEXT[] DEFAULT '{}',
+      parking_notes TEXT,
+      load_in_notes TEXT,
+      contact_name VARCHAR(255),
+      contact_phone VARCHAR(50),
+      contact_email VARCHAR(255),
+      notes TEXT,
+      is_active BOOLEAN NOT NULL DEFAULT true,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  await db.execute(sql`
     CREATE TABLE IF NOT EXISTS events (
       id SERIAL PRIMARY KEY,
       client_id INTEGER NOT NULL REFERENCES clients(id),
@@ -249,6 +278,7 @@ async function runMigrations(db: TestDatabase): Promise<void> {
       created_by INTEGER NOT NULL REFERENCES users(id),
       template_id INTEGER REFERENCES task_templates(id) ON DELETE SET NULL,
       cloned_from_event_id INTEGER,
+      venue_id INTEGER REFERENCES venues(id) ON DELETE SET NULL,
       created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
     )
@@ -569,6 +599,7 @@ async function runMigrations(db: TestDatabase): Promise<void> {
     'invoices',
     'task_templates',
     'task_template_items',
+    'venues',
     'verification_tokens',
   ];
   for (const table of rlsTables) {
@@ -583,7 +614,7 @@ async function runMigrations(db: TestDatabase): Promise<void> {
 export async function cleanDatabase(db: TestDatabase): Promise<void> {
   // Truncate tables in order (respecting foreign key constraints)
   await db.execute(
-    sql`TRUNCATE verification_tokens, notification_preferences, notifications, documents, event_menu_items, event_menus, menu_items, communications, payments, invoice_line_items, invoices, expenses, resource_schedule, task_resources, staff_skills, staff_availability, tasks, event_status_log, events, resources, users, clients, task_template_items, task_templates RESTART IDENTITY CASCADE`
+    sql`TRUNCATE verification_tokens, notification_preferences, notifications, documents, event_menu_items, event_menus, menu_items, communications, payments, invoice_line_items, invoices, expenses, resource_schedule, task_resources, staff_skills, staff_availability, tasks, event_status_log, events, venues, resources, users, clients, task_template_items, task_templates RESTART IDENTITY CASCADE`
   );
 }
 
