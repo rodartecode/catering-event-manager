@@ -9,6 +9,8 @@ import (
 	"database/sql/driver"
 	"fmt"
 	"time"
+
+	"github.com/sqlc-dev/pqtype"
 )
 
 type CommunicationType string
@@ -53,6 +55,98 @@ func (ns NullCommunicationType) Value() (driver.Value, error) {
 		return nil, nil
 	}
 	return string(ns.CommunicationType), nil
+}
+
+type DietaryTag string
+
+const (
+	DietaryTagVegan      DietaryTag = "vegan"
+	DietaryTagVegetarian DietaryTag = "vegetarian"
+	DietaryTagGlutenFree DietaryTag = "gluten_free"
+	DietaryTagHalal      DietaryTag = "halal"
+	DietaryTagKosher     DietaryTag = "kosher"
+	DietaryTagDairyFree  DietaryTag = "dairy_free"
+	DietaryTagNutFree    DietaryTag = "nut_free"
+)
+
+func (e *DietaryTag) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = DietaryTag(s)
+	case string:
+		*e = DietaryTag(s)
+	default:
+		return fmt.Errorf("unsupported scan type for DietaryTag: %T", src)
+	}
+	return nil
+}
+
+type NullDietaryTag struct {
+	DietaryTag DietaryTag `json:"dietary_tag"`
+	Valid      bool       `json:"valid"` // Valid is true if DietaryTag is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullDietaryTag) Scan(value interface{}) error {
+	if value == nil {
+		ns.DietaryTag, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.DietaryTag.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullDietaryTag) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.DietaryTag), nil
+}
+
+type DocumentType string
+
+const (
+	DocumentTypeContract  DocumentType = "contract"
+	DocumentTypeMenu      DocumentType = "menu"
+	DocumentTypeFloorPlan DocumentType = "floor_plan"
+	DocumentTypePermit    DocumentType = "permit"
+	DocumentTypePhoto     DocumentType = "photo"
+)
+
+func (e *DocumentType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = DocumentType(s)
+	case string:
+		*e = DocumentType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for DocumentType: %T", src)
+	}
+	return nil
+}
+
+type NullDocumentType struct {
+	DocumentType DocumentType `json:"document_type"`
+	Valid        bool         `json:"valid"` // Valid is true if DocumentType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullDocumentType) Scan(value interface{}) error {
+	if value == nil {
+		ns.DocumentType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.DocumentType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullDocumentType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.DocumentType), nil
 }
 
 type EventStatus string
@@ -101,6 +195,371 @@ func (ns NullEventStatus) Value() (driver.Value, error) {
 	return string(ns.EventStatus), nil
 }
 
+type ExpenseCategory string
+
+const (
+	ExpenseCategoryLabor           ExpenseCategory = "labor"
+	ExpenseCategoryFoodSupplies    ExpenseCategory = "food_supplies"
+	ExpenseCategoryEquipmentRental ExpenseCategory = "equipment_rental"
+	ExpenseCategoryVenue           ExpenseCategory = "venue"
+	ExpenseCategoryTransportation  ExpenseCategory = "transportation"
+	ExpenseCategoryDecor           ExpenseCategory = "decor"
+	ExpenseCategoryBeverages       ExpenseCategory = "beverages"
+	ExpenseCategoryOther           ExpenseCategory = "other"
+)
+
+func (e *ExpenseCategory) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ExpenseCategory(s)
+	case string:
+		*e = ExpenseCategory(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ExpenseCategory: %T", src)
+	}
+	return nil
+}
+
+type NullExpenseCategory struct {
+	ExpenseCategory ExpenseCategory `json:"expense_category"`
+	Valid           bool            `json:"valid"` // Valid is true if ExpenseCategory is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullExpenseCategory) Scan(value interface{}) error {
+	if value == nil {
+		ns.ExpenseCategory, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ExpenseCategory.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullExpenseCategory) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ExpenseCategory), nil
+}
+
+type InvoiceStatus string
+
+const (
+	InvoiceStatusDraft     InvoiceStatus = "draft"
+	InvoiceStatusSent      InvoiceStatus = "sent"
+	InvoiceStatusPaid      InvoiceStatus = "paid"
+	InvoiceStatusOverdue   InvoiceStatus = "overdue"
+	InvoiceStatusCancelled InvoiceStatus = "cancelled"
+)
+
+func (e *InvoiceStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = InvoiceStatus(s)
+	case string:
+		*e = InvoiceStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for InvoiceStatus: %T", src)
+	}
+	return nil
+}
+
+type NullInvoiceStatus struct {
+	InvoiceStatus InvoiceStatus `json:"invoice_status"`
+	Valid         bool          `json:"valid"` // Valid is true if InvoiceStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullInvoiceStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.InvoiceStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.InvoiceStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullInvoiceStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.InvoiceStatus), nil
+}
+
+type KitchenType string
+
+const (
+	KitchenTypeFull        KitchenType = "full"
+	KitchenTypePrepOnly    KitchenType = "prep_only"
+	KitchenTypeWarmingOnly KitchenType = "warming_only"
+	KitchenTypeNone        KitchenType = "none"
+)
+
+func (e *KitchenType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = KitchenType(s)
+	case string:
+		*e = KitchenType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for KitchenType: %T", src)
+	}
+	return nil
+}
+
+type NullKitchenType struct {
+	KitchenType KitchenType `json:"kitchen_type"`
+	Valid       bool        `json:"valid"` // Valid is true if KitchenType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullKitchenType) Scan(value interface{}) error {
+	if value == nil {
+		ns.KitchenType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.KitchenType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullKitchenType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.KitchenType), nil
+}
+
+type MenuItemCategory string
+
+const (
+	MenuItemCategoryAppetizer MenuItemCategory = "appetizer"
+	MenuItemCategoryMain      MenuItemCategory = "main"
+	MenuItemCategorySide      MenuItemCategory = "side"
+	MenuItemCategoryDessert   MenuItemCategory = "dessert"
+	MenuItemCategoryBeverage  MenuItemCategory = "beverage"
+)
+
+func (e *MenuItemCategory) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = MenuItemCategory(s)
+	case string:
+		*e = MenuItemCategory(s)
+	default:
+		return fmt.Errorf("unsupported scan type for MenuItemCategory: %T", src)
+	}
+	return nil
+}
+
+type NullMenuItemCategory struct {
+	MenuItemCategory MenuItemCategory `json:"menu_item_category"`
+	Valid            bool             `json:"valid"` // Valid is true if MenuItemCategory is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullMenuItemCategory) Scan(value interface{}) error {
+	if value == nil {
+		ns.MenuItemCategory, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.MenuItemCategory.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullMenuItemCategory) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.MenuItemCategory), nil
+}
+
+type NotificationType string
+
+const (
+	NotificationTypeTaskAssigned  NotificationType = "task_assigned"
+	NotificationTypeStatusChanged NotificationType = "status_changed"
+	NotificationTypeOverdue       NotificationType = "overdue"
+	NotificationTypeFollowUpDue   NotificationType = "follow_up_due"
+)
+
+func (e *NotificationType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = NotificationType(s)
+	case string:
+		*e = NotificationType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for NotificationType: %T", src)
+	}
+	return nil
+}
+
+type NullNotificationType struct {
+	NotificationType NotificationType `json:"notification_type"`
+	Valid            bool             `json:"valid"` // Valid is true if NotificationType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullNotificationType) Scan(value interface{}) error {
+	if value == nil {
+		ns.NotificationType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.NotificationType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullNotificationType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.NotificationType), nil
+}
+
+type PaymentMethod string
+
+const (
+	PaymentMethodCash         PaymentMethod = "cash"
+	PaymentMethodCheck        PaymentMethod = "check"
+	PaymentMethodCreditCard   PaymentMethod = "credit_card"
+	PaymentMethodBankTransfer PaymentMethod = "bank_transfer"
+	PaymentMethodOther        PaymentMethod = "other"
+)
+
+func (e *PaymentMethod) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = PaymentMethod(s)
+	case string:
+		*e = PaymentMethod(s)
+	default:
+		return fmt.Errorf("unsupported scan type for PaymentMethod: %T", src)
+	}
+	return nil
+}
+
+type NullPaymentMethod struct {
+	PaymentMethod PaymentMethod `json:"payment_method"`
+	Valid         bool          `json:"valid"` // Valid is true if PaymentMethod is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullPaymentMethod) Scan(value interface{}) error {
+	if value == nil {
+		ns.PaymentMethod, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.PaymentMethod.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullPaymentMethod) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.PaymentMethod), nil
+}
+
+type PrepType string
+
+const (
+	PrepTypeMarinate PrepType = "marinate"
+	PrepTypeBake     PrepType = "bake"
+	PrepTypeGrill    PrepType = "grill"
+	PrepTypePlate    PrepType = "plate"
+	PrepTypeChop     PrepType = "chop"
+	PrepTypeMix      PrepType = "mix"
+	PrepTypeChill    PrepType = "chill"
+	PrepTypeFry      PrepType = "fry"
+	PrepTypeAssemble PrepType = "assemble"
+	PrepTypeGarnish  PrepType = "garnish"
+)
+
+func (e *PrepType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = PrepType(s)
+	case string:
+		*e = PrepType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for PrepType: %T", src)
+	}
+	return nil
+}
+
+type NullPrepType struct {
+	PrepType PrepType `json:"prep_type"`
+	Valid    bool     `json:"valid"` // Valid is true if PrepType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullPrepType) Scan(value interface{}) error {
+	if value == nil {
+		ns.PrepType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.PrepType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullPrepType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.PrepType), nil
+}
+
+type ProductionTaskStatus string
+
+const (
+	ProductionTaskStatusPending    ProductionTaskStatus = "pending"
+	ProductionTaskStatusInProgress ProductionTaskStatus = "in_progress"
+	ProductionTaskStatusCompleted  ProductionTaskStatus = "completed"
+	ProductionTaskStatusSkipped    ProductionTaskStatus = "skipped"
+)
+
+func (e *ProductionTaskStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ProductionTaskStatus(s)
+	case string:
+		*e = ProductionTaskStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ProductionTaskStatus: %T", src)
+	}
+	return nil
+}
+
+type NullProductionTaskStatus struct {
+	ProductionTaskStatus ProductionTaskStatus `json:"production_task_status"`
+	Valid                bool                 `json:"valid"` // Valid is true if ProductionTaskStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullProductionTaskStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.ProductionTaskStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ProductionTaskStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullProductionTaskStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ProductionTaskStatus), nil
+}
+
 type ResourceType string
 
 const (
@@ -142,6 +601,103 @@ func (ns NullResourceType) Value() (driver.Value, error) {
 		return nil, nil
 	}
 	return string(ns.ResourceType), nil
+}
+
+type StaffSkill string
+
+const (
+	StaffSkillFoodSafetyCert   StaffSkill = "food_safety_cert"
+	StaffSkillBartender        StaffSkill = "bartender"
+	StaffSkillSommelier        StaffSkill = "sommelier"
+	StaffSkillLeadChef         StaffSkill = "lead_chef"
+	StaffSkillSousChef         StaffSkill = "sous_chef"
+	StaffSkillPrepCook         StaffSkill = "prep_cook"
+	StaffSkillPastryChef       StaffSkill = "pastry_chef"
+	StaffSkillServer           StaffSkill = "server"
+	StaffSkillEventCoordinator StaffSkill = "event_coordinator"
+	StaffSkillBarista          StaffSkill = "barista"
+)
+
+func (e *StaffSkill) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = StaffSkill(s)
+	case string:
+		*e = StaffSkill(s)
+	default:
+		return fmt.Errorf("unsupported scan type for StaffSkill: %T", src)
+	}
+	return nil
+}
+
+type NullStaffSkill struct {
+	StaffSkill StaffSkill `json:"staff_skill"`
+	Valid      bool       `json:"valid"` // Valid is true if StaffSkill is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullStaffSkill) Scan(value interface{}) error {
+	if value == nil {
+		ns.StaffSkill, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.StaffSkill.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullStaffSkill) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.StaffSkill), nil
+}
+
+type StationType string
+
+const (
+	StationTypeOven        StationType = "oven"
+	StationTypeGrill       StationType = "grill"
+	StationTypePrepCounter StationType = "prep_counter"
+	StationTypeColdStorage StationType = "cold_storage"
+	StationTypeStovetop    StationType = "stovetop"
+	StationTypeFryer       StationType = "fryer"
+	StationTypeMixer       StationType = "mixer"
+)
+
+func (e *StationType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = StationType(s)
+	case string:
+		*e = StationType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for StationType: %T", src)
+	}
+	return nil
+}
+
+type NullStationType struct {
+	StationType StationType `json:"station_type"`
+	Valid       bool        `json:"valid"` // Valid is true if StationType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullStationType) Scan(value interface{}) error {
+	if value == nil {
+		ns.StationType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.StationType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullStationType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.StationType), nil
 }
 
 type TaskCategory string
@@ -235,6 +791,7 @@ type UserRole string
 const (
 	UserRoleAdministrator UserRole = "administrator"
 	UserRoleManager       UserRole = "manager"
+	UserRoleClient        UserRole = "client"
 )
 
 func (e *UserRole) Scan(src interface{}) error {
@@ -272,7 +829,7 @@ func (ns NullUserRole) Value() (driver.Value, error) {
 	return string(ns.UserRole), nil
 }
 
-type ArchivedEvent struct {
+type ArchivedEvents struct {
 	ID                 int32          `json:"id"`
 	ClientID           int32          `json:"client_id"`
 	EventName          string         `json:"event_name"`
@@ -292,19 +849,80 @@ type ArchivedEvent struct {
 	ArchivedByName     sql.NullString `json:"archived_by_name"`
 }
 
-type Client struct {
-	ID          int32          `json:"id"`
-	CompanyName string         `json:"company_name"`
-	ContactName string         `json:"contact_name"`
-	Email       string         `json:"email"`
-	Phone       sql.NullString `json:"phone"`
-	Address     sql.NullString `json:"address"`
-	Notes       sql.NullString `json:"notes"`
-	CreatedAt   time.Time      `json:"created_at"`
-	UpdatedAt   time.Time      `json:"updated_at"`
+type Clients struct {
+	ID              int32          `json:"id"`
+	CompanyName     string         `json:"company_name"`
+	ContactName     string         `json:"contact_name"`
+	Email           string         `json:"email"`
+	Phone           sql.NullString `json:"phone"`
+	Address         sql.NullString `json:"address"`
+	Notes           sql.NullString `json:"notes"`
+	CreatedAt       time.Time      `json:"created_at"`
+	UpdatedAt       time.Time      `json:"updated_at"`
+	PortalEnabled   bool           `json:"portal_enabled"`
+	PortalEnabledAt sql.NullTime   `json:"portal_enabled_at"`
 }
 
-type Event struct {
+type Communications struct {
+	ID                int32             `json:"id"`
+	EventID           int32             `json:"event_id"`
+	ClientID          int32             `json:"client_id"`
+	Type              CommunicationType `json:"type"`
+	Subject           sql.NullString    `json:"subject"`
+	Notes             sql.NullString    `json:"notes"`
+	ContactedAt       time.Time         `json:"contacted_at"`
+	ContactedBy       sql.NullInt32     `json:"contacted_by"`
+	FollowUpDate      sql.NullTime      `json:"follow_up_date"`
+	FollowUpCompleted bool              `json:"follow_up_completed"`
+	CreatedAt         time.Time         `json:"created_at"`
+	UpdatedAt         time.Time         `json:"updated_at"`
+}
+
+type Documents struct {
+	ID               int32        `json:"id"`
+	EventID          int32        `json:"event_id"`
+	Name             string       `json:"name"`
+	Type             DocumentType `json:"type"`
+	StorageKey       string       `json:"storage_key"`
+	FileSize         int32        `json:"file_size"`
+	MimeType         string       `json:"mime_type"`
+	SharedWithClient bool         `json:"shared_with_client"`
+	UploadedBy       int32        `json:"uploaded_by"`
+	CreatedAt        time.Time    `json:"created_at"`
+	UpdatedAt        time.Time    `json:"updated_at"`
+}
+
+type EventMenuItems struct {
+	ID               int32          `json:"id"`
+	EventMenuID      int32          `json:"event_menu_id"`
+	MenuItemID       int32          `json:"menu_item_id"`
+	QuantityOverride sql.NullInt32  `json:"quantity_override"`
+	Notes            sql.NullString `json:"notes"`
+	SortOrder        int32          `json:"sort_order"`
+	CreatedAt        time.Time      `json:"created_at"`
+}
+
+type EventMenus struct {
+	ID        int32          `json:"id"`
+	EventID   int32          `json:"event_id"`
+	Name      string         `json:"name"`
+	Notes     sql.NullString `json:"notes"`
+	SortOrder int32          `json:"sort_order"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+}
+
+type EventStatusLog struct {
+	ID        int32           `json:"id"`
+	EventID   int32           `json:"event_id"`
+	OldStatus NullEventStatus `json:"old_status"`
+	NewStatus EventStatus     `json:"new_status"`
+	ChangedBy int32           `json:"changed_by"`
+	Notes     sql.NullString  `json:"notes"`
+	ChangedAt time.Time       `json:"changed_at"`
+}
+
+type Events struct {
 	ID                 int32          `json:"id"`
 	ClientID           int32          `json:"client_id"`
 	EventName          string         `json:"event_name"`
@@ -319,27 +937,148 @@ type Event struct {
 	CreatedBy          int32          `json:"created_by"`
 	CreatedAt          time.Time      `json:"created_at"`
 	UpdatedAt          time.Time      `json:"updated_at"`
+	TemplateID         sql.NullInt32  `json:"template_id"`
+	ClonedFromEventID  sql.NullInt32  `json:"cloned_from_event_id"`
+	VenueID            sql.NullInt32  `json:"venue_id"`
 }
 
-type EventStatusLog struct {
-	ID        int32           `json:"id"`
-	EventID   int32           `json:"event_id"`
-	OldStatus NullEventStatus `json:"old_status"`
-	NewStatus EventStatus     `json:"new_status"`
-	ChangedBy int32           `json:"changed_by"`
-	Notes     sql.NullString  `json:"notes"`
-	ChangedAt time.Time       `json:"changed_at"`
+type Expenses struct {
+	ID          int32           `json:"id"`
+	EventID     int32           `json:"event_id"`
+	Category    ExpenseCategory `json:"category"`
+	Description string          `json:"description"`
+	Amount      string          `json:"amount"`
+	Vendor      sql.NullString  `json:"vendor"`
+	ExpenseDate time.Time       `json:"expense_date"`
+	Notes       sql.NullString  `json:"notes"`
+	CreatedBy   int32           `json:"created_by"`
+	CreatedAt   time.Time       `json:"created_at"`
+	UpdatedAt   time.Time       `json:"updated_at"`
 }
 
-type Resource struct {
+type InvoiceLineItems struct {
+	ID          int32     `json:"id"`
+	InvoiceID   int32     `json:"invoice_id"`
+	Description string    `json:"description"`
+	Quantity    string    `json:"quantity"`
+	UnitPrice   string    `json:"unit_price"`
+	Amount      string    `json:"amount"`
+	SortOrder   int32     `json:"sort_order"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+}
+
+type Invoices struct {
+	ID            int32          `json:"id"`
+	EventID       int32          `json:"event_id"`
+	InvoiceNumber string         `json:"invoice_number"`
+	Status        InvoiceStatus  `json:"status"`
+	Subtotal      string         `json:"subtotal"`
+	TaxRate       string         `json:"tax_rate"`
+	TaxAmount     string         `json:"tax_amount"`
+	Total         string         `json:"total"`
+	Notes         sql.NullString `json:"notes"`
+	DueDate       sql.NullTime   `json:"due_date"`
+	SentAt        sql.NullTime   `json:"sent_at"`
+	CreatedBy     int32          `json:"created_by"`
+	CreatedAt     time.Time      `json:"created_at"`
+	UpdatedAt     time.Time      `json:"updated_at"`
+}
+
+type KitchenStations struct {
+	ID        int32          `json:"id"`
+	Name      string         `json:"name"`
+	Type      StationType    `json:"type"`
+	Capacity  int32          `json:"capacity"`
+	VenueID   sql.NullInt32  `json:"venue_id"`
+	Notes     sql.NullString `json:"notes"`
+	IsActive  bool           `json:"is_active"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+}
+
+type MenuItems struct {
+	ID              int32                 `json:"id"`
+	Name            string                `json:"name"`
+	Description     sql.NullString        `json:"description"`
+	CostPerPerson   string                `json:"cost_per_person"`
+	Category        MenuItemCategory      `json:"category"`
+	Allergens       []string              `json:"allergens"`
+	DietaryTags     []DietaryTag          `json:"dietary_tags"`
+	IsActive        bool                  `json:"is_active"`
+	CreatedBy       int32                 `json:"created_by"`
+	CreatedAt       time.Time             `json:"created_at"`
+	UpdatedAt       time.Time             `json:"updated_at"`
+	ProductionSteps pqtype.NullRawMessage `json:"production_steps"`
+}
+
+type NotificationPreferences struct {
+	ID               int32            `json:"id"`
+	UserID           int32            `json:"user_id"`
+	NotificationType NotificationType `json:"notification_type"`
+	InAppEnabled     bool             `json:"in_app_enabled"`
+	EmailEnabled     bool             `json:"email_enabled"`
+	CreatedAt        time.Time        `json:"created_at"`
+	UpdatedAt        time.Time        `json:"updated_at"`
+}
+
+type Notifications struct {
+	ID           int32            `json:"id"`
+	UserID       int32            `json:"user_id"`
+	Type         NotificationType `json:"type"`
+	Title        string           `json:"title"`
+	Body         sql.NullString   `json:"body"`
+	ReadAt       sql.NullTime     `json:"read_at"`
+	EntityType   sql.NullString   `json:"entity_type"`
+	EntityID     sql.NullInt32    `json:"entity_id"`
+	CreatedAt    time.Time        `json:"created_at"`
+	UpdatedAt    time.Time        `json:"updated_at"`
+	EmailPending bool             `json:"email_pending"`
+}
+
+type Payments struct {
 	ID          int32          `json:"id"`
-	Name        string         `json:"name"`
-	Type        ResourceType   `json:"type"`
-	HourlyRate  sql.NullString `json:"hourly_rate"`
-	IsAvailable bool           `json:"is_available"`
+	InvoiceID   int32          `json:"invoice_id"`
+	Amount      string         `json:"amount"`
+	Method      PaymentMethod  `json:"method"`
+	PaymentDate time.Time      `json:"payment_date"`
+	Reference   sql.NullString `json:"reference"`
 	Notes       sql.NullString `json:"notes"`
+	RecordedBy  int32          `json:"recorded_by"`
 	CreatedAt   time.Time      `json:"created_at"`
 	UpdatedAt   time.Time      `json:"updated_at"`
+}
+
+type PortalAccessLog struct {
+	ID           int32          `json:"id"`
+	UserID       int32          `json:"user_id"`
+	ClientID     int32          `json:"client_id"`
+	Action       string         `json:"action"`
+	ResourceType sql.NullString `json:"resource_type"`
+	ResourceID   sql.NullInt32  `json:"resource_id"`
+	IpAddress    sql.NullString `json:"ip_address"`
+	Timestamp    time.Time      `json:"timestamp"`
+}
+
+type ProductionTasks struct {
+	ID              int32                `json:"id"`
+	EventID         int32                `json:"event_id"`
+	MenuItemID      sql.NullInt32        `json:"menu_item_id"`
+	StationID       sql.NullInt32        `json:"station_id"`
+	Name            string               `json:"name"`
+	PrepType        PrepType             `json:"prep_type"`
+	DurationMinutes int32                `json:"duration_minutes"`
+	OffsetMinutes   int32                `json:"offset_minutes"`
+	ScheduledStart  sql.NullTime         `json:"scheduled_start"`
+	ScheduledEnd    sql.NullTime         `json:"scheduled_end"`
+	Status          ProductionTaskStatus `json:"status"`
+	Servings        sql.NullInt32        `json:"servings"`
+	AssignedTo      sql.NullInt32        `json:"assigned_to"`
+	DependsOnTaskID sql.NullInt32        `json:"depends_on_task_id"`
+	Notes           sql.NullString       `json:"notes"`
+	IsAutoGenerated bool                 `json:"is_auto_generated"`
+	CreatedAt       time.Time            `json:"created_at"`
+	UpdatedAt       time.Time            `json:"updated_at"`
 }
 
 type ResourceSchedule struct {
@@ -354,7 +1093,65 @@ type ResourceSchedule struct {
 	UpdatedAt  time.Time      `json:"updated_at"`
 }
 
-type Task struct {
+type Resources struct {
+	ID          int32          `json:"id"`
+	Name        string         `json:"name"`
+	Type        ResourceType   `json:"type"`
+	HourlyRate  sql.NullString `json:"hourly_rate"`
+	IsAvailable bool           `json:"is_available"`
+	Notes       sql.NullString `json:"notes"`
+	CreatedAt   time.Time      `json:"created_at"`
+	UpdatedAt   time.Time      `json:"updated_at"`
+	UserID      sql.NullInt32  `json:"user_id"`
+}
+
+type StaffAvailability struct {
+	ID          int32     `json:"id"`
+	UserID      int32     `json:"user_id"`
+	DayOfWeek   int32     `json:"day_of_week"`
+	StartTime   string    `json:"start_time"`
+	EndTime     string    `json:"end_time"`
+	IsRecurring bool      `json:"is_recurring"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+}
+
+type StaffSkills struct {
+	UserID      int32        `json:"user_id"`
+	Skill       StaffSkill   `json:"skill"`
+	CertifiedAt sql.NullTime `json:"certified_at"`
+	ExpiresAt   sql.NullTime `json:"expires_at"`
+	CreatedAt   time.Time    `json:"created_at"`
+}
+
+type TaskResources struct {
+	TaskID     int32     `json:"task_id"`
+	ResourceID int32     `json:"resource_id"`
+	AssignedAt time.Time `json:"assigned_at"`
+}
+
+type TaskTemplateItems struct {
+	ID             int32          `json:"id"`
+	TemplateID     int32          `json:"template_id"`
+	Title          string         `json:"title"`
+	Description    sql.NullString `json:"description"`
+	Category       TaskCategory   `json:"category"`
+	DaysOffset     int32          `json:"days_offset"`
+	DependsOnIndex sql.NullInt32  `json:"depends_on_index"`
+	SortOrder      int32          `json:"sort_order"`
+	CreatedAt      time.Time      `json:"created_at"`
+	UpdatedAt      time.Time      `json:"updated_at"`
+}
+
+type TaskTemplates struct {
+	ID          int32          `json:"id"`
+	Name        string         `json:"name"`
+	Description sql.NullString `json:"description"`
+	CreatedAt   time.Time      `json:"created_at"`
+	UpdatedAt   time.Time      `json:"updated_at"`
+}
+
+type Tasks struct {
 	ID              int32          `json:"id"`
 	EventID         int32          `json:"event_id"`
 	Title           string         `json:"title"`
@@ -370,19 +1167,39 @@ type Task struct {
 	UpdatedAt       time.Time      `json:"updated_at"`
 }
 
-type TaskResource struct {
-	TaskID     int32     `json:"task_id"`
-	ResourceID int32     `json:"resource_id"`
-	AssignedAt time.Time `json:"assigned_at"`
+type Users struct {
+	ID           int32          `json:"id"`
+	Email        string         `json:"email"`
+	PasswordHash sql.NullString `json:"password_hash"`
+	Name         string         `json:"name"`
+	Role         UserRole       `json:"role"`
+	IsActive     bool           `json:"is_active"`
+	CreatedAt    time.Time      `json:"created_at"`
+	UpdatedAt    time.Time      `json:"updated_at"`
+	ClientID     sql.NullInt32  `json:"client_id"`
 }
 
-type User struct {
-	ID           int32     `json:"id"`
-	Email        string    `json:"email"`
-	PasswordHash string    `json:"password_hash"`
-	Name         string    `json:"name"`
-	Role         UserRole  `json:"role"`
-	IsActive     bool      `json:"is_active"`
-	CreatedAt    time.Time `json:"created_at"`
-	UpdatedAt    time.Time `json:"updated_at"`
+type Venues struct {
+	ID                 int32           `json:"id"`
+	Name               string          `json:"name"`
+	Address            string          `json:"address"`
+	Capacity           sql.NullInt32   `json:"capacity"`
+	HasKitchen         bool            `json:"has_kitchen"`
+	KitchenType        NullKitchenType `json:"kitchen_type"`
+	EquipmentAvailable []string        `json:"equipment_available"`
+	ParkingNotes       sql.NullString  `json:"parking_notes"`
+	LoadInNotes        sql.NullString  `json:"load_in_notes"`
+	ContactName        sql.NullString  `json:"contact_name"`
+	ContactPhone       sql.NullString  `json:"contact_phone"`
+	ContactEmail       sql.NullString  `json:"contact_email"`
+	Notes              sql.NullString  `json:"notes"`
+	IsActive           bool            `json:"is_active"`
+	CreatedAt          time.Time       `json:"created_at"`
+	UpdatedAt          time.Time       `json:"updated_at"`
+}
+
+type VerificationTokens struct {
+	Identifier string    `json:"identifier"`
+	Token      string    `json:"token"`
+	Expires    time.Time `json:"expires"`
 }

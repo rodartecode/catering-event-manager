@@ -68,6 +68,32 @@ WHERE id = $1;
 DELETE FROM resource_schedule
 WHERE task_id = $1;
 
+-- name: GetStationCapacity :one
+SELECT id, name, type, capacity FROM kitchen_stations WHERE id = $1;
+
+-- name: CheckStationConflicts :many
+-- Find all production tasks that overlap with the requested time range for a station
+SELECT
+    pt.id,
+    pt.name as task_name,
+    e.event_name,
+    pt.scheduled_start,
+    pt.scheduled_end
+FROM production_tasks pt
+JOIN events e ON pt.event_id = e.id
+WHERE pt.station_id = $1
+  AND tstzrange(pt.scheduled_start, pt.scheduled_end, '[)') && tstzrange($2::timestamptz, $3::timestamptz, '[)')
+  AND (sqlc.narg('exclude_task_id')::int IS NULL OR pt.id != sqlc.narg('exclude_task_id')::int)
+ORDER BY pt.scheduled_start;
+
+-- name: CountStationConcurrency :one
+-- Count production tasks that overlap with the requested time range for a station
+SELECT COUNT(*) as concurrent_count
+FROM production_tasks pt
+WHERE pt.station_id = $1
+  AND tstzrange(pt.scheduled_start, pt.scheduled_end, '[)') && tstzrange($2::timestamptz, $3::timestamptz, '[)')
+  AND (sqlc.narg('exclude_task_id')::int IS NULL OR pt.id != sqlc.narg('exclude_task_id')::int);
+
 -- name: GetScheduleEntryByID :one
 SELECT
     rs.id,

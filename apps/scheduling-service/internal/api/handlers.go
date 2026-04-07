@@ -5,10 +5,10 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/gofiber/fiber/v3"
 	"github.com/catering-event-manager/scheduling-service/internal/domain"
 	"github.com/catering-event-manager/scheduling-service/internal/logger"
 	"github.com/catering-event-manager/scheduling-service/internal/scheduler"
+	"github.com/gofiber/fiber/v3"
 )
 
 type HealthResponse struct {
@@ -26,6 +26,7 @@ func RegisterRoutes(app *fiber.App, db *sql.DB) {
 	// Initialize services
 	conflictService := scheduler.NewConflictService(db)
 	availabilityService := scheduler.NewAvailabilityService(db)
+	stationConflictService := scheduler.NewStationConflictService(db)
 
 	api := app.Group("/api/v1")
 
@@ -84,6 +85,52 @@ func RegisterRoutes(app *fiber.App, db *sql.DB) {
 			Int("conflict_count", len(result.Conflicts)).
 			Dur("duration_ms", duration).
 			Msg("Conflict check completed")
+
+		return c.JSON(result)
+	})
+
+	// POST /api/v1/scheduling/check-station-conflicts
+	scheduling.Post("/check-station-conflicts", func(c fiber.Ctx) error {
+		log := logger.Get()
+		startTime := time.Now()
+
+		var req domain.CheckStationConflictsRequest
+		if err := c.Bind().JSON(&req); err != nil {
+			log.Warn().Err(err).Msg("Invalid request body for check-station-conflicts")
+			return c.Status(fiber.StatusBadRequest).JSON(ErrorResponse{
+				Error:   "invalid_request",
+				Message: "Invalid request body",
+			})
+		}
+
+		result, err := stationConflictService.CheckStationConflicts(c.Context(), req)
+		if err != nil {
+			if domainErr, ok := err.(*domain.DomainError); ok {
+				status := fiber.StatusInternalServerError
+				switch domainErr.Code {
+				case domain.ErrCodeValidation:
+					status = fiber.StatusBadRequest
+				case domain.ErrCodeNotFound:
+					status = fiber.StatusNotFound
+				}
+				return c.Status(status).JSON(ErrorResponse{
+					Error:   string(domainErr.Code),
+					Message: domainErr.Message,
+				})
+			}
+			log.Error().Err(err).Msg("Failed to check station conflicts")
+			return c.Status(fiber.StatusInternalServerError).JSON(ErrorResponse{
+				Error:   "internal_error",
+				Message: "Failed to check station conflicts",
+			})
+		}
+
+		duration := time.Since(startTime)
+		log.Info().
+			Int32("station_id", req.StationID).
+			Int("concurrent_count", int(result.ConcurrentCount)).
+			Dur("duration_ms", duration).
+			Msg("Station conflict check completed")
 
 		return c.JSON(result)
 	})

@@ -176,6 +176,30 @@ async function runMigrations(db: TestDatabase): Promise<void> {
     END $$;
   `);
 
+  await db.execute(sql`
+    DO $$ BEGIN
+      CREATE TYPE station_type AS ENUM ('oven', 'grill', 'prep_counter', 'cold_storage', 'stovetop', 'fryer', 'mixer');
+    EXCEPTION
+      WHEN duplicate_object THEN null;
+    END $$;
+  `);
+
+  await db.execute(sql`
+    DO $$ BEGIN
+      CREATE TYPE prep_type AS ENUM ('marinate', 'bake', 'grill', 'plate', 'chop', 'mix', 'chill', 'fry', 'assemble', 'garnish');
+    EXCEPTION
+      WHEN duplicate_object THEN null;
+    END $$;
+  `);
+
+  await db.execute(sql`
+    DO $$ BEGIN
+      CREATE TYPE production_task_status AS ENUM ('pending', 'in_progress', 'completed', 'skipped');
+    EXCEPTION
+      WHEN duplicate_object THEN null;
+    END $$;
+  `);
+
   // Create tables (clients first for FK references)
   await db.execute(sql`
     CREATE TABLE IF NOT EXISTS clients (
@@ -260,6 +284,32 @@ async function runMigrations(db: TestDatabase): Promise<void> {
       created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
     )
+  `);
+
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS kitchen_stations (
+      id SERIAL PRIMARY KEY,
+      name VARCHAR(255) NOT NULL,
+      type station_type NOT NULL,
+      capacity INTEGER NOT NULL DEFAULT 1,
+      venue_id INTEGER REFERENCES venues(id) ON DELETE SET NULL,
+      notes TEXT,
+      is_active BOOLEAN NOT NULL DEFAULT true,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+      updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+    )
+  `);
+
+  await db.execute(sql`
+    CREATE INDEX IF NOT EXISTS idx_kitchen_stations_type ON kitchen_stations(type)
+  `);
+
+  await db.execute(sql`
+    CREATE INDEX IF NOT EXISTS idx_kitchen_stations_venue_id ON kitchen_stations(venue_id)
+  `);
+
+  await db.execute(sql`
+    CREATE INDEX IF NOT EXISTS idx_kitchen_stations_is_active ON kitchen_stations(is_active)
   `);
 
   await db.execute(sql`
@@ -462,6 +512,7 @@ async function runMigrations(db: TestDatabase): Promise<void> {
       category menu_item_category NOT NULL,
       allergens TEXT[] DEFAULT '{}',
       dietary_tags dietary_tag[] DEFAULT '{}',
+      production_steps JSONB,
       is_active BOOLEAN NOT NULL DEFAULT true,
       created_by INTEGER NOT NULL REFERENCES users(id),
       created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -492,6 +543,45 @@ async function runMigrations(db: TestDatabase): Promise<void> {
       created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
       UNIQUE(event_menu_id, menu_item_id)
     )
+  `);
+
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS production_tasks (
+      id SERIAL PRIMARY KEY,
+      event_id INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+      menu_item_id INTEGER REFERENCES menu_items(id) ON DELETE SET NULL,
+      station_id INTEGER REFERENCES kitchen_stations(id) ON DELETE SET NULL,
+      name VARCHAR(255) NOT NULL,
+      prep_type prep_type NOT NULL,
+      duration_minutes INTEGER NOT NULL,
+      offset_minutes INTEGER NOT NULL,
+      scheduled_start TIMESTAMP WITH TIME ZONE,
+      scheduled_end TIMESTAMP WITH TIME ZONE,
+      status production_task_status NOT NULL DEFAULT 'pending',
+      servings INTEGER,
+      assigned_to INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      depends_on_task_id INTEGER,
+      notes TEXT,
+      is_auto_generated BOOLEAN NOT NULL DEFAULT false,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+      updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+    )
+  `);
+
+  await db.execute(sql`
+    CREATE INDEX IF NOT EXISTS idx_production_tasks_event_id ON production_tasks(event_id)
+  `);
+
+  await db.execute(sql`
+    CREATE INDEX IF NOT EXISTS idx_production_tasks_station_id ON production_tasks(station_id)
+  `);
+
+  await db.execute(sql`
+    CREATE INDEX IF NOT EXISTS idx_production_tasks_status ON production_tasks(status)
+  `);
+
+  await db.execute(sql`
+    CREATE INDEX IF NOT EXISTS idx_production_tasks_scheduled_start ON production_tasks(scheduled_start)
   `);
 
   await db.execute(sql`
@@ -591,6 +681,8 @@ async function runMigrations(db: TestDatabase): Promise<void> {
     'event_menu_items',
     'event_menus',
     'menu_items',
+    'kitchen_stations',
+    'production_tasks',
     'expenses',
     'notification_preferences',
     'notifications',
@@ -614,7 +706,7 @@ async function runMigrations(db: TestDatabase): Promise<void> {
 export async function cleanDatabase(db: TestDatabase): Promise<void> {
   // Truncate tables in order (respecting foreign key constraints)
   await db.execute(
-    sql`TRUNCATE verification_tokens, notification_preferences, notifications, documents, event_menu_items, event_menus, menu_items, communications, payments, invoice_line_items, invoices, expenses, resource_schedule, task_resources, staff_skills, staff_availability, tasks, event_status_log, events, venues, resources, users, clients, task_template_items, task_templates RESTART IDENTITY CASCADE`
+    sql`TRUNCATE verification_tokens, notification_preferences, notifications, documents, production_tasks, event_menu_items, event_menus, menu_items, communications, payments, invoice_line_items, invoices, expenses, resource_schedule, task_resources, staff_skills, staff_availability, tasks, event_status_log, events, kitchen_stations, venues, resources, users, clients, task_template_items, task_templates RESTART IDENTITY CASCADE`
   );
 }
 
