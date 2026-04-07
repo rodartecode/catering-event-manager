@@ -44,6 +44,7 @@ src/server/routers/
 ├── document.ts    # Document management (Supabase Storage)
 ├── expense.ts     # Expense tracking
 ├── invoice.ts     # Invoicing & PDF export
+├── kitchen-production.ts # Kitchen stations & production scheduling
 ├── menu.ts        # Menu planning & dietary tracking
 ├── payment.ts     # Payment recording
 ├── analytics.ts   # Reporting & profitability

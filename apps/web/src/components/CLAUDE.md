@@ -15,6 +15,7 @@ components/
 ├── events/          # EventCard, EventForm, EventFormFields, status dialogs
 ├── expenses/        # ExpenseForm, ExpenseList, ExpenseSummaryCard
 ├── invoices/        # InvoiceDetail, InvoiceForm, InvoiceList, badges
+├── kitchen-production/ # StationCard, StationForm, ProductionTimeline, ProductionTaskCard, badges
 ├── menus/           # EventMenuBuilder, AddMenuItemDialog, dietary/category badges
 ├── notifications/   # NotificationBell, NotificationDropdown
 ├── payments/        # PaymentList, RecordPaymentDialog
