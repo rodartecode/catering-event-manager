@@ -13,13 +13,18 @@ type Querier interface {
 	// Find all existing schedule entries that overlap with the requested time range
 	// for any of the specified resources
 	CheckConflicts(ctx context.Context, arg CheckConflictsParams) ([]CheckConflictsRow, error)
+	// Find all production tasks that overlap with the requested time range for a station
+	CheckStationConflicts(ctx context.Context, arg CheckStationConflictsParams) ([]CheckStationConflictsRow, error)
+	// Count production tasks that overlap with the requested time range for a station
+	CountStationConcurrency(ctx context.Context, arg CountStationConcurrencyParams) (int64, error)
 	CreateScheduleEntry(ctx context.Context, arg CreateScheduleEntryParams) (ResourceSchedule, error)
 	DeleteScheduleEntriesByTask(ctx context.Context, taskID sql.NullInt32) error
 	DeleteScheduleEntry(ctx context.Context, id int32) error
-	GetResourceByID(ctx context.Context, id int32) (Resource, error)
+	GetResourceByID(ctx context.Context, id int32) (GetResourceByIDRow, error)
 	GetResourceSchedule(ctx context.Context, arg GetResourceScheduleParams) ([]GetResourceScheduleRow, error)
 	GetScheduleEntryByID(ctx context.Context, id int32) (GetScheduleEntryByIDRow, error)
-	ListResources(ctx context.Context, arg ListResourcesParams) ([]Resource, error)
+	GetStationCapacity(ctx context.Context, id int32) (GetStationCapacityRow, error)
+	ListResources(ctx context.Context, arg ListResourcesParams) ([]ListResourcesRow, error)
 }
 
 var _ Querier = (*Queries)(nil)

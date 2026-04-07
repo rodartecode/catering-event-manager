@@ -93,6 +93,99 @@ func (q *Queries) CheckConflicts(ctx context.Context, arg CheckConflictsParams) 
 	return items, nil
 }
 
+const checkStationConflicts = `-- name: CheckStationConflicts :many
+SELECT
+    pt.id,
+    pt.name as task_name,
+    e.event_name,
+    pt.scheduled_start,
+    pt.scheduled_end
+FROM production_tasks pt
+JOIN events e ON pt.event_id = e.id
+WHERE pt.station_id = $1
+  AND tstzrange(pt.scheduled_start, pt.scheduled_end, '[)') && tstzrange($2::timestamptz, $3::timestamptz, '[)')
+  AND ($4::int IS NULL OR pt.id != $4::int)
+ORDER BY pt.scheduled_start
+`
+
+type CheckStationConflictsParams struct {
+	StationID     sql.NullInt32 `json:"station_id"`
+	Column2       time.Time     `json:"column_2"`
+	Column3       time.Time     `json:"column_3"`
+	ExcludeTaskID sql.NullInt32 `json:"exclude_task_id"`
+}
+
+type CheckStationConflictsRow struct {
+	ID             int32        `json:"id"`
+	TaskName       string       `json:"task_name"`
+	EventName      string       `json:"event_name"`
+	ScheduledStart sql.NullTime `json:"scheduled_start"`
+	ScheduledEnd   sql.NullTime `json:"scheduled_end"`
+}
+
+// Find all production tasks that overlap with the requested time range for a station
+func (q *Queries) CheckStationConflicts(ctx context.Context, arg CheckStationConflictsParams) ([]CheckStationConflictsRow, error) {
+	rows, err := q.db.QueryContext(ctx, checkStationConflicts,
+		arg.StationID,
+		arg.Column2,
+		arg.Column3,
+		arg.ExcludeTaskID,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []CheckStationConflictsRow
+	for rows.Next() {
+		var i CheckStationConflictsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.TaskName,
+			&i.EventName,
+			&i.ScheduledStart,
+			&i.ScheduledEnd,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const countStationConcurrency = `-- name: CountStationConcurrency :one
+SELECT COUNT(*) as concurrent_count
+FROM production_tasks pt
+WHERE pt.station_id = $1
+  AND tstzrange(pt.scheduled_start, pt.scheduled_end, '[)') && tstzrange($2::timestamptz, $3::timestamptz, '[)')
+  AND ($4::int IS NULL OR pt.id != $4::int)
+`
+
+type CountStationConcurrencyParams struct {
+	StationID     sql.NullInt32 `json:"station_id"`
+	Column2       time.Time     `json:"column_2"`
+	Column3       time.Time     `json:"column_3"`
+	ExcludeTaskID sql.NullInt32 `json:"exclude_task_id"`
+}
+
+// Count production tasks that overlap with the requested time range for a station
+func (q *Queries) CountStationConcurrency(ctx context.Context, arg CountStationConcurrencyParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countStationConcurrency,
+		arg.StationID,
+		arg.Column2,
+		arg.Column3,
+		arg.ExcludeTaskID,
+	)
+	var concurrent_count int64
+	err := row.Scan(&concurrent_count)
+	return concurrent_count, err
+}
+
 const createScheduleEntry = `-- name: CreateScheduleEntry :one
 INSERT INTO resource_schedule (resource_id, event_id, task_id, start_time, end_time, notes)
 VALUES ($1, $2, $3, $4, $5, $6)
@@ -158,9 +251,20 @@ FROM resources
 WHERE id = $1
 `
 
-func (q *Queries) GetResourceByID(ctx context.Context, id int32) (Resource, error) {
+type GetResourceByIDRow struct {
+	ID          int32          `json:"id"`
+	Name        string         `json:"name"`
+	Type        ResourceType   `json:"type"`
+	HourlyRate  sql.NullString `json:"hourly_rate"`
+	IsAvailable bool           `json:"is_available"`
+	Notes       sql.NullString `json:"notes"`
+	CreatedAt   time.Time      `json:"created_at"`
+	UpdatedAt   time.Time      `json:"updated_at"`
+}
+
+func (q *Queries) GetResourceByID(ctx context.Context, id int32) (GetResourceByIDRow, error) {
 	row := q.db.QueryRowContext(ctx, getResourceByID, id)
-	var i Resource
+	var i GetResourceByIDRow
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
@@ -303,6 +407,29 @@ func (q *Queries) GetScheduleEntryByID(ctx context.Context, id int32) (GetSchedu
 	return i, err
 }
 
+const getStationCapacity = `-- name: GetStationCapacity :one
+SELECT id, name, type, capacity FROM kitchen_stations WHERE id = $1
+`
+
+type GetStationCapacityRow struct {
+	ID       int32       `json:"id"`
+	Name     string      `json:"name"`
+	Type     StationType `json:"type"`
+	Capacity int32       `json:"capacity"`
+}
+
+func (q *Queries) GetStationCapacity(ctx context.Context, id int32) (GetStationCapacityRow, error) {
+	row := q.db.QueryRowContext(ctx, getStationCapacity, id)
+	var i GetStationCapacityRow
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Type,
+		&i.Capacity,
+	)
+	return i, err
+}
+
 const listResources = `-- name: ListResources :many
 SELECT id, name, type, hourly_rate, is_available, notes, created_at, updated_at
 FROM resources
@@ -320,7 +447,18 @@ type ListResourcesParams struct {
 	LimitCount  int32            `json:"limit_count"`
 }
 
-func (q *Queries) ListResources(ctx context.Context, arg ListResourcesParams) ([]Resource, error) {
+type ListResourcesRow struct {
+	ID          int32          `json:"id"`
+	Name        string         `json:"name"`
+	Type        ResourceType   `json:"type"`
+	HourlyRate  sql.NullString `json:"hourly_rate"`
+	IsAvailable bool           `json:"is_available"`
+	Notes       sql.NullString `json:"notes"`
+	CreatedAt   time.Time      `json:"created_at"`
+	UpdatedAt   time.Time      `json:"updated_at"`
+}
+
+func (q *Queries) ListResources(ctx context.Context, arg ListResourcesParams) ([]ListResourcesRow, error) {
 	rows, err := q.db.QueryContext(ctx, listResources,
 		arg.Type,
 		arg.IsAvailable,
@@ -331,9 +469,9 @@ func (q *Queries) ListResources(ctx context.Context, arg ListResourcesParams) ([
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Resource
+	var items []ListResourcesRow
 	for rows.Next() {
-		var i Resource
+		var i ListResourcesRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
