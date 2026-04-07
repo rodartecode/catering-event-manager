@@ -59,18 +59,16 @@ _(No items — all P1 features complete)_
 
 ## P3 — Domain Differentiators
 
-### kitchen-production
+### ~~kitchen-production~~ DONE (2026-04-07)
 **Kitchen production scheduling and station allocation**
-- Scope: L
-- Touches: schema, api, ui, go-service
-- Depends on: `menu-planning`
-- Done when:
-  - `kitchen_stations` table: name, type (oven/grill/prep_counter/cold_storage), capacity
-  - `production_tasks` table: menu_item_id, event_id, station_id, start_time, duration, prep_type (marinate/bake/plate/etc)
-  - Production timeline view: work backwards from event time (e.g., "marinate 24h before", "bake 4h before")
-  - Station conflict detection via Go scheduler (stations as schedulable resources)
-  - Auto-generate production tasks from menu items (each dish = set of prep steps)
-- Notes: Extends task templates — menu-driven production templates. This is what separates professional catering software from generic PM tools. Start with manual production task creation, then add auto-generation.
+- 2 tables (kitchen_stations, production_tasks) + 3 enums (station_type, prep_type, production_task_status)
+- productionSteps JSONB on menu_items for auto-generation templates
+- kitchenProduction tRPC router: 14 procedures (station CRUD, task CRUD, timeline, auto-generate)
+- menu.updateProductionSteps procedure for step template editing
+- 9 components: StationCard, StationForm, ProductionTimeline, ProductionTaskCard, ProductionTaskForm, ProductionStepsEditor, badges, skeleton
+- 4 pages: station list, new/detail, event production timeline
+- Go endpoint: POST /check-station-conflicts (capacity-aware conflict detection)
+- 20 router tests + 2 Go tests
 
 ### ~~venue-database~~ DONE (PR #50, 2026-04-03)
 **Venue profiles with logistics intelligence**
