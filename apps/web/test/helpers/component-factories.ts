@@ -529,3 +529,20 @@ export function mockProductionTask(
     ...overrides,
   };
 }
+
+/**
+ * Mock a timeline item (task + station/assigned context) for ProductionTimeline tests.
+ */
+export function mockTimelineItem(
+  overrides: Partial<{
+    task: ReturnType<typeof mockProductionTask>;
+    stationName: string | null;
+    assignedToName: string | null;
+  }> = {}
+) {
+  return {
+    task: overrides.task ?? mockProductionTask(),
+    stationName: overrides.stationName ?? null,
+    assignedToName: overrides.assignedToName ?? null,
+  };
+}
