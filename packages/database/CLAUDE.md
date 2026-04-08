@@ -33,6 +33,7 @@ src/schema/
 ├── invoices.ts          # References events, users
 ├── invoice-line-items.ts # References invoices
 ├── payments.ts          # References invoices, users
+├── kitchen-production.ts # Kitchen stations + production tasks (station_type, prep_type, production_task_status enums)
 ├── notifications.ts     # User notifications (notification_type enum)
 ├── notification-preferences.ts # Per-user per-type in-app/email toggles
 ├── portal-access-log.ts # Client portal access audit log
@@ -67,6 +68,15 @@ notificationTypeEnum: ['task_assigned', 'status_changed', 'overdue', 'follow_up_
 
 // Staff Skills
 staffSkillEnum: ['food_safety_cert', 'bartender', 'sommelier', 'lead_chef', 'sous_chef', 'prep_cook', 'pastry_chef', 'server', 'event_coordinator', 'barista']
+
+// Kitchen Station Types
+stationTypeEnum: ['oven', 'grill', 'prep_counter', 'cold_storage', 'stovetop', 'fryer', 'mixer']
+
+// Prep Types
+prepTypeEnum: ['marinate', 'bake', 'grill', 'plate', 'chop', 'mix', 'chill', 'fry', 'assemble', 'garnish']
+
+// Production Task Status
+productionTaskStatusEnum: ['pending', 'in_progress', 'completed', 'skipped']
 ```
 
 ## Schema Patterns

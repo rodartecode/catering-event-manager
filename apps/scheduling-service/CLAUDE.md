@@ -44,6 +44,17 @@ internal/
 }
 ```
 
+### POST `/scheduling/check-station-conflicts`
+```json
+{
+  "station_id": 1,
+  "start_time": "2026-04-10T08:00:00Z",
+  "end_time": "2026-04-10T10:00:00Z",
+  "exclude_task_id": null
+}
+```
+Capacity-aware: returns conflict only when concurrent tasks >= station capacity.
+
 ### GET `/resource-availability?resource_id=1&start_date=...&end_date=...`
 
 ### GET `/health`

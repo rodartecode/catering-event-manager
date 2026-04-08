@@ -621,4 +621,43 @@ export const menuRouter = router({
       events: Array.from(data.eventNames),
     }));
   }),
+
+  // ── Production Steps Template ───────────────────────────────────
+
+  updateProductionSteps: adminProcedure
+    .input(
+      z.object({
+        menuItemId: z.number().positive(),
+        productionSteps: z
+          .array(
+            z.object({
+              name: z.string().min(1).max(255),
+              prepType: z.string().min(1),
+              stationType: z.string().min(1),
+              durationMinutes: z.number().int().min(1),
+              offsetMinutes: z.number().int(),
+            })
+          )
+          .nullable(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const [item] = await ctx.db
+        .update(menuItems)
+        .set({
+          productionSteps: input.productionSteps,
+          updatedAt: new Date(),
+        })
+        .where(eq(menuItems.id, input.menuItemId))
+        .returning();
+      if (!item) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Menu item not found' });
+      }
+      logger.info('Production steps updated', {
+        menuItemId: input.menuItemId,
+        stepCount: input.productionSteps?.length ?? 0,
+        context: 'menu.updateProductionSteps',
+      });
+      return item;
+    }),
 });

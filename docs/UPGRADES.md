@@ -1,6 +1,6 @@
 # Pending Version Upgrades
 
-> Last reviewed: 2026-04-01
+> Last reviewed: 2026-04-08
 
 Tracks major dependency upgrades — blockers, peer dep constraints, and recommended upgrade path.
 
@@ -19,6 +19,7 @@ Tracks major dependency upgrades — blockers, peer dep constraints, and recomme
 | Batch patch/minor upgrades (Biome, Next.js, Turbo, Playwright, Supabase, React Query, Resend, axe-core) | #44 | 2026-04-01 |
 | Go lib/pq 1.12.0 → 1.12.1 + golang.org/x/* security updates | #44 | 2026-04-01 |
 | Remove deprecated @types/bcryptjs | #44 | 2026-04-01 |
+| Go 1.26.1 → 1.26.2 (crypto/x509, crypto/tls CVEs) | #53 | 2026-04-08 |
 
 ---
 

@@ -97,6 +97,8 @@ func CleanupTables(t *testing.T, db *sql.DB) {
 
 	// Truncate in reverse dependency order
 	tables := []string{
+		"production_tasks",
+		"kitchen_stations",
 		"resource_schedule",
 		"task_resources",
 		"tasks",
@@ -230,6 +232,46 @@ func initSchema(db *sql.DB) error {
 		assigned_at TIMESTAMP NOT NULL DEFAULT NOW(),
 		UNIQUE(task_id, resource_id)
 	);
+
+	-- Kitchen production enums and tables
+	CREATE TYPE station_type AS ENUM ('oven', 'grill', 'prep_counter', 'cold_storage', 'stovetop', 'fryer', 'mixer');
+	CREATE TYPE prep_type AS ENUM ('marinate', 'bake', 'grill', 'plate', 'chop', 'mix', 'chill', 'fry', 'assemble', 'garnish');
+	CREATE TYPE production_task_status AS ENUM ('pending', 'in_progress', 'completed', 'skipped');
+
+	CREATE TABLE kitchen_stations (
+		id SERIAL PRIMARY KEY,
+		name VARCHAR(255) NOT NULL,
+		type station_type NOT NULL,
+		capacity INTEGER NOT NULL DEFAULT 1,
+		venue_id INTEGER,
+		notes TEXT,
+		is_active BOOLEAN NOT NULL DEFAULT true,
+		created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+		updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+	);
+
+	CREATE TABLE production_tasks (
+		id SERIAL PRIMARY KEY,
+		event_id INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+		menu_item_id INTEGER,
+		station_id INTEGER REFERENCES kitchen_stations(id) ON DELETE SET NULL,
+		name VARCHAR(255) NOT NULL,
+		prep_type prep_type NOT NULL,
+		duration_minutes INTEGER NOT NULL,
+		offset_minutes INTEGER NOT NULL,
+		scheduled_start TIMESTAMPTZ,
+		scheduled_end TIMESTAMPTZ,
+		status production_task_status NOT NULL DEFAULT 'pending',
+		servings INTEGER,
+		assigned_to INTEGER REFERENCES users(id) ON DELETE SET NULL,
+		depends_on_task_id INTEGER,
+		notes TEXT,
+		is_auto_generated BOOLEAN NOT NULL DEFAULT false,
+		created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+		updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+	);
+	CREATE INDEX idx_production_tasks_station_id ON production_tasks(station_id);
+	CREATE INDEX idx_production_tasks_station_time ON production_tasks(station_id, scheduled_start, scheduled_end);
 	`
 
 	_, err := db.Exec(schema)
