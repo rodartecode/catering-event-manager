@@ -17,7 +17,7 @@
 - Frontend: Next.js 16.2.1 + React 19.2.4 + Tailwind CSS 4.2.2
 - API: tRPC v11.16.0 (type-safe RPC)
 - Database: PostgreSQL 17 + Drizzle ORM 0.45.2
-- Scheduling: Go 1.26.1 + Fiber v3.1.0 + SQLC 1.27+
+- Scheduling: Go 1.26.2 + Fiber v3.1.0 + SQLC 1.27+
 - Monorepo: pnpm 10+ + Turborepo 2.8.21
 - Testing: Vitest 4.1.2 + Playwright 1.58.2 + TestContainers
 - Linting & Formatting: Biome 2.4.9
