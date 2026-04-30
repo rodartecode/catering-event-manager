@@ -8,6 +8,7 @@
   "outputDirectory": ".next",
   "crons": [
     { "path": "/api/cron/follow-ups", "schedule": "0 9 * * *" },
-    { "path": "/api/cron/notifications-digest", "schedule": "0 8,14,20 * * *" }
+    { "path": "/api/cron/notifications-digest", "schedule": "0 8,14,20 * * *" },
+    { "path": "/api/cron/reset-demo", "schedule": "0 2 * * 0" }
   ]
 }

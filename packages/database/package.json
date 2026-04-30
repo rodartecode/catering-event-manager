@@ -16,6 +16,10 @@
     "./client": {
       "types": "./src/client.ts",
       "default": "./src/client.ts"
+    },
+    "./seed-demo": {
+      "types": "./src/seed-demo.ts",
+      "default": "./src/seed-demo.ts"
     }
   },
   "typesVersions": {
@@ -25,6 +29,9 @@
       ],
       "client": [
         "./src/client.ts"
+      ],
+      "seed-demo": [
+        "./src/seed-demo.ts"
       ]
     }
   },
@@ -33,7 +40,8 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "db:seed": "tsx src/seed.ts"
+    "db:seed": "tsx src/seed.ts",
+    "db:seed:demo": "tsx src/seed-demo.ts"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

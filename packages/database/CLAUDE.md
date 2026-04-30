@@ -138,6 +138,19 @@ pnpm db:seed
 # Manager: manager@example.com / password123
 ```
 
+### Demo Seed (showcase data)
+```bash
+# Destructive: TRUNCATEs every app table, then reseeds with showcase data
+# covering vendors, kitchen production, venues, staff skills, scheduling, etc.
+DEMO_RESET_ALLOWED=true pnpm db:seed:demo
+
+# Default credentials after demo seeding:
+# Owner:        admin@demo.catering   / demo123!
+# Ops Manager:  manager@demo.catering / demo123!
+```
+
+The `seedDemo()` function is exported from `@catering-event-manager/database/seed-demo` and is invoked weekly by `/api/cron/reset-demo` on the demo deployment (Sundays 02:00 UTC). Both `DEMO_RESET_ALLOWED=true` and `NEXT_PUBLIC_IS_DEMO=true` must be set or the cron returns 403.
+
 ## Cross-Service Type Safety
 
 Both services share the same PostgreSQL schema:

@@ -31,6 +31,7 @@ All database commands run from `packages/database/`:
 | `pnpm db:migrate` | Apply pending migrations | Production deployments |
 | `pnpm db:studio` | Launch Drizzle Studio on :4983 | Visual DB exploration |
 | `pnpm db:seed` | Populate development data | After fresh db:push |
+| `pnpm db:seed:demo` | Wipe and reseed demo showcase data | Demo env only (requires `DEMO_RESET_ALLOWED=true`) |
 
 **After schema changes** - regenerate types for both services:
 ```bash
