@@ -20,6 +20,10 @@
     "./seed-demo": {
       "types": "./src/seed-demo.ts",
       "default": "./src/seed-demo.ts"
+    },
+    "./migrate": {
+      "types": "./src/migrate.ts",
+      "default": "./src/migrate.ts"
     }
   },
   "typesVersions": {
@@ -32,6 +36,9 @@
       ],
       "seed-demo": [
         "./src/seed-demo.ts"
+      ],
+      "migrate": [
+        "./src/migrate.ts"
       ]
     }
   },
