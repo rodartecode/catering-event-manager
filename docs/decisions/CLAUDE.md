@@ -61,4 +61,3 @@ cat docs/decisions/0002-*.md
 
 - **Project Root**: `../../CLAUDE.md`
 - **Learnings**: `../learnings.md`
-- **Implementation Guides**: `../implementation-guides/`

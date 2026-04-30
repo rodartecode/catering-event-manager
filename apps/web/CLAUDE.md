@@ -179,4 +179,3 @@ pnpm type-check
 - **Server Patterns**: `src/server/CLAUDE.md`
 - **Database Schema**: `../../packages/database/CLAUDE.md`
 - **Go Service**: `../../apps/scheduling-service/CLAUDE.md`
-- **Implementation Guides**: `../../docs/implementation-guides/`

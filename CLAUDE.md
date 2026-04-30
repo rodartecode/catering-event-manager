@@ -1,5 +1,7 @@
 # CLAUDE.md
 
+> **For humans**: this file (and the `CLAUDE.md` files in subdirectories) is context for AI coding assistants. Start with [README.md](README.md) instead.
+
 Guidance for Claude Code when working with this repository.
 
 ## Project Overview
@@ -44,13 +46,9 @@ packages/
 ├── types/                 # Shared TypeScript types
 └── config/                # Shared configurations
 
-specs/
-└── 001-event-lifecycle-management/  # Feature specification
-
 docs/
 ├── decisions/             # Architecture Decision Records
-├── implementation-guides/ # Step-by-step guides
-└── learnings.md          # Debugging patterns & solutions
+└── learnings.md           # Debugging patterns & solutions
 ```
 
 ## Session Context
@@ -83,27 +81,7 @@ docs/
 
 ## Implementation Status
 
-- **Phase 1**: ✅ Monorepo structure, dependencies, Docker Compose
-- **Phase 2**: ✅ Database schema, auth, tRPC, Go service foundation
-- **Phase 3**: ✅ Event management (create, track, status, archive)
-
-See `specs/001-event-lifecycle-management/tasks.md` for task breakdown.
-
-## Feature Specifications
-
-Detailed user stories: `specs/001-event-lifecycle-management/spec.md`
-
-**Priority Order**: P1 Event Management → P2 Task Management → P3 Resource Scheduling → P4 Analytics → P5 Client Communication
-
-## Constitution Principles
-
-See `.specify/constitution.md` for 6 core principles:
-1. Technology Excellence
-2. Modular Architecture
-3. Test-First Development
-4. API-First Design
-5. Observability & Quality
-6. Continuous Learning
+All phases shipped — see `README.md` for the feature list and `docs/UPGRADES.md` for dependency state.
 
 ## Project Tracking
 

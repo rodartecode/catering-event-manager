@@ -2,7 +2,31 @@
   "name": "catering-event-manager",
   "version": "1.0.0",
   "private": true,
-  "description": "Catering event lifecycle management system",
+  "description": "End-to-end event lifecycle management for catering companies — Next.js 16 + Go Fiber v3 monorepo with PostgreSQL, tRPC, and Drizzle ORM.",
+  "homepage": "https://catering-event-manager.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rodartecode/catering-event-manager.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rodartecode/catering-event-manager/issues"
+  },
+  "license": "MIT",
+  "author": "Jesse Rodarte",
+  "keywords": [
+    "nextjs",
+    "react",
+    "typescript",
+    "trpc",
+    "drizzle-orm",
+    "postgresql",
+    "golang",
+    "fiber",
+    "monorepo",
+    "turborepo",
+    "catering",
+    "event-management"
+  ],
   "pnpm": {
     "overrides": {
       "drizzle-orm": "$drizzle-orm",
