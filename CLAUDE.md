@@ -71,7 +71,7 @@ docs/
 
 | Category | Technology | Version |
 |----------|------------|---------|
-| Runtime | Node.js | 20 LTS |
+| Runtime | Node.js | 22 LTS |
 | Runtime | Go | 1.26+ |
 | Database | PostgreSQL | 17 |
 | Frontend | Next.js | 16.2+ |

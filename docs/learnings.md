@@ -209,3 +209,9 @@ Example:
 **Problem**: Committing only migration meta JSON files (in `migrations/meta/`) caused lint-staged to fail — Biome matched them via `*.json` glob but they're in an ignored path, so Biome exited with "No files were processed" error
 **Solution**: Added `--no-errors-on-unmatched` flag to the Biome command in `package.json` lint-staged config. This tells Biome to exit 0 when all matched files are ignored.
 **Context**: This affects any commit that only touches files in Biome-ignored directories (e.g. migration snapshots, `.next/`, `.vercel/`)
+
+### [2026-04-29] Node 20 → 22 LTS bump unblocked Dependabot npm batch
+
+**Problem**: Dependabot npm minor-and-patch group PR (#58) failed Vitest with `TypeError: webidl.util.markAsUncloneable is not a function`. The bundle bumped `undici` 7.24.6 → 8.1.0 transitively (via `@supabase/supabase-js` 2.104, `next` 16.2.4, `resend` 6.12), and undici 8 dropped Node 20 support — `webidl.util.markAsUncloneable` is only present on Node 22+.
+**Solution**: Bumped `NODE_VERSION` (CI) and `engines.node` to 22, updated `apps/web/Dockerfile` to `node:22-alpine`, refreshed CLAUDE.md / README.md / CONTRIBUTING.md / docs/{DEPLOYMENT,PERFORMANCE,migration-strat}.md. Vercel projects also need Project Settings → Node.js Version → 22.x verified.
+**Context**: Whenever a Dependabot batch fails with `webidl.util.markAsUncloneable`, look for an undici major bump in the lockfile diff — it's the canonical signal. Node 20 is also being force-removed from GitHub-hosted runners on 2026-09-16, so this bump was overdue.
