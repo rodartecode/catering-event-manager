@@ -6,7 +6,7 @@ Thank you for your interest in contributing! This guide will help you get starte
 
 ### Prerequisites
 
-- Node.js 20 LTS
+- Node.js 22 LTS
 - pnpm 10+
 - Go 1.26+
 - Docker and Docker Compose

@@ -334,7 +334,7 @@ git push origin main
 
 ### Build Dependencies
 
-- **Node.js**: 20 LTS
+- **Node.js**: 22 LTS
 - **pnpm**: 10+
 - **Go**: 1.26+
 - **Docker**: 24+
@@ -1731,7 +1731,7 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '20'
+        node-version: '22'
         cache: 'pnpm'
 
     - name: Setup pnpm
