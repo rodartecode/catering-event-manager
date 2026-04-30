@@ -10,6 +10,7 @@ import {
   createEvent,
   createExpense,
   createUser,
+  createVendor,
   resetFactoryCounter,
 } from '../../../test/helpers/factories';
 import {
@@ -146,6 +147,62 @@ describe('expense router', () => {
           expenseDate: new Date(),
         })
       ).rejects.toThrow();
+    });
+
+    it('creates an expense linked to a managed vendor', async () => {
+      const caller = createAdminCaller(db);
+      const client = await createClient(db);
+      const event = await createEvent(db, client.id, 1);
+      const vendor = await createVendor(db, { companyName: 'Floral Co' });
+
+      const result = await caller.expense.create({
+        eventId: event.id,
+        category: 'decor',
+        description: 'Centerpieces',
+        amount: '300.00',
+        vendorId: vendor.id,
+        expenseDate: new Date('2026-04-01'),
+      });
+
+      expect(result.vendorId).toBe(vendor.id);
+      expect(result.vendor).toBeNull();
+    });
+
+    it('allows both vendorId and free-text vendor to coexist', async () => {
+      const caller = createAdminCaller(db);
+      const client = await createClient(db);
+      const event = await createEvent(db, client.id, 1);
+      const vendor = await createVendor(db, { companyName: 'Floral Co' });
+
+      const result = await caller.expense.create({
+        eventId: event.id,
+        category: 'decor',
+        description: 'Centerpieces',
+        amount: '300.00',
+        vendor: 'Floral Co (subcontractor)',
+        vendorId: vendor.id,
+        expenseDate: new Date('2026-04-01'),
+      });
+
+      expect(result.vendorId).toBe(vendor.id);
+      expect(result.vendor).toBe('Floral Co (subcontractor)');
+    });
+
+    it('rejects when vendorId references a missing vendor', async () => {
+      const caller = createAdminCaller(db);
+      const client = await createClient(db);
+      const event = await createEvent(db, client.id, 1);
+
+      await expect(
+        caller.expense.create({
+          eventId: event.id,
+          category: 'decor',
+          description: 'x',
+          amount: '10.00',
+          vendorId: 9999,
+          expenseDate: new Date(),
+        })
+      ).rejects.toThrow('Vendor not found');
     });
   });
 

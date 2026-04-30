@@ -99,6 +99,20 @@
       "when": 1775593155270,
       "tag": "0013_round_newton_destine",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1777513343591,
+      "tag": "0014_majestic_microchip",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1777513400000,
+      "tag": "0015_enable_vendor_rls",
+      "breakpoints": true
     }
   ]
 }

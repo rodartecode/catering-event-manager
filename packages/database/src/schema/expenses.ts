@@ -11,6 +11,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import { events } from './events';
 import { users } from './users';
+import { vendors } from './vendors';
 
 export const expenseCategoryEnum = pgEnum('expense_category', [
   'labor',
@@ -34,6 +35,7 @@ export const expenses = pgTable(
     description: varchar('description', { length: 500 }).notNull(),
     amount: numeric('amount', { precision: 10, scale: 2 }).notNull(),
     vendor: varchar('vendor', { length: 255 }),
+    vendorId: integer('vendor_id').references(() => vendors.id, { onDelete: 'set null' }),
     expenseDate: timestamp('expense_date', { withTimezone: true }).notNull(),
     notes: text('notes'),
     createdBy: integer('created_by')
@@ -46,5 +48,6 @@ export const expenses = pgTable(
     eventIdIdx: index('idx_expenses_event_id').on(table.eventId),
     categoryIdx: index('idx_expenses_category').on(table.category),
     expenseDateIdx: index('idx_expenses_expense_date').on(table.expenseDate),
+    vendorIdIdx: index('idx_expenses_vendor_id').on(table.vendorId),
   })
 );

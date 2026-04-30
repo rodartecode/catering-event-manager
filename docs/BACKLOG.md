@@ -104,18 +104,16 @@ _(No items — all P1 features complete)_
   - Uses simple statistics (averages, percentiles) — no ML required initially
 - Notes: Needs historical cost data from the financial layer + menu data. Start simple with SQL aggregations. Can evolve to ML-based predictions later.
 
-### vendor-management
+### ~~vendor-management~~ ✅ shipped 2026-04-29
 **External vendor database and event assignments**
-- Scope: M
-- Touches: schema, api, ui
-- Depends on: none
-- Done when:
-  - `vendors` table: company_name, contact_name, email, phone, service_type, notes
-  - `event_vendors` junction: event_id, vendor_id, role, cost
-  - tRPC: `vendor.create`, `vendor.list`, `vendor.getById`, `vendor.update`, `vendor.assignToEvent`
-  - Event detail page shows assigned vendors with costs
-  - Vendor list page with filtering by service type
-- Notes: Many caterers subcontract (rentals, florals, AV, photography). Tracking vendor assignments per event feeds into cost tracking.
+- Shipped in PR feat/vendor-management:
+  - `vendors` table + `vendor_service_type` enum (rentals, florals, av, photography, transportation, decor, entertainment, other)
+  - `event_vendors` junction with role + cost + unique(event_id, vendor_id)
+  - Optional `expenses.vendor_id` FK; free-text `expenses.vendor` retained for back-compat
+  - tRPC `vendor` router (8 procedures): list, getById, create, update, assignToEvent, updateAssignment, unassignFromEvent, listByEvent, listAssignmentsForVendor
+  - Pages: `/vendors`, `/vendors/new`, `/vendors/[id]` (Details + Events tabs), `/vendors/[id]/edit`
+  - Event detail page Vendors section with admin Assign button
+  - ExpenseForm gains a managed-vendor select that disables free-text when chosen
 
 ### time-tracking
 **Log actual time spent on tasks**
