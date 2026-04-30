@@ -32,11 +32,11 @@ Complete guide for deploying the catering event management system to production 
 | Scheduler | Fly.io | App: `catering-scheduler-dev`, Region: `ord` (Chicago) |
 | Database | Supabase | Project: `catering-event-manager`, Region: `us-west-2`, PostgreSQL 17.6 |
 
-**Supabase Project Details**:
-- **Project ID**: `mjcoyhnecepcizffppzq`
-- **API URL**: `https://mjcoyhnecepcizffppzq.supabase.co`
-- **Database Host**: `db.mjcoyhnecepcizffppzq.supabase.co`
-- **Dashboard**: [Supabase Dashboard](https://supabase.com/dashboard/project/mjcoyhnecepcizffppzq)
+**Supabase Project Details** (replace `<YOUR_PROJECT_REF>` with your project ref from the Supabase dashboard):
+- **Project ID**: `<YOUR_PROJECT_REF>`
+- **API URL**: `https://<YOUR_PROJECT_REF>.supabase.co`
+- **Database Host**: `db.<YOUR_PROJECT_REF>.supabase.co`
+- **Dashboard**: `https://supabase.com/dashboard/project/<YOUR_PROJECT_REF>`
 
 ### Production Quick Reference
 

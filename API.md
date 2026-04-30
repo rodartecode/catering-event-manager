@@ -2,7 +2,7 @@
 
 **Last updated**: 2026-04-01
 **Version**: 1.3
-**Base URL**: `http://localhost:3000/api/trpc` (dev) | `https://catering-dev.vercel.app/api/trpc` (prod)
+**Base URL**: `http://localhost:3000/api/trpc` (dev) | `https://catering-event-manager.vercel.app/api/trpc` (live demo)
 
 This document describes the complete tRPC API for the production-ready Catering Event Manager system. 16 routers with 122 procedures implemented.
 
