@@ -64,6 +64,23 @@ CRON_SECRET="$(openssl rand -base64 32)"  # Authenticates Vercel Cron requests
 
 Required for `/api/cron/*` endpoints. Vercel sends this as a `Bearer` token in the `Authorization` header.
 
+### Demo Environment
+
+Set on the public sales-demo deployment only. Both flags must be `"true"` for the weekly demo reset cron (`/api/cron/reset-demo`) to actually wipe and reseed the database; either being unset blocks it.
+
+```bash
+NEXT_PUBLIC_IS_DEMO="true"        # Marks deployment as the public demo
+DEMO_RESET_ALLOWED="true"         # Authorizes weekly TRUNCATE+reseed
+```
+
+> **Never set on staging or production.** The reset cron runs `TRUNCATE ... CASCADE` against every application table.
+
+To run the demo seed manually (e.g., one-off populate):
+
+```bash
+DEMO_RESET_ALLOWED=true pnpm --filter @catering-event-manager/database db:seed:demo
+```
+
 ## Optional Variables
 
 ```bash
@@ -94,6 +111,8 @@ ENABLE_QUERY_LOGGING=true   # Log SQL queries (dev only)
 | `STAGING_VERCEL_PROJECT_ID` | Staging Vercel project ID |
 | `STAGING_FLY_API_TOKEN` | Staging Fly.io API token |
 | `CRON_SECRET` | Bearer token for cron endpoint authentication |
+| `DEMO_RESET_ALLOWED` | Demo deployment only — authorizes weekly DB wipe (set to `true`) |
+| `NEXT_PUBLIC_IS_DEMO` | Demo deployment only — paired guard for `DEMO_RESET_ALLOWED` |
 
 ## Security
 

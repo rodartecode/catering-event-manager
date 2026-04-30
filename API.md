@@ -1245,6 +1245,10 @@ curl http://localhost:3000/api/cron/follow-ups
 # Notification digest cron endpoint
 curl http://localhost:3000/api/cron/notifications-digest
 
+# Demo reset cron endpoint (demo deployment only)
+# Returns 403 unless DEMO_RESET_ALLOWED=true AND NEXT_PUBLIC_IS_DEMO=true
+curl -H "Authorization: Bearer $CRON_SECRET" http://localhost:3000/api/cron/reset-demo
+
 # Go service conflict detection (requires JSON)
 curl -X POST http://localhost:8080/api/v1/scheduling/check-conflicts \
   -H "Content-Type: application/json" \

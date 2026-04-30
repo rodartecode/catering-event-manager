@@ -233,6 +233,7 @@ pnpm db:generate   # Generate migrations
 pnpm db:migrate    # Apply migrations
 pnpm db:studio     # Open Drizzle Studio
 pnpm db:seed       # Seed database with sample data
+pnpm db:seed:demo  # Wipe + reseed demo showcase data (demo env only)
 ```
 
 ## Testing
@@ -504,18 +505,24 @@ DATABASE_URL="postgresql://prod-user:pass@prod-host:5432/db" pnpm db:migrate
 # Seed production database with sample data (optional)
 DATABASE_URL="your-production-db-url" pnpm db:seed
 
+# Wipe + reseed the public demo deployment (demo env only — destructive)
+DEMO_RESET_ALLOWED=true DATABASE_URL="your-demo-db-url" pnpm db:seed:demo
+
 # Database backup
 pg_dump $DATABASE_URL > backup-$(date +%Y%m%d).sql
 ```
 
 **Demo Data & Login Credentials:**
 
-Production database includes complete demo data for testing:
+The public demo deployment is reseeded weekly (Sundays 02:00 UTC) by `/api/cron/reset-demo`. Logins after a fresh seed:
 
-- **Admin Account**: `admin@example.com` / `password123` (full access)
-- **Manager Account**: `manager@example.com` / `password123` (limited access)
-- **Client Portal**: `jane.smith@acme.test` (magic link authentication)
-- **Sample Data**: 3 clients, 5 events, 10 tasks, 5 resources, communication history
+- **Owner**: `admin@demo.catering` / `demo123!`
+- **Ops Manager**: `manager@demo.catering` / `demo123!`
+- **Lead Chef**: `chef.marin@demo.catering` / `demo123!`
+- **Client Portal**: `priya@lumen-robotics.demo` (magic link)
+- **Showcase data**: 5 clients, 10 events spanning past/present/future, 4 venues, 10 vendors (all 8 service types), kitchen stations + auto-scheduled production tasks, vendor-linked expenses, paid + sent invoices
+
+For local sample data (lighter dataset), use `pnpm db:seed` instead.
 
 **Live Demo**: [catering-event-manager.vercel.app](https://catering-event-manager.vercel.app)
 
