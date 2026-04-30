@@ -132,7 +132,7 @@ pnpm test:quality                                  # Visual / a11y / perf gates
 
 ## Demo data
 
-The public demo at [catering-event-manager.vercel.app](https://catering-event-manager.vercel.app) is reseeded every Sunday at 02:00 UTC by a Vercel cron route (`/api/cron/reset-demo`, dual-flag guarded with `NEXT_PUBLIC_IS_DEMO` + `DEMO_RESET_ALLOWED`).
+The public demo at [catering-event-manager.vercel.app](https://catering-event-manager.vercel.app) is migrated and reseeded every Sunday at 02:00 UTC by a Vercel cron route (`/api/cron/reset-demo`, dual-flag guarded with `NEXT_PUBLIC_IS_DEMO` + `DEMO_RESET_ALLOWED`). The cron runs journal-tracked Drizzle migrations before TRUNCATE+seed, so schema changes shipped between firings don't leave the demo stuck on an old shape.
 
 Logins after a fresh seed:
 

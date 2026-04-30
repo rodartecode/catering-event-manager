@@ -151,6 +151,18 @@ DEMO_RESET_ALLOWED=true pnpm db:seed:demo
 
 The `seedDemo()` function is exported from `@catering-event-manager/database/seed-demo` and is invoked weekly by `/api/cron/reset-demo` on the demo deployment (Sundays 02:00 UTC). Both `DEMO_RESET_ALLOWED=true` and `NEXT_PUBLIC_IS_DEMO=true` must be set or the cron returns 403.
 
+The cron also calls `runMigrations()` from `@catering-event-manager/database/migrate` before seeding, so journal-tracked migrations shipped between Sunday firings get applied automatically (otherwise the next TRUNCATE would blow up on missing tables — see `docs/learnings.md` 2026-04-30). **Hand-written SQL files not in `meta/_journal.json`** (RLS files, `0013_updated_at_triggers_and_fk_indexes.sql`) are NOT applied by the cron — apply them manually via `psql -f` before merging journal-tracked migrations that depend on objects they create.
+
+### Programmatic migration helper
+
+```typescript
+import { runMigrations } from '@catering-event-manager/database/migrate';
+
+await runMigrations(process.env.DATABASE_URL);
+```
+
+Uses drizzle-orm's `postgres-js/migrator` against the bundled `src/migrations/` folder. The Next.js bundle includes the SQL files via `outputFileTracingIncludes` in `apps/web/next.config.ts` for the `/api/cron/reset-demo` route.
+
 ## Cross-Service Type Safety
 
 Both services share the same PostgreSQL schema:
