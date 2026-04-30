@@ -1,8 +1,6 @@
 # Component Architecture Guide
 
-**Last updated**: 2026-04-03
-
-A comprehensive guide to the ~99 React components across 19 domains that make up the catering event management system's user interface.
+A comprehensive guide to the ~115 React components across 22 domains that make up the catering event management system's user interface.
 
 ## Table of Contents
 

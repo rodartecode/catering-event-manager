@@ -1,7 +1,5 @@
 # Performance Optimization Guide
 
-**Last updated**: 2026-02-01
-
 Comprehensive guide to optimizing performance in the production-ready catering event management system across all layers: frontend, backend, database, and infrastructure.
 
 ## Table of Contents

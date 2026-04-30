@@ -64,5 +64,3 @@ Both services share the same PostgreSQL 17 database:
 ## References
 
 - [Fiber benchmarks](https://docs.gofiber.io/extra/benchmarks/) - 5k requests/second vs ~500 for Express
-- [research.md](../specs/001-event-lifecycle-management/research.md) - Full technology evaluation
-- Constitution Principle I: Technology Excellence

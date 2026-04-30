@@ -1,7 +1,5 @@
 # Production Deployment Guide
 
-**Last updated**: 2026-03-31
-
 Complete guide for deploying the catering event management system to production environments including cloud platforms, containerization, monitoring, and maintenance procedures.
 
 ## Table of Contents

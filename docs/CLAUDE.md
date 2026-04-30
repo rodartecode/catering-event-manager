@@ -1,26 +1,21 @@
 # CLAUDE.md - Documentation Guide
 
-This directory contains documentation, architecture decisions, implementation guides, and learnings for the Catering Event Manager project.
+This directory contains documentation, architecture decisions, and learnings for the Catering Event Manager project.
 
 ## Directory Structure
 
 ```
 docs/
-├── decisions/                    # Architecture Decision Records (ADRs)
-│   ├── TEMPLATE.md              # ADR template format
-│   ├── 0001-*.md               # Numbered ADRs
-│   └── 0002-*.md
-├── implementation-guides/        # Step-by-step development guides
-│   ├── README.md               # Guide overview and usage
-│   ├── PHASE-2-FOUNDATIONAL.md # Infrastructure setup (38 tasks)
-│   ├── PHASE-3-USER-STORY-1.md # MVP event management (25 tasks)
-│   └── PHASES-4-8-OVERVIEW.md  # Remaining phases reference
-├── ui-validation/               # UI testing artifacts
-│   └── VALIDATION-REPORT.md    # Manual testing reports
-├── learnings.md                # Accumulated debugging patterns & solutions
-├── COMPONENTS.md               # Component library documentation
-├── DEPLOYMENT.md               # Production deployment guide
-└── PERFORMANCE.md              # Performance optimization notes
+├── decisions/                  # Architecture Decision Records (ADRs)
+│   ├── TEMPLATE.md            # ADR template format
+│   └── 000N-*.md              # Numbered ADRs
+├── ui-validation/             # UI screenshots and validation reports
+├── learnings.md               # Accumulated debugging patterns & solutions
+├── BACKLOG.md                 # Roadmap and tech debt tracking
+├── COMPONENTS.md              # Component library documentation
+├── DEPLOYMENT.md              # Production deployment guide
+├── PERFORMANCE.md             # Performance optimization notes
+└── UPGRADES.md                # Dependency upgrade tracking
 ```
 
 ## Architecture Decision Records (ADRs)
@@ -53,37 +48,6 @@ git commit -m "docs(adr): add decision for [brief description]"
 - **Decision**: Specific choice made
 - **Consequences**: Positive/Negative/Neutral outcomes
 - **Alternatives Considered**: Comparison table of rejected options
-
-## Implementation Guides
-
-**Purpose**: Step-by-step guides for implementing major features and infrastructure.
-
-**Guide Usage**:
-```bash
-# Start with prerequisites check
-cat docs/implementation-guides/README.md
-
-# Follow guides sequentially within each phase
-# Example: Phase 2 (Infrastructure)
-open docs/implementation-guides/PHASE-2-FOUNDATIONAL.md
-
-# Each guide includes:
-# - Complete code examples with exact file paths
-# - Verification commands to test each section
-# - Common troubleshooting tips
-```
-
-**Guide Structure**:
-- **Prerequisites**: Dependencies, environment setup
-- **Tasks**: Numbered steps with code examples
-- **Verification**: Commands to test implementation
-- **Troubleshooting**: Common issues and solutions
-
-**Creating New Guides**:
-- Break large features into phases (20-40 tasks each)
-- Include exact file paths: `/apps/web/src/server/routers/event.ts`
-- Add verification commands after each major section
-- Document common error messages and solutions
 
 ## Learnings Documentation
 
@@ -140,9 +104,7 @@ open docs/implementation-guides/PHASE-2-FOUNDATIONAL.md
 - Tables: align columns, include headers
 
 ### Cross-Referencing
-- Link to specs: `specs/001-event-lifecycle-management/spec.md`
 - Reference ADRs: "See ADR-0001 for architecture rationale"
-- Point to guides: "Follow PHASE-2-FOUNDATIONAL.md for setup"
 - Cite learnings: "Known issue documented in learnings.md"
 
 ### File Naming

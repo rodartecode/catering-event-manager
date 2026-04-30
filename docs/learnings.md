@@ -165,7 +165,7 @@ export default tseslint.config(
 **Solution**: After major changes, update test counts in:
 
 - `CONTRIBUTING.md` (Current Test Status section)
-- `specs/*/tasks.md` (Tests header section)
+- `README.md` (Test Results section)
 - Run `pnpm test` and `go test ./...` to get accurate counts
 
 **Context**: Current status (2026-03-18): 866 TypeScript tests, 41 Go tests
