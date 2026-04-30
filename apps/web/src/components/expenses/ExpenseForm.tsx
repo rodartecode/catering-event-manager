@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { VendorSelect } from '@/components/vendors/VendorSelect';
 import { trpc } from '@/lib/trpc';
 
 interface ExpenseFormProps {
@@ -11,6 +12,7 @@ interface ExpenseFormProps {
     description: string;
     amount: string;
     vendor: string | null;
+    vendorId: number | null;
     expenseDate: Date;
     notes: string | null;
   };
@@ -49,6 +51,7 @@ export function ExpenseForm({ eventId, expense, onSuccess, onCancel }: ExpenseFo
       : formatDateForInput(new Date()),
     notes: expense?.notes || '',
   });
+  const [vendorId, setVendorId] = useState<number | null>(expense?.vendorId ?? null);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const createMutation = trpc.expense.create.useMutation({
@@ -97,6 +100,7 @@ export function ExpenseForm({ eventId, expense, onSuccess, onCancel }: ExpenseFo
         description: formData.description,
         amount: formData.amount,
         vendor: formData.vendor || null,
+        vendorId: vendorId,
         expenseDate: new Date(formData.expenseDate),
         notes: formData.notes || null,
       });
@@ -107,6 +111,7 @@ export function ExpenseForm({ eventId, expense, onSuccess, onCancel }: ExpenseFo
         description: formData.description,
         amount: formData.amount,
         vendor: formData.vendor || undefined,
+        vendorId: vendorId ?? undefined,
         expenseDate: new Date(formData.expenseDate),
         notes: formData.notes || undefined,
       });
@@ -206,9 +211,16 @@ export function ExpenseForm({ eventId, expense, onSuccess, onCancel }: ExpenseFo
         </div>
       </div>
 
+      <VendorSelect
+        value={vendorId}
+        onSelect={(vendor) => setVendorId(vendor?.id ?? null)}
+        label="Managed Vendor"
+        placeholder="None — enter vendor name below"
+      />
+
       <div>
         <label htmlFor="expense-vendor" className="block text-sm font-medium text-gray-700 mb-1">
-          Vendor
+          Vendor (Free Text)
         </label>
         <input
           id="expense-vendor"
@@ -216,7 +228,13 @@ export function ExpenseForm({ eventId, expense, onSuccess, onCancel }: ExpenseFo
           value={formData.vendor}
           onChange={(e) => updateField('vendor', e.target.value)}
           maxLength={255}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          disabled={vendorId !== null}
+          placeholder={
+            vendorId !== null
+              ? 'Using managed vendor (clear above to enter free text)'
+              : 'Optional vendor name...'
+          }
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500"
         />
       </div>
 

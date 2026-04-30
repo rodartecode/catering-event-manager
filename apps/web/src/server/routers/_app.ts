@@ -16,6 +16,7 @@ import { staffRouter } from './staff';
 import { taskRouter } from './task';
 import { templateRouter } from './template';
 import { userRouter } from './user';
+import { vendorRouter } from './vendor';
 import { venueRouter } from './venue';
 
 export const appRouter = router({
@@ -36,6 +37,7 @@ export const appRouter = router({
   portal: portalRouter,
   template: templateRouter,
   search: searchRouter,
+  vendor: vendorRouter,
   venue: venueRouter,
 });
 

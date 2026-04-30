@@ -34,6 +34,11 @@ vi.mock('@/lib/trpc', () => ({
         })),
       },
     },
+    vendor: {
+      list: {
+        useQuery: vi.fn().mockReturnValue({ data: [], isLoading: false }),
+      },
+    },
   },
 }));
 
@@ -77,7 +82,7 @@ describe('ExpenseForm', () => {
       expect(screen.getByLabelText(/description/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/amount/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/date/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/vendor/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/vendor \(free text\)/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/notes/i)).toBeInTheDocument();
     });
 
@@ -143,6 +148,7 @@ describe('ExpenseForm', () => {
       description: 'Chef wages',
       amount: '500.00',
       vendor: 'Staffing Agency',
+      vendorId: null,
       expenseDate: new Date('2026-03-15'),
       notes: 'For the weekend event',
     };
@@ -159,7 +165,7 @@ describe('ExpenseForm', () => {
       expect(screen.getByLabelText(/category/i)).toHaveValue('labor');
       expect(screen.getByLabelText(/description/i)).toHaveValue('Chef wages');
       expect(screen.getByLabelText(/amount/i)).toHaveValue('500.00');
-      expect(screen.getByLabelText(/vendor/i)).toHaveValue('Staffing Agency');
+      expect(screen.getByLabelText(/vendor \(free text\)/i)).toHaveValue('Staffing Agency');
       expect(screen.getByLabelText(/notes/i)).toHaveValue('For the weekend event');
     });
   });
@@ -208,7 +214,7 @@ describe('ExpenseForm', () => {
       const user = userEvent.setup();
       renderWithProviders(<ExpenseForm {...defaultProps} />);
 
-      const input = screen.getByLabelText(/vendor/i);
+      const input = screen.getByLabelText(/vendor \(free text\)/i);
       await user.type(input, 'Party Supply Co');
 
       expect(input).toHaveValue('Party Supply Co');

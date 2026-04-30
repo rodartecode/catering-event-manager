@@ -200,6 +200,14 @@ async function runMigrations(db: TestDatabase): Promise<void> {
     END $$;
   `);
 
+  await db.execute(sql`
+    DO $$ BEGIN
+      CREATE TYPE vendor_service_type AS ENUM ('rentals', 'florals', 'av', 'photography', 'transportation', 'decor', 'entertainment', 'other');
+    EXCEPTION
+      WHEN duplicate_object THEN null;
+    END $$;
+  `);
+
   // Create tables (clients first for FK references)
   await db.execute(sql`
     CREATE TABLE IF NOT EXISTS clients (
@@ -424,6 +432,35 @@ async function runMigrations(db: TestDatabase): Promise<void> {
   `);
 
   await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS vendors (
+      id SERIAL PRIMARY KEY,
+      company_name VARCHAR(255) NOT NULL,
+      contact_name VARCHAR(255),
+      email VARCHAR(255),
+      phone VARCHAR(50),
+      service_type vendor_service_type NOT NULL,
+      notes TEXT,
+      is_active BOOLEAN NOT NULL DEFAULT true,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+      updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+    )
+  `);
+
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS event_vendors (
+      id SERIAL PRIMARY KEY,
+      event_id INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+      vendor_id INTEGER NOT NULL REFERENCES vendors(id) ON DELETE RESTRICT,
+      role VARCHAR(255),
+      cost DECIMAL(10,2),
+      notes TEXT,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+      updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+      CONSTRAINT uq_event_vendors_event_vendor UNIQUE (event_id, vendor_id)
+    )
+  `);
+
+  await db.execute(sql`
     CREATE TABLE IF NOT EXISTS expenses (
       id SERIAL PRIMARY KEY,
       event_id INTEGER NOT NULL REFERENCES events(id),
@@ -431,6 +468,7 @@ async function runMigrations(db: TestDatabase): Promise<void> {
       description VARCHAR(500) NOT NULL,
       amount DECIMAL(10,2) NOT NULL,
       vendor VARCHAR(255),
+      vendor_id INTEGER REFERENCES vendors(id) ON DELETE SET NULL,
       expense_date TIMESTAMP WITH TIME ZONE NOT NULL,
       notes TEXT,
       created_by INTEGER NOT NULL REFERENCES users(id),
@@ -691,6 +729,8 @@ async function runMigrations(db: TestDatabase): Promise<void> {
     'invoices',
     'task_templates',
     'task_template_items',
+    'vendors',
+    'event_vendors',
     'venues',
     'verification_tokens',
   ];
@@ -706,7 +746,7 @@ async function runMigrations(db: TestDatabase): Promise<void> {
 export async function cleanDatabase(db: TestDatabase): Promise<void> {
   // Truncate tables in order (respecting foreign key constraints)
   await db.execute(
-    sql`TRUNCATE verification_tokens, notification_preferences, notifications, documents, production_tasks, event_menu_items, event_menus, menu_items, communications, payments, invoice_line_items, invoices, expenses, resource_schedule, task_resources, staff_skills, staff_availability, tasks, event_status_log, events, kitchen_stations, venues, resources, users, clients, task_template_items, task_templates RESTART IDENTITY CASCADE`
+    sql`TRUNCATE verification_tokens, notification_preferences, notifications, documents, production_tasks, event_menu_items, event_menus, menu_items, communications, payments, invoice_line_items, invoices, expenses, event_vendors, vendors, resource_schedule, task_resources, staff_skills, staff_availability, tasks, event_status_log, events, kitchen_stations, venues, resources, users, clients, task_template_items, task_templates RESTART IDENTITY CASCADE`
   );
 }
 

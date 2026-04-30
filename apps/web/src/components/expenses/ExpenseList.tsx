@@ -41,6 +41,7 @@ export function ExpenseList({ eventId, isAdmin }: ExpenseListProps) {
     description: string;
     amount: string;
     vendor: string | null;
+    vendorId: number | null;
     expenseDate: Date;
     notes: string | null;
   } | null>(null);
@@ -148,6 +149,7 @@ export function ExpenseList({ eventId, isAdmin }: ExpenseListProps) {
                                 description: expense.description,
                                 amount: expense.amount,
                                 vendor: expense.vendor,
+                                vendorId: expense.vendorId,
                                 expenseDate: expense.expenseDate,
                                 notes: expense.notes,
                               })

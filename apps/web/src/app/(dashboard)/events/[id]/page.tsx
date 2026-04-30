@@ -11,6 +11,7 @@ import { ExpenseList, ExpenseSummaryCard } from '@/components/expenses';
 import { InvoiceList } from '@/components/invoices';
 import { EventDietarySummary, EventMenuBuilder, EventMenuCostCard } from '@/components/menus';
 import { GanttChart, TaskList } from '@/components/tasks';
+import { AssignVendorDialog, EventVendorList } from '@/components/vendors';
 import { trpc } from '@/lib/trpc';
 import { useIsAdmin } from '@/lib/use-auth';
 
@@ -22,6 +23,7 @@ export default function EventDetailPage() {
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
   const [isArchiveDialogOpen, setIsArchiveDialogOpen] = useState(false);
   const [isCloneDialogOpen, setIsCloneDialogOpen] = useState(false);
+  const [isAssignVendorDialogOpen, setIsAssignVendorDialogOpen] = useState(false);
 
   const {
     data: event,
@@ -217,6 +219,23 @@ export default function EventDetailPage() {
             <EventMenuBuilder eventId={eventId} isAdmin={isAdmin} />
           </div>
 
+          {/* Vendors Section */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold">Vendors</h2>
+              {isAdmin && (
+                <button
+                  type="button"
+                  onClick={() => setIsAssignVendorDialogOpen(true)}
+                  className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                >
+                  Assign Vendor
+                </button>
+              )}
+            </div>
+            <EventVendorList eventId={eventId} canManage={isAdmin} />
+          </div>
+
           {/* Expenses Section */}
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-xl font-semibold mb-4">Expenses</h2>
@@ -301,6 +320,11 @@ export default function EventDetailPage() {
       {/* Clone Event Dialog */}
       {isCloneDialogOpen && (
         <CloneEventDialog sourceEvent={event} onClose={() => setIsCloneDialogOpen(false)} />
+      )}
+
+      {/* Assign Vendor Dialog */}
+      {isAssignVendorDialogOpen && (
+        <AssignVendorDialog eventId={eventId} onClose={() => setIsAssignVendorDialogOpen(false)} />
       )}
 
       {/* Archive Confirmation Dialog */}

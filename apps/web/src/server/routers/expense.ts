@@ -1,4 +1,9 @@
-import { events, expenseCategoryEnum, expenses } from '@catering-event-manager/database/schema';
+import {
+  events,
+  expenseCategoryEnum,
+  expenses,
+  vendors,
+} from '@catering-event-manager/database/schema';
 import { TRPCError } from '@trpc/server';
 import { eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
@@ -14,6 +19,7 @@ const createExpenseInput = z.object({
     .string()
     .regex(/^\d+(\.\d{1,2})?$/, 'Amount must be a valid decimal with up to 2 decimal places'),
   vendor: z.string().trim().max(255).optional(),
+  vendorId: z.number().int().positive().nullable().optional(),
   expenseDate: z.coerce.date(),
   notes: z.string().trim().optional(),
 });
@@ -27,6 +33,7 @@ const updateExpenseInput = z.object({
     .regex(/^\d+(\.\d{1,2})?$/, 'Amount must be a valid decimal with up to 2 decimal places')
     .optional(),
   vendor: z.string().trim().max(255).nullable().optional(),
+  vendorId: z.number().int().positive().nullable().optional(),
   expenseDate: z.coerce.date().optional(),
   notes: z.string().trim().nullable().optional(),
 });
@@ -58,6 +65,17 @@ export const expenseRouter = router({
       throw new TRPCError({ code: 'NOT_FOUND', message: 'Event not found' });
     }
 
+    if (input.vendorId != null) {
+      const vendor = await db
+        .select({ id: vendors.id })
+        .from(vendors)
+        .where(eq(vendors.id, input.vendorId))
+        .then((rows) => rows[0]);
+      if (!vendor) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Vendor not found' });
+      }
+    }
+
     const [expense] = await db
       .insert(expenses)
       .values({
@@ -66,6 +84,7 @@ export const expenseRouter = router({
         description: input.description,
         amount: input.amount,
         vendor: input.vendor ?? null,
+        vendorId: input.vendorId ?? null,
         expenseDate: input.expenseDate,
         notes: input.notes ?? null,
         createdBy: Number(session.user.id),
@@ -85,6 +104,7 @@ export const expenseRouter = router({
       description: expense.description,
       amount: expense.amount,
       vendor: expense.vendor,
+      vendorId: expense.vendorId,
       expenseDate: expense.expenseDate,
       notes: expense.notes,
       createdBy: expense.createdBy,
@@ -108,12 +128,24 @@ export const expenseRouter = router({
       throw new TRPCError({ code: 'NOT_FOUND', message: 'Expense not found' });
     }
 
+    if (updates.vendorId != null) {
+      const vendor = await db
+        .select({ id: vendors.id })
+        .from(vendors)
+        .where(eq(vendors.id, updates.vendorId))
+        .then((rows) => rows[0]);
+      if (!vendor) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Vendor not found' });
+      }
+    }
+
     // Build update object, only including provided fields
     const updateData: Record<string, unknown> = { updatedAt: new Date() };
     if (updates.category !== undefined) updateData.category = updates.category;
     if (updates.description !== undefined) updateData.description = updates.description;
     if (updates.amount !== undefined) updateData.amount = updates.amount;
     if (updates.vendor !== undefined) updateData.vendor = updates.vendor;
+    if (updates.vendorId !== undefined) updateData.vendorId = updates.vendorId;
     if (updates.expenseDate !== undefined) updateData.expenseDate = updates.expenseDate;
     if (updates.notes !== undefined) updateData.notes = updates.notes;
 
@@ -132,6 +164,7 @@ export const expenseRouter = router({
       description: updated.description,
       amount: updated.amount,
       vendor: updated.vendor,
+      vendorId: updated.vendorId,
       expenseDate: updated.expenseDate,
       notes: updated.notes,
       createdBy: updated.createdBy,
@@ -177,6 +210,7 @@ export const expenseRouter = router({
       description: expense.description,
       amount: expense.amount,
       vendor: expense.vendor,
+      vendorId: expense.vendorId,
       expenseDate: expense.expenseDate,
       notes: expense.notes,
       createdBy: expense.createdBy,

@@ -176,6 +176,96 @@ export async function createVenue(
 }
 
 /**
+ * Create a test vendor.
+ */
+export async function createVendor(
+  db: TestDatabase,
+  overrides: Partial<{
+    companyName: string;
+    contactName: string;
+    email: string;
+    phone: string;
+    serviceType:
+      | 'rentals'
+      | 'florals'
+      | 'av'
+      | 'photography'
+      | 'transportation'
+      | 'decor'
+      | 'entertainment'
+      | 'other';
+    notes: string;
+    isActive: boolean;
+  }> = {}
+) {
+  const id = nextId();
+
+  const result = await db.execute(sql`
+    INSERT INTO vendors (company_name, contact_name, email, phone, service_type, notes, is_active)
+    VALUES (
+      ${overrides.companyName || `Test Vendor ${id}`},
+      ${overrides.contactName || null},
+      ${overrides.email || null},
+      ${overrides.phone || null},
+      ${overrides.serviceType || 'other'},
+      ${overrides.notes || null},
+      ${overrides.isActive !== undefined ? overrides.isActive : true}
+    )
+    RETURNING id, company_name, contact_name, email, phone, service_type, notes, is_active, created_at, updated_at
+  `);
+
+  return result[0] as {
+    id: number;
+    company_name: string;
+    contact_name: string | null;
+    email: string | null;
+    phone: string | null;
+    service_type: string;
+    notes: string | null;
+    is_active: boolean;
+    created_at: Date;
+    updated_at: Date;
+  };
+}
+
+/**
+ * Create a test event-vendor assignment.
+ */
+export async function createEventVendor(
+  db: TestDatabase,
+  eventId: number,
+  vendorId: number,
+  overrides: Partial<{
+    role: string;
+    cost: string;
+    notes: string;
+  }> = {}
+) {
+  const result = await db.execute(sql`
+    INSERT INTO event_vendors (event_id, vendor_id, role, cost, notes)
+    VALUES (
+      ${eventId},
+      ${vendorId},
+      ${overrides.role || null},
+      ${overrides.cost || null},
+      ${overrides.notes || null}
+    )
+    RETURNING id, event_id, vendor_id, role, cost, notes, created_at, updated_at
+  `);
+
+  return result[0] as {
+    id: number;
+    event_id: number;
+    vendor_id: number;
+    role: string | null;
+    cost: string | null;
+    notes: string | null;
+    created_at: Date;
+    updated_at: Date;
+  };
+}
+
+/**
  * Create a test event.
  */
 export async function createEvent(
@@ -475,6 +565,7 @@ export async function createExpense(
     description: string;
     amount: string;
     vendor: string;
+    vendorId: number | null;
     expenseDate: Date;
     notes: string;
   }> = {}
@@ -482,18 +573,19 @@ export async function createExpense(
   const id = nextId();
 
   const result = await db.execute(sql`
-    INSERT INTO expenses (event_id, category, description, amount, vendor, expense_date, notes, created_by)
+    INSERT INTO expenses (event_id, category, description, amount, vendor, vendor_id, expense_date, notes, created_by)
     VALUES (
       ${eventId},
       ${overrides.category || 'food_supplies'},
       ${overrides.description || `Expense ${id}`},
       ${overrides.amount || '100.00'},
       ${overrides.vendor || null},
+      ${overrides.vendorId ?? null},
       ${(overrides.expenseDate || new Date()).toISOString()},
       ${overrides.notes || null},
       ${createdBy}
     )
-    RETURNING id, event_id, category, description, amount, vendor, expense_date, notes, created_by, created_at, updated_at
+    RETURNING id, event_id, category, description, amount, vendor, vendor_id, expense_date, notes, created_by, created_at, updated_at
   `);
 
   return result[0] as {
@@ -503,6 +595,7 @@ export async function createExpense(
     description: string;
     amount: string;
     vendor: string | null;
+    vendor_id: number | null;
     expense_date: Date;
     notes: string | null;
     created_by: number;
