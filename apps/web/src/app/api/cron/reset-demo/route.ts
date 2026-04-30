@@ -1,3 +1,4 @@
+import { runMigrations } from '@catering-event-manager/database/migrate';
 import { seedDemo } from '@catering-event-manager/database/seed-demo';
 import { NextResponse } from 'next/server';
 import { logger } from '@/lib/logger';
@@ -5,8 +6,15 @@ import { logger } from '@/lib/logger';
 export const dynamic = 'force-dynamic';
 
 /**
- * Wipes the demo database and reseeds it with showcase data.
+ * Migrates and reseeds the demo database with showcase data.
  * Triggered weekly by Vercel Cron (see apps/web/vercel.json).
+ *
+ * Migrations run before the seed so that schema changes shipped between
+ * cron firings don't leave the demo DB stuck on an old shape (which would
+ * blow up the TRUNCATE/INSERT in seedDemo). Hand-written SQL files not in
+ * the Drizzle journal (RLS, `update_updated_at_column()` triggers) are NOT
+ * applied here — apply those manually before merging journal-tracked
+ * migrations that depend on them.
  *
  * Hard guards:
  *  - Authorization Bearer must match CRON_SECRET
@@ -41,12 +49,17 @@ export async function GET(request: Request) {
 
   const startedAt = Date.now();
   try {
+    const migrateStartedAt = Date.now();
+    await runMigrations(connectionString);
+    const migrateDurationMs = Date.now() - migrateStartedAt;
+
     const result = await seedDemo(connectionString);
     const durationMs = Date.now() - startedAt;
 
     logger.info('Demo database reset complete', {
       context: 'reset-demo-cron',
       durationMs,
+      migrateDurationMs,
       ...result,
     });
 
@@ -54,6 +67,7 @@ export async function GET(request: Request) {
       success: true,
       timestamp: new Date().toISOString(),
       durationMs,
+      migrateDurationMs,
       seeded: result,
     });
   } catch (error) {

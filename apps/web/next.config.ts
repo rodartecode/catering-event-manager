@@ -57,6 +57,12 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   output: 'standalone',
   transpilePackages: ['@catering-event-manager/database', '@catering-event-manager/types'],
+  outputFileTracingIncludes: {
+    // The reset-demo cron runs `runMigrations()` which reads SQL files from
+    // packages/database/src/migrations at runtime. Next's tracer doesn't pick
+    // them up automatically — include them explicitly.
+    '/api/cron/reset-demo': ['../../packages/database/src/migrations/**/*'],
+  },
   experimental: {
     serverActions: {
       bodySizeLimit: '2mb',
