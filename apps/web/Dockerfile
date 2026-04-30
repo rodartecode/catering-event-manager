@@ -44,7 +44,7 @@ WORKDIR /app
 
 ARG GIT_SHA=unknown
 ARG BUILD_DATE=unknown
-LABEL org.opencontainers.image.source="https://github.com/jrodarte/catering-event-manager"
+LABEL org.opencontainers.image.source="https://github.com/rodartecode/catering-event-manager"
 LABEL org.opencontainers.image.revision=$GIT_SHA
 LABEL org.opencontainers.image.created=$BUILD_DATE
 

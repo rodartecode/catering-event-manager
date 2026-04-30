@@ -299,4 +299,4 @@ This project stays on the cutting edge with the latest stable packages. When upg
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under the project's license.
+By contributing, you agree that your contributions will be licensed under the [MIT License](LICENSE).

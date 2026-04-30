@@ -1,8 +1,16 @@
 # Catering Event Manager
 
-**Production-ready event lifecycle management system** for catering companies - from initial inquiry to post-event follow-up.
+[![CI](https://github.com/rodartecode/catering-event-manager/actions/workflows/ci.yml/badge.svg)](https://github.com/rodartecode/catering-event-manager/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Next.js 16](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org/)
+[![Go 1.26](https://img.shields.io/badge/Go-1.26-00ADD8?logo=go&logoColor=white)](https://go.dev/)
+[![TypeScript 6](https://img.shields.io/badge/TypeScript-6-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 
-**Last updated**: April 8, 2026
+End-to-end event lifecycle management for catering companies — from initial inquiry through post-event follow-up. Hybrid Next.js 16 + Go Fiber v3 monorepo with PostgreSQL 17, tRPC v11, and Drizzle ORM.
+
+**[→ Live demo](https://catering-event-manager.vercel.app)** · sign in as `admin@demo.catering` / `demo123!` (demo DB reseeded weekly)
+
+![Analytics dashboard](docs/ui-validation/12-analytics-dashboard.png)
 
 ## Architecture
 
@@ -413,9 +421,9 @@ The application is deployed across three managed platforms:
 
 | Service | Platform | URL |
 |---------|----------|-----|
-| Web App | Vercel | [catering-dev.vercel.app](https://catering-dev.vercel.app) |
-| Scheduler | Fly.io | [catering-scheduler-dev.fly.dev](https://catering-scheduler-dev.fly.dev) |
-| Database | Supabase | PostgreSQL 17.6 (us-west-2) |
+| Web App (live demo) | Vercel | [catering-event-manager.vercel.app](https://catering-event-manager.vercel.app) |
+| Scheduler | Fly.io | Internal — fronted by the web app |
+| Database | Supabase | PostgreSQL 17 |
 
 **Deployment workflow**:
 - **Web**: Push to `main` → Auto-deploys to Vercel
@@ -523,8 +531,6 @@ The public demo deployment is reseeded weekly (Sundays 02:00 UTC) by `/api/cron/
 - **Showcase data**: 5 clients, 10 events spanning past/present/future, 4 venues, 10 vendors (all 8 service types), kitchen stations + auto-scheduled production tasks, vendor-linked expenses, paid + sent invoices
 
 For local sample data (lighter dataset), use `pnpm db:seed` instead.
-
-**Live Demo**: [catering-event-manager.vercel.app](https://catering-event-manager.vercel.app)
 
 ### Performance Optimization
 
@@ -664,7 +670,7 @@ Before production deployment:
 
 ## License
 
-Private - All Rights Reserved
+[MIT](LICENSE) © Jesse Rodarte
 
 ---
 
