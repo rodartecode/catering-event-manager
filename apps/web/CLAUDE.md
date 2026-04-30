@@ -17,13 +17,14 @@ Next.js 16 + React 19 full-stack application with tRPC v11 API, Next-Auth v5 aut
 ```
 src/
 ├── server/routers/           # tRPC API (→ src/server/CLAUDE.md)
-│   ├── _app.ts              # Root router (combines 17 domain routers)
+│   ├── _app.ts              # Root router (combines 18 domain routers)
 │   ├── event.ts             # Event management
 │   ├── task.ts              # Task management
 │   ├── resource.ts          # Resource scheduling
 │   ├── document.ts          # Document management
 │   ├── expense.ts           # Expense tracking
 │   ├── invoice.ts           # Invoicing
+│   ├── kitchen-production.ts # Kitchen stations & production scheduling
 │   ├── menu.ts              # Menu planning
 │   ├── notification.ts      # Notifications & preferences
 │   ├── payment.ts           # Payments
@@ -39,6 +40,7 @@ src/
 │   ├── documents/          # Document upload/list
 │   ├── expenses/           # Expense tracking
 │   ├── invoices/           # Invoice management
+│   ├── kitchen-production/ # Stations, production tasks, timeline
 │   ├── menus/              # Menu planning
 │   ├── notifications/      # Bell icon, dropdown, preferences
 │   ├── staff/              # Staff skills, availability, profiles

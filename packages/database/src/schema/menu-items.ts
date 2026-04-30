@@ -2,6 +2,7 @@ import {
   boolean,
   index,
   integer,
+  jsonb,
   numeric,
   pgEnum,
   pgTable,
@@ -41,6 +42,7 @@ export const menuItems = pgTable(
     allergens: text('allergens').array().default([]),
     dietaryTags: dietaryTagEnum('dietary_tags').array().default([]),
     isActive: boolean('is_active').default(true).notNull(),
+    productionSteps: jsonb('production_steps'),
     createdBy: integer('created_by')
       .references(() => users.id)
       .notNull(),

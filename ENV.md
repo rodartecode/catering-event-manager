@@ -53,7 +53,7 @@ Required for client portal magic links and notification email digests:
 
 ```bash
 RESEND_API_KEY="re_..."
-FROM_EMAIL="no-reply@example.com"
+EMAIL_FROM="no-reply@example.com"
 ```
 
 ### Cron Jobs

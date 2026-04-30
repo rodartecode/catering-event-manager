@@ -8,6 +8,7 @@ export * from './events';
 export * from './expenses';
 export * from './invoice-line-items';
 export * from './invoices';
+export * from './kitchen-production';
 export * from './menu-items';
 export * from './notification-preferences';
 export * from './notifications';
