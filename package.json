@@ -6,7 +6,7 @@
   "pnpm": {
     "overrides": {
       "drizzle-orm": "$drizzle-orm",
-      "undici": ">=7.24.0",
+      "undici": "^7.24.0",
       "flatted": ">=3.4.2"
     }
   },
