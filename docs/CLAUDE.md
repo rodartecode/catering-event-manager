@@ -9,7 +9,8 @@ docs/
 ├── decisions/                  # Architecture Decision Records (ADRs)
 │   ├── TEMPLATE.md            # ADR template format
 │   └── 000N-*.md              # Numbered ADRs
-├── ui-validation/             # UI screenshots and validation reports
+├── screenshots/               # UI screenshots used in README + VALIDATION-REPORT
+├── internal/                  # Historical validation/session notes (unmaintained)
 ├── learnings.md               # Accumulated debugging patterns & solutions
 ├── BACKLOG.md                 # Roadmap and tech debt tracking
 ├── COMPONENTS.md              # Component library documentation
@@ -83,7 +84,7 @@ git commit -m "docs(adr): add decision for [brief description]"
 
 **Purpose**: Store manual testing reports and visual regression artifacts.
 
-**Validation Reports** (`ui-validation/VALIDATION-REPORT.md`):
+**Validation Reports** (`screenshots/VALIDATION-REPORT.md`):
 - Manual UI/UX flow testing results
 - Authentication flow validation
 - Dashboard functionality checks
