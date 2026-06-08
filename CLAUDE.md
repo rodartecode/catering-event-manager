@@ -4,6 +4,14 @@
 
 Guidance for Claude Code when working with this repository.
 
+> **Canonical home of the Go scheduler.** A private production hard fork
+> (`event-manager-prod`) was split off from this repo and is **removing** its Go
+> scheduling service (collapsing conflict detection into a Postgres GiST exclusion
+> constraint). This **public** repo remains the canonical, tested home of
+> `apps/scheduling-service/`. Any future reuse of the scheduler (e.g. the painting
+> app) should extract it from here, not from the prod fork. The two repos diverge by
+> design — there is no shared-package layer; port improvements manually.
+
 ## Project Overview
 
 **Catering Event Lifecycle Management System** - Hybrid microservices monorepo for managing catering events from inquiry to post-event follow-up.
