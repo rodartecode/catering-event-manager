@@ -354,8 +354,6 @@ SCHEDULING_SERVICE_URL="https://scheduler.your-domain.com"
 
 # Redis cache (optional but recommended)
 REDIS_URL="redis://redis-host:6379"
-ANALYTICS_CACHE_TTL="300"
-CONFLICT_CACHE_TTL="30"
 
 # Logging
 LOG_LEVEL="info"
