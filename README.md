@@ -85,7 +85,7 @@ catering-event-manager/
 │   ├── web/                    # Next.js 16 application
 │   │   ├── src/app/            # App Router routes
 │   │   ├── src/server/         # tRPC routers (19 domains)
-│   │   └── src/components/     # React components (22 domains)
+│   │   └── src/components/     # React components (21 domains)
 │   └── scheduling-service/     # Go Fiber v3 service
 │       ├── internal/domain/    # Core entities (no deps)
 │       ├── internal/scheduler/ # Conflict + availability algorithms
