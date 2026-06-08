@@ -1,6 +1,6 @@
 # Component Architecture Guide
 
-A comprehensive guide to the ~115 React components across 22 domains that make up the catering event management system's user interface.
+A guide to the ~113 React components across 21 domains that make up the catering event management system's user interface. The directory tree below is current; the per-category sections further down focus on representative components and are not exhaustive.
 
 ## Table of Contents
 
@@ -25,6 +25,7 @@ src/components/
 ├── events/                 # Event lifecycle management (8 components)
 ├── expenses/               # Expense tracking (3 components)
 ├── invoices/               # Invoicing & PDF (4 components)
+├── kitchen-production/     # Kitchen stations & production tasks (9 components)
 ├── menus/                  # Menu planning & dietary tracking (6 components)
 ├── notifications/          # Notification bell & dropdown (2 components)
 ├── payments/               # Payment recording & list (2 components)
@@ -34,7 +35,8 @@ src/components/
 ├── shared/                 # Export, import, bulk actions (4 components)
 ├── staff/                  # Staff skills & availability (5 components)
 ├── tasks/                  # Task management & assignment (14 components)
-└── venues/                 # Venue profiles & selection (6 components)
+├── vendors/                # Vendor directory & event assignments (6 components)
+└── venues/                 # Venue profiles & selection (5 components)
 ```
 
 ## Component Categories
